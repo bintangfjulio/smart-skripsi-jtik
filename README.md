@@ -1,2 +1,0 @@
-# pytorch
-PyTorch Deep Learning
