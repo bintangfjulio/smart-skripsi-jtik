@@ -12,7 +12,7 @@ import pandas as pd
 import torch.nn as nn
 import torch.nn.functional as F
 
-from transformers import BertTokenizer, BertModel, get_linear_schedule_with_warmup, AdamW
+from transformers import BertTokenizer, BertModel
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 from tqdm import tqdm
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
@@ -23,15 +23,15 @@ from torch.utils.data import TensorDataset
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--data", type=str, default="abstrak")
 parser.add_argument("--dataset", type=str, default='data_skripsi_jtik.csv')
 parser.add_argument("--batch_size", type=int, default=32)
 parser.add_argument("--bert_model", type=str, default='indolem/indobert-base-uncased')
 parser.add_argument("--seed", type=int, default=42)
-parser.add_argument("--max_epochs", type=int, default=20)
+parser.add_argument("--max_epochs", type=int, default=30)
 parser.add_argument("--lr", type=float, default=2e-5)
 parser.add_argument("--dropout", type=float, default=0.1)
 parser.add_argument("--patience", type=int, default=3)
-parser.add_argument("--data", type=str, default="abstrak")
 config = vars(parser.parse_args())
 
 np.random.seed(config["seed"]) 
@@ -170,12 +170,7 @@ model.to(device)
 
 n_total_steps = len(train_loader)
 criterion = nn.CrossEntropyLoss()
-# optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
-
-optimizer = AdamW(model.parameters(), lr=config["lr"], weight_decay=0.9)
-scheduler = get_linear_schedule_with_warmup(optimizer, 
-                                        num_warmup_steps = 0,
-                                        num_training_steps = n_total_steps * config["max_epochs"])
+optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
 
 
 # fine-tune
@@ -185,8 +180,8 @@ failed_counter = 0
 print("Training Stage...")
 model.zero_grad()
 for epoch in range(config["max_epochs"]):
-    # if failed_counter == config["patience"]:
-    #     break
+    if failed_counter == config["patience"]:
+        break
 
     model.train(True)
     for index, (input_ids, attention_mask, target) in enumerate(train_loader):
@@ -199,12 +194,11 @@ for epoch in range(config["max_epochs"]):
 
         loss.backward()
         optimizer.step()
-        scheduler.step()
         optimizer.zero_grad()
         model.zero_grad()
 
         if (index+1) % 100 == 0:
-            print (f'Epoch [{epoch}/{config["max_epochs"]}], Step [{index+1}/{n_total_steps}], Loss: {loss.item():.4f}')
+            print (f'Epoch [{epoch + 1}/{config["max_epochs"]}], Step [{index+1}/{n_total_steps}], Loss: {loss.item():.4f}')
 
     model.eval()
     with torch.no_grad():
@@ -224,7 +218,7 @@ for epoch in range(config["max_epochs"]):
             model.zero_grad()
 
         val_loss /= n_samples
-        print(f'Epoch [{epoch}/{config["max_epochs"]}], Validation Loss: {val_loss:.4f}')
+        print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Validation Loss: {val_loss:.4f}')
         
         if round(val_loss, 2) < round(best_loss, 2):
             if not os.path.exists('checkpoints'):
@@ -234,7 +228,7 @@ for epoch in range(config["max_epochs"]):
                 os.remove('checkpoints/model_classifier.pt')
 
             checkpoint = {
-                "epoch": epoch,
+                "epoch": epoch + 1,
                 "model_state": model.state_dict(),
             }
                 
