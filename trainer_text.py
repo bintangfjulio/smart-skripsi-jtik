@@ -169,11 +169,10 @@ n_total_steps = len(train_loader)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
 
-# n_total_steps = len(train_loader) * config["num_epochs"]
 # optimizer = AdamW(model.parameters(), lr=config["lr"], weight_decay=0.9)
 # scheduler = get_linear_schedule_with_warmup(optimizer, 
 #                                         num_warmup_steps = 0,
-#                                         num_training_steps = n_total_steps)
+#                                         num_training_steps = n_total_steps * config["num_epochs"])
 
 
 # fine-tune
