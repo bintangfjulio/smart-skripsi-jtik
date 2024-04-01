@@ -51,7 +51,7 @@ max_length = max(len(str(row["abstrak"]).split()) for row in dataset.to_dict('re
 
 
 # preprocessor
-if not os.path.exists(f"datasets/train_set.pkl") and not os.path.exists(f"datasets/valid_set.pkl") and not os.path.exists(f"datasets/test_set.pkl"):
+if not os.path.exists("train_set.pkl") and not os.path.exists("valid_set.pkl") and not os.path.exists("test_set.pkl"):
     print("\nPreprocessing Data...")
     input_ids, target = [], []
     preprocessing_progress = tqdm(dataset.to_dict('records'))
@@ -85,24 +85,24 @@ if not os.path.exists(f"datasets/train_set.pkl") and not os.path.exists(f"datase
     valid_size = len(train_valid_set) - train_size
 
     train_set, valid_set = torch.utils.data.random_split(train_valid_set, [train_size, valid_size])
-    with open(f"datasets/train_set.pkl", 'wb') as train_preprocessed:
+    with open("train_set.pkl", 'wb') as train_preprocessed:
         pickle.dump(train_set, train_preprocessed)
 
-    with open(f"datasets/valid_set.pkl", 'wb') as valid_preprocessed:
+    with open("valid_set.pkl", 'wb') as valid_preprocessed:
         pickle.dump(valid_set, valid_preprocessed)
 
-    with open(f"datasets/test_set.pkl", 'wb') as test_preprocessed:
+    with open("test_set.pkl", 'wb') as test_preprocessed:
         pickle.dump(test_set, test_preprocessed)
     print('[ Preprocessing Completed ]\n')
 
 print("\nLoading Data...")
-with open(f"datasets/train_set.pkl", 'rb') as train_preprocessed:
+with open("train_set.pkl", 'rb') as train_preprocessed:
     train_set = pickle.load(train_preprocessed)
     
-with open(f"datasets/valid_set.pkl", 'rb') as valid_preprocessed:
+with open("valid_set.pkl", 'rb') as valid_preprocessed:
     valid_set = pickle.load(valid_preprocessed)
     
-with open(f"datasets/test_set.pkl", 'rb') as test_preprocessed:
+with open("test_set.pkl", 'rb') as test_preprocessed:
     test_set = pickle.load(test_preprocessed)
 print('[ Loading Completed ]\n')
 
