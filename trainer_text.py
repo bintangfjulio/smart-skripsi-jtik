@@ -54,7 +54,7 @@ max_length = max(len(str(row["abstrak"]).split()) for row in dataset.tolist()) +
 if not os.path.exists("train_set.pkl") and not os.path.exists("valid_set.pkl") and not os.path.exists("test_set.pkl"):
     print("\nPreprocessing Data...")
     input_ids, attention_mask, target = [], [], []
-    preprocessing_progress = tqdm(dataset..tolist()
+    preprocessing_progress = tqdm(dataset.tolist()
 
     for row in preprocessing_progress:
         label = labels.index(row["prodi"])
