@@ -27,7 +27,7 @@ parser.add_argument("--dataset", type=str, default='data_skripsi_jtik.csv')
 parser.add_argument("--batch_size", type=int, default=32)
 parser.add_argument("--bert_model", type=str, default='indolem/indobert-base-uncased')
 parser.add_argument("--seed", type=int, default=42)
-parser.add_argument("--max_epochs", type=int, default=50)
+parser.add_argument("--max_epochs", type=int, default=20)
 parser.add_argument("--lr", type=float, default=2e-5)
 parser.add_argument("--dropout", type=float, default=0.1)
 parser.add_argument("--patience", type=int, default=3)
@@ -170,12 +170,12 @@ model.to(device)
 
 n_total_steps = len(train_loader)
 criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
+# optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
 
-# optimizer = AdamW(model.parameters(), lr=config["lr"], weight_decay=0.9)
-# scheduler = get_linear_schedule_with_warmup(optimizer, 
-#                                         num_warmup_steps = 0,
-#                                         num_training_steps = n_total_steps * config["max_epochs"])
+optimizer = AdamW(model.parameters(), lr=config["lr"], weight_decay=0.9)
+scheduler = get_linear_schedule_with_warmup(optimizer, 
+                                        num_warmup_steps = 0,
+                                        num_training_steps = n_total_steps * config["max_epochs"])
 
 
 # fine-tune
@@ -185,8 +185,8 @@ failed_counter = 0
 print("Training Stage...")
 model.zero_grad()
 for epoch in range(config["max_epochs"]):
-    if failed_counter == config["patience"]:
-        break
+    # if failed_counter == config["patience"]:
+    #     break
 
     model.train(True)
     for index, (input_ids, attention_mask, target) in enumerate(train_loader):
@@ -199,7 +199,7 @@ for epoch in range(config["max_epochs"]):
 
         loss.backward()
         optimizer.step()
-        # scheduler.step()
+        scheduler.step()
         optimizer.zero_grad()
         model.zero_grad()
 
