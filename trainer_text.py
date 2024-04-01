@@ -33,18 +33,18 @@ parser.add_argument("--dropout", type=float, default=0.1)
 parser.add_argument("--patience", type=int, default=3)
 config = vars(parser.parse_args())
 
-np.random.seed(config.seed) 
-torch.manual_seed(config.seed)
-random.seed(config.seed)
+np.random.seed(config["seed"]) 
+torch.manual_seed(config["seed"])
+random.seed(config["seed"])
 
 if torch.cuda.is_available():
-    torch.cuda.manual_seed(config.seed)
-    torch.cuda.manual_seed_all(config.seed)
+    torch.cuda.manual_seed(config["seed"])
+    torch.cuda.manual_seed_all(config["seed"])
     torch.backends.cudnn.deterministic = True
 
-dataset = pd.read_csv(config.dataset)
+dataset = pd.read_csv(config["dataset"])
 stop_words = StopWordRemoverFactory().get_stop_words()
-tokenizer = BertTokenizer.from_pretrained(config.bert_model)
+tokenizer = BertTokenizer.from_pretrained(config["bert_model"])
 stemmer = StemmerFactory().create_stemmer()
 max_length = max(len(str(row["abstrak"]).split()) for row in dataset.values.tolist()) + 5
 labels = dataset['prodi'].unique().tolist()
@@ -107,17 +107,17 @@ with open(f"datasets/test_set.pkl", 'rb') as test_preprocessed:
 print('[ Loading Completed ]\n')
 
 train_loader = torch.utils.data.DataLoader(dataset=train_set, 
-                                        batch_size=config.batch_size, 
+                                        batch_size=config["batch_size"], 
                                         shuffle=True,
                                         num_workers=multiprocessing.cpu_count())
 
 valid_loader = torch.utils.data.DataLoader(dataset=valid_set, 
-                                        batch_size=config.batch_size, 
+                                        batch_size=config["batch_size"], 
                                         shuffle=False,
                                         num_workers=multiprocessing.cpu_count())
 
 test_loader = torch.utils.data.DataLoader(dataset=test_set, 
-                                        batch_size=config.batch_size, 
+                                        batch_size=config["batch_size"], 
                                         shuffle=False,
                                         num_workers=multiprocessing.cpu_count())
 
@@ -162,15 +162,15 @@ class BERT_CNN(nn.Module):
         
         return preds
     
-model = BERT_CNN(len(labels), config.bert_model, config.dropout)
+model = BERT_CNN(len(labels), config["bert_model"], config["dropout"])
 model.to(device)
 
 n_total_steps = len(train_loader)
 criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
+optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
 
-# n_total_steps = len(train_loader) * config.num_epochs
-# optimizer = AdamW(model.parameters(), lr=config.lr, weight_decay=0.9)
+# n_total_steps = len(train_loader) * config["num_epochs"]
+# optimizer = AdamW(model.parameters(), lr=config["lr"], weight_decay=0.9)
 # scheduler = get_linear_schedule_with_warmup(optimizer, 
 #                                         num_warmup_steps = 0,
 #                                         num_training_steps = n_total_steps)
@@ -181,8 +181,8 @@ best_loss = 9.99
 failed_counter = 0
 
 print("Training Stage...")
-for epoch in range(config.num_epochs):
-    if failed_counter == config.patience:
+for epoch in range(config["num_epochs"]):
+    if failed_counter == config["patience"]:
         break
 
     model.train(True)
@@ -197,8 +197,8 @@ for epoch in range(config.num_epochs):
         loss.backward()
         optimizer.step()
 
-        if (index+1) % config.batch_size == 0:
-            print (f'Epoch [{epoch+1}/{config.num_epochs}], Step [{index+1}/{n_total_steps}], Loss: {loss.item():.4f}')
+        if (index+1) % config["batch_size"] == 0:
+            print (f'Epoch [{epoch+1}/{config["num_epochs"]}], Step [{index+1}/{n_total_steps}], Loss: {loss.item():.4f}')
 
     model.eval()
     with torch.no_grad():
@@ -215,7 +215,7 @@ for epoch in range(config.num_epochs):
             n_samples += 1
 
         val_loss /= n_samples
-        print(f'Epoch [{epoch+1}/{config.num_epochs}], Validation Loss: {val_loss:.4f}')
+        print(f'Epoch [{epoch+1}/{config["num_epochs"]}], Validation Loss: {val_loss:.4f}')
         
         if round(val_loss, 2) < round(best_loss, 2):
             if not os.path.exists('checkpoints'):
