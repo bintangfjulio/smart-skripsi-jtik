@@ -47,7 +47,7 @@ stop_words = StopWordRemoverFactory().get_stop_words()
 tokenizer = BertTokenizer.from_pretrained(config["bert_model"])
 stemmer = StemmerFactory().create_stemmer()
 labels = dataset['prodi'].unique().tolist()
-max_length = max(len(str(row["abstrak"]).split()) for row in dataset.tolist()) + 5
+max_length = max(len(str(row["judul"]).split()) for row in dataset.tolist()) + 5
 
 
 # preprocessor
@@ -58,7 +58,7 @@ if not os.path.exists("train_set.pkl") and not os.path.exists("valid_set.pkl") a
 
     for row in preprocessing_progress:
         label = labels.index(row["prodi"])
-        text = str(row["abstrak"]) 
+        text = str(row["judul"]) 
         text = text.lower()
         text = emoji.replace_emoji(text, replace='') 
         text = re.sub(r'\n', ' ', text) 
@@ -182,6 +182,7 @@ best_loss = 9.99
 failed_counter = 0
 
 print("Training Stage...")
+model.zero_grad()
 for epoch in range(config["max_epochs"]):
     if failed_counter == config["patience"]:
         break
@@ -198,6 +199,7 @@ for epoch in range(config["max_epochs"]):
         loss.backward()
         optimizer.step()
         # scheduler.step()
+        optimizer.zero_grad()
         model.zero_grad()
 
         if (index+1) % config["batch_size"] == 0:
