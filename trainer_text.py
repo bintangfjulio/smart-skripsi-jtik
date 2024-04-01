@@ -195,9 +195,10 @@ for epoch in range(config["max_epochs"]):
         preds = model(input_ids=input_ids, attention_mask=attention_mask)
         loss = criterion(preds, target)
 
-        optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        # scheduler.step()
+        model.zero_grad()
 
         if (index+1) % config["batch_size"] == 0:
             print (f'Epoch [{epoch+1}/{config["max_epochs"]}], Step [{index+1}/{n_total_steps}], Loss: {loss.item():.4f}')
@@ -216,6 +217,8 @@ for epoch in range(config["max_epochs"]):
             loss = criterion(preds, target)
             val_loss += loss.item()
             n_samples += 1
+
+            model.zero_grad()
 
         val_loss /= n_samples
         print(f'Epoch [{epoch+1}/{config["max_epochs"]}], Validation Loss: {val_loss:.4f}')
