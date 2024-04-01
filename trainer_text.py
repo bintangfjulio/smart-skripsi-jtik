@@ -47,14 +47,14 @@ stop_words = StopWordRemoverFactory().get_stop_words()
 tokenizer = BertTokenizer.from_pretrained(config["bert_model"])
 stemmer = StemmerFactory().create_stemmer()
 labels = dataset['prodi'].unique().tolist()
-max_length = max(len(str(row["judul"]).split()) for row in dataset.tolist()) + 5
+max_length = max(len(str(row["judul"]).split()) for row in dataset.to_dict('records')) + 5
 
 
 # preprocessor
 if not os.path.exists("train_set.pkl") and not os.path.exists("valid_set.pkl") and not os.path.exists("test_set.pkl"):
     print("\nPreprocessing Data...")
     input_ids, attention_mask, target = [], [], []
-    preprocessing_progress = tqdm(dataset.tolist()
+    preprocessing_progress = tqdm(dataset.to_dict('records'))
 
     for row in preprocessing_progress:
         label = labels.index(row["prodi"])
