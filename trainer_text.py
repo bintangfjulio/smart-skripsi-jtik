@@ -53,7 +53,7 @@ max_length = max(len(str(row["abstrak"]).split()) for row in dataset.to_dict('re
 # preprocessor
 if not os.path.exists("train_set.pkl") and not os.path.exists("valid_set.pkl") and not os.path.exists("test_set.pkl"):
     print("\nPreprocessing Data...")
-    input_ids, target = [], []
+    input_ids, attention_mask, target = [], [], []
     preprocessing_progress = tqdm(dataset.to_dict('records'))
 
     for row in preprocessing_progress:
@@ -71,11 +71,13 @@ if not os.path.exists("train_set.pkl") and not os.path.exists("valid_set.pkl") a
 
         token = tokenizer(text=text, max_length=max_length, padding="max_length", truncation=True)  
         input_ids.append(token['input_ids'])
+        attention_mask.append(token['attention_mask'])
         target.append(label)
 
     input_ids = torch.tensor(input_ids)
+    attention_mask = torch.tensor(attention_mask)
     target = torch.tensor(target)
-    tensor_dataset = TensorDataset(input_ids, target)
+    tensor_dataset = TensorDataset(input_ids, attention_mask, target)
 
     train_valid_size = round(len(tensor_dataset) * 0.8)
     test_size = len(tensor_dataset) - train_valid_size
@@ -139,8 +141,8 @@ class BERT_CNN(nn.Module):
         self.out_channels_length = out_channels
         self.output_layer = nn.Linear(len(window_sizes) * out_channels, num_classes)
 
-    def forward(self, input_ids):
-        bert_output = self.pretrained_bert(input_ids=input_ids)
+    def forward(self, input_ids, attention_mask):
+        bert_output = self.pretrained_bert(input_ids=input_ids, attention_mask=attention_mask)
         bert_hidden_states = bert_output[2]
         bert_hidden_states = torch.stack(bert_hidden_states, dim=1)
         stacked_hidden_states = bert_hidden_states[:, -4:]
@@ -172,7 +174,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
 # optimizer = AdamW(model.parameters(), lr=config["lr"], weight_decay=0.9)
 # scheduler = get_linear_schedule_with_warmup(optimizer, 
 #                                         num_warmup_steps = 0,
-#                                         num_training_steps = n_total_steps * config["num_epochs"])
+#                                         num_training_steps = n_total_steps * config["max_epochs"])
 
 
 # fine-tune
@@ -180,16 +182,17 @@ best_loss = 9.99
 failed_counter = 0
 
 print("Training Stage...")
-for epoch in range(config["num_epochs"]):
+for epoch in range(config["max_epochs"]):
     if failed_counter == config["patience"]:
         break
 
     model.train(True)
-    for index, (input_ids, target) in enumerate(train_loader):
+    for index, (input_ids, attention_mask, target) in enumerate(train_loader):
         input_ids = input_ids.to(device)
+        attention_mask = attention_mask.to(device)
         target = target.to(device)
 
-        preds = model(input_ids=input_ids)
+        preds = model(input_ids=input_ids, attention_mask=attention_mask)
         loss = criterion(preds, target)
 
         optimizer.zero_grad()
@@ -197,24 +200,25 @@ for epoch in range(config["num_epochs"]):
         optimizer.step()
 
         if (index+1) % config["batch_size"] == 0:
-            print (f'Epoch [{epoch+1}/{config["num_epochs"]}], Step [{index+1}/{n_total_steps}], Loss: {loss.item():.4f}')
+            print (f'Epoch [{epoch+1}/{config["max_epochs"]}], Step [{index+1}/{n_total_steps}], Loss: {loss.item():.4f}')
 
     model.eval()
     with torch.no_grad():
         val_loss = 0
         n_samples = 0
 
-        for input_ids, target in valid_loader:
+        for input_ids, attention_mask, target in valid_loader:
             input_ids = input_ids.to(device)
+            attention_mask = attention_mask.to(device)
             target = target.to(device)
-            preds = model(input_ids=input_ids)
+            preds = model(input_ids=input_ids, attention_mask=attention_mask)
 
             loss = criterion(preds, target)
             val_loss += loss.item()
             n_samples += 1
 
         val_loss /= n_samples
-        print(f'Epoch [{epoch+1}/{config["num_epochs"]}], Validation Loss: {val_loss:.4f}')
+        print(f'Epoch [{epoch+1}/{config["max_epochs"]}], Validation Loss: {val_loss:.4f}')
         
         if round(val_loss, 2) < round(best_loss, 2):
             if not os.path.exists('checkpoints'):
@@ -245,10 +249,11 @@ with torch.no_grad():
     n_correct = 0
     n_samples = 0
 
-    for input_ids, target in test_loader:
+    for input_ids, attention_mask, target in test_loader:
         input_ids = input_ids.to(device)
+        attention_mask = attention_mask.to(device)
         target = target.to(device)
-        preds = model(input_ids=input_ids)
+        preds = model(input_ids=input_ids, attention_mask=attention_mask)
 
         result = torch.argmax(preds, dim=1) 
         n_samples += target.size(0)
