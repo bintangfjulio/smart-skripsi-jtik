@@ -31,6 +31,7 @@ parser.add_argument("--max_epochs", type=int, default=50)
 parser.add_argument("--lr", type=float, default=2e-5)
 parser.add_argument("--dropout", type=float, default=0.1)
 parser.add_argument("--patience", type=int, default=3)
+parser.add_argument("--data", type=str, default="abstrak")
 config = vars(parser.parse_args())
 
 np.random.seed(config["seed"]) 
@@ -47,7 +48,7 @@ stop_words = StopWordRemoverFactory().get_stop_words()
 tokenizer = BertTokenizer.from_pretrained(config["bert_model"])
 stemmer = StemmerFactory().create_stemmer()
 labels = dataset['prodi'].unique().tolist()
-max_length = max(len(str(row["judul"]).split()) for row in dataset.to_dict('records')) + 5
+max_length = max(len(str(row[config["data"]]).split()) for row in dataset.to_dict('records')) + 5
 
 
 # preprocessor
@@ -58,7 +59,7 @@ if not os.path.exists("train_set.pkl") and not os.path.exists("valid_set.pkl") a
 
     for row in preprocessing_progress:
         label = labels.index(row["prodi"])
-        text = str(row["judul"]) 
+        text = str(row[config["data"]]) 
         text = text.lower()
         text = emoji.replace_emoji(text, replace='') 
         text = re.sub(r'\n', ' ', text) 
@@ -202,8 +203,8 @@ for epoch in range(config["max_epochs"]):
         optimizer.zero_grad()
         model.zero_grad()
 
-        if (index+1) % config["batch_size"] == 0:
-            print (f'Epoch [{epoch+1}/{config["max_epochs"]}], Step [{index+1}/{n_total_steps}], Loss: {loss.item():.4f}')
+        if (index+1) % 100 == 0:
+            print (f'Epoch [{epoch}/{config["max_epochs"]}], Step [{index+1}/{n_total_steps}], Loss: {loss.item():.4f}')
 
     model.eval()
     with torch.no_grad():
@@ -223,7 +224,7 @@ for epoch in range(config["max_epochs"]):
             model.zero_grad()
 
         val_loss /= n_samples
-        print(f'Epoch [{epoch+1}/{config["max_epochs"]}], Validation Loss: {val_loss:.4f}')
+        print(f'Epoch [{epoch}/{config["max_epochs"]}], Validation Loss: {val_loss:.4f}')
         
         if round(val_loss, 2) < round(best_loss, 2):
             if not os.path.exists('checkpoints'):
