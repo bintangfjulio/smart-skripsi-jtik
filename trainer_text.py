@@ -46,15 +46,15 @@ dataset = pd.read_csv(config["dataset"])
 stop_words = StopWordRemoverFactory().get_stop_words()
 tokenizer = BertTokenizer.from_pretrained(config["bert_model"])
 stemmer = StemmerFactory().create_stemmer()
-max_length = max(len(str(row["abstrak"]).split()) for row in dataset.values.tolist()) + 5
 labels = dataset['prodi'].unique().tolist()
+max_length = max(len(str(row["abstrak"]).split()) for row in dataset.to_dict('records')) + 5
 
 
 # preprocessor
 if not os.path.exists(f"datasets/train_set.pkl") and not os.path.exists(f"datasets/valid_set.pkl") and not os.path.exists(f"datasets/test_set.pkl"):
     print("\nPreprocessing Data...")
     input_ids, target = [], []
-    preprocessing_progress = tqdm(dataset.values.tolist())
+    preprocessing_progress = tqdm(dataset.to_dict('records'))
 
     for row in preprocessing_progress:
         label = labels.index(row["prodi"])
