@@ -176,6 +176,8 @@ optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
 best_loss = 9.99
 failed_counter = 0
 
+logger = pd.DataFrame(columns=['accuracy', 'loss', 'epoch', 'stage'])
+
 print("Training Stage...")
 model.zero_grad()
 for epoch in range(config["max_epochs"]):
@@ -183,10 +185,12 @@ for epoch in range(config["max_epochs"]):
         break
 
     train_loss = 0
+    n_batch = 0
+    n_correct = 0
     n_samples = 0
 
     model.train(True)
-    for input_ids, attention_mask, target in enumerate(train_loader):
+    for input_ids, attention_mask, target in train_loader:
         input_ids = input_ids.to(device)
         attention_mask = attention_mask.to(device)
         target = target.to(device)
@@ -195,6 +199,10 @@ for epoch in range(config["max_epochs"]):
         loss = criterion(preds, target)
 
         train_loss += loss.item()
+        n_batch += 1
+
+        result = torch.argmax(preds, dim=1) 
+        n_correct += (result == target).sum().item()
         n_samples += target.size(0)
 
         loss.backward()
@@ -202,28 +210,39 @@ for epoch in range(config["max_epochs"]):
         optimizer.zero_grad()
         model.zero_grad()
 
-    train_loss /= n_samples
-    print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Training Loss: {train_loss:.4f}')
+    train_loss /= n_batch
+    acc = 100.0 * n_correct / n_samples
+    logger.append({'accuracy': acc, 'loss': train_loss, 'epoch': epoch, 'stage': 'train'})
+    print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Training Loss: {train_loss:.4f}, Training Accuracy: {acc:.2f}%')
 
     model.eval()
     with torch.no_grad():
         val_loss = 0
+        n_batch = 0
+        n_correct = 0
         n_samples = 0
 
         for input_ids, attention_mask, target in valid_loader:
             input_ids = input_ids.to(device)
             attention_mask = attention_mask.to(device)
             target = target.to(device)
-            preds = model(input_ids=input_ids, attention_mask=attention_mask)
 
+            preds = model(input_ids=input_ids, attention_mask=attention_mask)
             loss = criterion(preds, target)
+
             val_loss += loss.item()
+            n_batch += 1
+
+            result = torch.argmax(preds, dim=1) 
+            n_correct += (result == target).sum().item()
             n_samples += target.size(0)
 
             model.zero_grad()
 
-        val_loss /= n_samples
-        print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Validation Loss: {val_loss:.4f}')
+        val_loss /= n_batch
+        acc = 100.0 * n_correct / n_samples
+        logger.append({'accuracy': acc, 'loss': val_loss, 'epoch': epoch, 'stage': 'valid'})
+        print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Validation Loss: {val_loss:.4f}, Validation Accuracy: {acc:.2f}%')
         
         if round(val_loss, 2) < round(best_loss, 2):
             if not os.path.exists('checkpoints'):
@@ -265,4 +284,7 @@ with torch.no_grad():
         n_correct += (result == target).sum().item()
 
     acc = 100.0 * n_correct / n_samples
-    print(f'Test Accuracy: {acc}%')
+    logger.append({'accuracy': acc, 'loss': '-', 'epoch': '-', 'stage': 'test'})
+    print(f'Test Accuracy: {acc:.2f}%')
+
+logger.to_csv('metrics.csv', index=False, encoding='utf-8')
