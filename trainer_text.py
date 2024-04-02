@@ -26,7 +26,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--data", type=str, default="abstrak")
 parser.add_argument("--dataset", type=str, default='data_skripsi_jtik.csv')
 parser.add_argument("--batch_size", type=int, default=32)
-parser.add_argument("--bert_model", type=str, default='indolem/indobert-base-uncased')
+parser.add_argument("--bert_model", type=str, default="indolem/indobertweet-base-uncased")
 parser.add_argument("--seed", type=int, default=42)
 parser.add_argument("--max_epochs", type=int, default=30)
 parser.add_argument("--lr", type=float, default=2e-5)
@@ -195,7 +195,7 @@ for epoch in range(config["max_epochs"]):
         loss = criterion(preds, target)
 
         train_loss += loss.item()
-        n_samples += 1
+        n_samples += target.size(0)
 
         loss.backward()
         optimizer.step()
@@ -218,7 +218,7 @@ for epoch in range(config["max_epochs"]):
 
             loss = criterion(preds, target)
             val_loss += loss.item()
-            n_samples += 1
+            n_samples += target.size(0)
 
             model.zero_grad()
 
