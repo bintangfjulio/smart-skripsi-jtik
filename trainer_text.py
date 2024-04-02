@@ -212,7 +212,7 @@ for epoch in range(config["max_epochs"]):
 
     train_loss /= n_batch
     acc = 100.0 * n_correct / n_samples
-    logger.append({'accuracy': acc, 'loss': train_loss, 'epoch': epoch+1, 'stage': 'train'})
+    logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': [train_loss], 'epoch': [epoch+1], 'stage': ['train']})], ignore_index=True)
     print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Training Loss: {train_loss:.4f}, Training Accuracy: {acc:.2f}%')
 
     model.eval()
@@ -241,7 +241,7 @@ for epoch in range(config["max_epochs"]):
 
         val_loss /= n_batch
         acc = 100.0 * n_correct / n_samples
-        logger.append({'accuracy': acc, 'loss': val_loss, 'epoch': epoch+1, 'stage': 'valid'})
+        logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': [val_loss], 'epoch': [epoch+1], 'stage': ['valid']})], ignore_index=True)
         print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Validation Loss: {val_loss:.4f}, Validation Accuracy: {acc:.2f}%')
         
         if round(val_loss, 2) < round(best_loss, 2):
@@ -284,7 +284,7 @@ with torch.no_grad():
         n_correct += (result == target).sum().item()
 
     acc = 100.0 * n_correct / n_samples
-    logger.append({'accuracy': acc, 'loss': '-', 'epoch': '-', 'stage': 'test'})
+    logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': ['-'], 'epoch': [epoch+1], 'stage': ['test']})], ignore_index=True)
     print(f'Test Accuracy: {acc:.2f}%')
 
 logger.to_csv('metrics.csv', index=False, encoding='utf-8')
