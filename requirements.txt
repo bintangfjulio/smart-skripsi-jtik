@@ -1,6 +1,4 @@
 Sastrawi
 transformers
-torchmetrics
 selenium
-pandas
 emoji
