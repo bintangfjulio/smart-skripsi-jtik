@@ -168,7 +168,6 @@ class BERT_CNN(nn.Module):
 model = BERT_CNN(len(labels), config["bert_model"], config["dropout"])
 model.to(device)
 
-n_total_steps = len(train_loader)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
 
@@ -183,8 +182,11 @@ for epoch in range(config["max_epochs"]):
     if failed_counter == config["patience"]:
         break
 
+    train_loss = 0
+    n_samples = 0
+
     model.train(True)
-    for index, (input_ids, attention_mask, target) in enumerate(train_loader):
+    for input_ids, attention_mask, target in enumerate(train_loader):
         input_ids = input_ids.to(device)
         attention_mask = attention_mask.to(device)
         target = target.to(device)
@@ -192,13 +194,16 @@ for epoch in range(config["max_epochs"]):
         preds = model(input_ids=input_ids, attention_mask=attention_mask)
         loss = criterion(preds, target)
 
+        train_loss += loss.item()
+        n_samples += 1
+
         loss.backward()
         optimizer.step()
         optimizer.zero_grad()
         model.zero_grad()
 
-        if (index+1) % 100 == 0:
-            print (f'Epoch [{epoch + 1}/{config["max_epochs"]}], Step [{index+1}/{n_total_steps}], Loss: {loss.item():.4f}')
+    train_loss /= n_samples
+    print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Training Loss: {train_loss:.4f}')
 
     model.eval()
     with torch.no_grad():
