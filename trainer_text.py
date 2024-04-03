@@ -47,7 +47,7 @@ if torch.cuda.is_available():
     torch.cuda.manual_seed_all(config["seed"])
     torch.backends.cudnn.deterministic = True
 
-dataset = pd.read_csv(config["dataset"])
+dataset = pd.read_csv(f'datasets/{config["dataset"]}')
 stop_words = StopWordRemoverFactory().get_stop_words()
 tokenizer = BertTokenizer.from_pretrained(config["bert_model"])
 stemmer = StemmerFactory().create_stemmer()
@@ -56,7 +56,7 @@ max_length = max(len(str(row[config["data"]]).split()) for row in dataset.to_dic
 
 
 # preprocessor
-if not os.path.exists("train_set.pkl") and not os.path.exists("valid_set.pkl") and not os.path.exists("test_set.pkl"):
+if not os.path.exists("datasets/train_set.pkl") and not os.path.exists("datasets/valid_set.pkl") and not os.path.exists("datasets/test_set.pkl"):
     print("\nPreprocessing Data...")
     input_ids, attention_mask, target = [], [], []
 
@@ -91,24 +91,24 @@ if not os.path.exists("train_set.pkl") and not os.path.exists("valid_set.pkl") a
     valid_size = len(train_valid_set) - train_size
 
     train_set, valid_set = torch.utils.data.random_split(train_valid_set, [train_size, valid_size])
-    with open("train_set.pkl", 'wb') as train_preprocessed:
+    with open("datasets/train_set.pkl", 'wb') as train_preprocessed:
         pickle.dump(train_set, train_preprocessed)
 
-    with open("valid_set.pkl", 'wb') as valid_preprocessed:
+    with open("datasets/valid_set.pkl", 'wb') as valid_preprocessed:
         pickle.dump(valid_set, valid_preprocessed)
 
-    with open("test_set.pkl", 'wb') as test_preprocessed:
+    with open("datasets/test_set.pkl", 'wb') as test_preprocessed:
         pickle.dump(test_set, test_preprocessed)
     print('[ Preprocessing Completed ]\n')
 
 print("\nLoading Data...")
-with open("train_set.pkl", 'rb') as train_preprocessed:
+with open("datasets/train_set.pkl", 'rb') as train_preprocessed:
     train_set = pickle.load(train_preprocessed)
     
-with open("valid_set.pkl", 'rb') as valid_preprocessed:
+with open("datasets/valid_set.pkl", 'rb') as valid_preprocessed:
     valid_set = pickle.load(valid_preprocessed)
     
-with open("test_set.pkl", 'rb') as test_preprocessed:
+with open("datasets/test_set.pkl", 'rb') as test_preprocessed:
     test_set = pickle.load(test_preprocessed)
 print('[ Loading Completed ]\n')
 
@@ -281,8 +281,8 @@ for epoch in range(config["max_epochs"]):
             if not os.path.exists('checkpoints'):
                 os.makedirs('checkpoints')
 
-            if os.path.exists('checkpoints/model_classifier.pt'):
-                os.remove('checkpoints/model_classifier.pt')
+            if os.path.exists('checkpoints/model_result.pkl'):
+                os.remove('checkpoints/model_result.pkl')
 
             checkpoint = {
                 "epoch": epoch + 1,
@@ -372,5 +372,5 @@ for metric in ['accuracy', 'loss']:
                         ha='right' if stage == 0 else 'left')
 
 plt.legend()
-plt.savefig('metrics.png')
+plt.savefig('logs/metrics.png')
 plt.clf()
