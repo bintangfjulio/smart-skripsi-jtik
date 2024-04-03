@@ -334,13 +334,13 @@ with torch.no_grad():
             each_label_total[ground_truth.item()] += 1
 
     acc = 100.0 * n_correct / n_samples
-    logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': ['-'], 'epoch': ['-'], 'stage': ['test']})], ignore_index=True)
+    logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': [0], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
     print(f'Test Accuracy: {acc:.2f}%')
 
     for label, correct_count in each_label_correct.items():
         total_count = each_label_total[label]
         false_count = total_count - correct_count
-        classification_report = pd.concat([classification_report, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': ["-"], 'stage': ['test']})], ignore_index=True)
+        classification_report = pd.concat([classification_report, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
         print(f"Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
 
 if not os.path.exists('logs'):
@@ -351,30 +351,25 @@ classification_report.to_csv('logs/classification_report.csv', index=False, enco
 
 
 # create graph
-train_log = logger[logger['stage'] == 'train'].reset_index(drop=True)
-valid_log = logger[logger['stage'] == 'valid'].reset_index(drop=True)
-test_log = logger[logger['stage'] == 'test'].reset_index(drop=True)
+logger = pd.read_csv("logs/metrics.csv", dtype={'accuracy': float, 'loss': float})
 
-plt.title('Test Accuracy: {:.2f}'.format(test_log['accuracy'][0]), ha='center', fontsize='medium')
+train_log = logger[logger['stage'] == 'train']
+valid_log = logger[logger['stage'] == 'valid']
+
 plt.xlabel('Epoch')
 plt.ylabel('Value')
-plt.plot(train_log['epoch'], train_log['accuracy'], marker='o', label='Train Accuracy')
-plt.plot(valid_log['epoch'], valid_log['accuracy'], marker='o', label='Validation Accuracy')
-plt.plot(train_log['epoch'], train_log['loss'], marker='o', label='Train Loss')
-plt.plot(valid_log['epoch'], valid_log['loss'], marker='o', label='Validation Loss')
 plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
 
-for metric in ['accuracy', 'loss']:
-    for stage, logger in enumerate([train_log, valid_log]):
-        for index, value in enumerate(logger[metric]):
-            value_label = '{:.2f}'.format(value)
-            plt.annotate(value_label,
-                        (logger['epoch'][index], value),
-                        textcoords='offset points',
-                        xytext=(0, 4),
-                        fontsize='small',
-                        ha='right' if stage == 0 else 'left')
-
+plt.plot(train_log['epoch'], train_log['accuracy'], marker='o', label='Train Accuracy')
+plt.plot(valid_log['epoch'], valid_log['accuracy'], marker='o', label='Validation Accuracy')
+plt.title(f'Best Training Accuracy: {train_log["accuracy"].max():.2f} | Best Validation Accuracy: {valid_log["accuracy"].max():.2f}', ha='center', fontsize='medium')
 plt.legend()
-plt.savefig('logs/metrics.png')
+plt.savefig('accuracy_metrics.png')
+plt.clf()
+
+plt.plot(train_log['epoch'], train_log['loss'], marker='o', label='Train Loss')
+plt.plot(valid_log['epoch'], valid_log['loss'], marker='o', label='Validation Loss')
+plt.title(f'Best Training Loss: {train_log["loss"].min():.2f} | Best Validation Loss: {valid_log["loss"].min():.2f}', ha='center', fontsize='medium')
+plt.legend()
+plt.savefig('loss_metrics.png')
 plt.clf()
