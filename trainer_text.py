@@ -182,8 +182,10 @@ failed_counter = 0
 logger = pd.DataFrame(columns=['accuracy', 'loss', 'epoch', 'stage']) 
 classification_report = pd.DataFrame(columns=['label', 'correct_prediction', 'false_prediction', 'total_prediction', 'epoch', 'stage'])
 
-print("Training Stage...")
+optimizer.zero_grad()
 model.zero_grad()
+
+print("Training Stage...")
 for epoch in range(config["max_epochs"]):
     if failed_counter == config["patience"]:
         print("Early Stopping")
@@ -198,7 +200,7 @@ for epoch in range(config["max_epochs"]):
     each_label_total = defaultdict(int)
 
     model.train(True)
-    for input_ids, attention_mask, target in tqdm(train_loader, desc="Training", unit="batch"):
+    for input_ids, attention_mask, target in tqdm(train_loader, desc="Training Stage", unit="batch"):
         input_ids = input_ids.to(device)
         attention_mask = attention_mask.to(device)
         target = target.to(device)
@@ -220,6 +222,7 @@ for epoch in range(config["max_epochs"]):
 
         loss.backward()
         optimizer.step()
+
         optimizer.zero_grad()
         model.zero_grad()
 
@@ -244,7 +247,7 @@ for epoch in range(config["max_epochs"]):
         each_label_correct = defaultdict(int)
         each_label_total = defaultdict(int)
 
-        for input_ids, attention_mask, target in tqdm(valid_loader, desc="Validation", unit="batch"):
+        for input_ids, attention_mask, target in tqdm(valid_loader, desc="Validation Stage", unit="batch"):
             input_ids = input_ids.to(device)
             attention_mask = attention_mask.to(device)
             target = target.to(device)
@@ -264,6 +267,7 @@ for epoch in range(config["max_epochs"]):
                     each_label_correct[ground_truth.item()] += 1
                 each_label_total[ground_truth.item()] += 1
 
+            optimizer.zero_grad()
             model.zero_grad()
 
         val_loss /= n_batch
@@ -300,11 +304,11 @@ for epoch in range(config["max_epochs"]):
             failed_counter += 1
 
 print("Test Stage...")
-with open("checkpoints/model_result.pkl", 'rb') as temp:
-    checkpoint = pickle.load(temp)
+with open("checkpoints/model_result.pkl", 'rb') as checkpoint_path:
+    pretrained_model = pickle.load(checkpoint_path)
 
-print("Loading Checkpoint from Epoch", checkpoint['epoch'])
-model.load_state_dict(checkpoint['model_state'])
+print("Loading Checkpoint from Epoch", pretrained_model['epoch'])
+model.load_state_dict(pretrained_model['model_state'])
 
 model.eval()
 with torch.no_grad():
