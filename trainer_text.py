@@ -355,7 +355,7 @@ train_log = logger[logger['stage'] == 'train'].reset_index(drop=True)
 valid_log = logger[logger['stage'] == 'valid'].reset_index(drop=True)
 test_log = logger[logger['stage'] == 'test'].reset_index(drop=True)
 
-plt.title('Test Accuracy: {:.2f} | Test Loss: {:.2f}'.format(float(test_log['accuracy'][0]), float(test_log['loss'][0])), ha='center', fontsize='medium')
+plt.title('Test Accuracy: {:.2f}'.format(float(test_log['accuracy'][0])), ha='center', fontsize='medium')
 plt.xlabel('Epoch')
 plt.ylabel('Value')
 plt.plot(train_log['epoch'], train_log['accuracy'], marker='o', label='Train Accuracy')
