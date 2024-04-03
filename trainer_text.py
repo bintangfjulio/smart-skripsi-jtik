@@ -17,6 +17,7 @@ from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFacto
 from tqdm import tqdm
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from torch.utils.data import TensorDataset
+from collections import defaultdict
 
 
 # setup
@@ -47,7 +48,7 @@ dataset = pd.read_csv(config["dataset"])
 stop_words = StopWordRemoverFactory().get_stop_words()
 tokenizer = BertTokenizer.from_pretrained(config["bert_model"])
 stemmer = StemmerFactory().create_stemmer()
-labels = dataset['prodi'].unique().tolist()
+labels = sorted(dataset['prodi'].unique().tolist())
 max_length = max(len(str(row[config["data"]]).split()) for row in dataset.to_dict('records')) + 5
 
 
@@ -55,9 +56,8 @@ max_length = max(len(str(row[config["data"]]).split()) for row in dataset.to_dic
 if not os.path.exists("train_set.pkl") and not os.path.exists("valid_set.pkl") and not os.path.exists("test_set.pkl"):
     print("\nPreprocessing Data...")
     input_ids, attention_mask, target = [], [], []
-    preprocessing_progress = tqdm(dataset.to_dict('records'))
 
-    for row in preprocessing_progress:
+    for row in tqdm(dataset.to_dict('records'), desc="Preprocessing"):
         label = labels.index(row["prodi"])
         text = str(row[config["data"]]) 
         text = text.lower()
@@ -176,12 +176,14 @@ optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
 best_loss = 9.99
 failed_counter = 0
 
-logger = pd.DataFrame(columns=['accuracy', 'loss', 'epoch', 'stage'])
+logger = pd.DataFrame(columns=['accuracy', 'loss', 'epoch', 'stage']) 
+classification_report = pd.DataFrame(columns=['label', 'correct_prediction', 'false_prediction', 'total_prediction', 'epoch', 'stage'])
 
 print("Training Stage...")
 model.zero_grad()
 for epoch in range(config["max_epochs"]):
     if failed_counter == config["patience"]:
+        print("Early Stopping")
         break
 
     train_loss = 0
@@ -189,8 +191,11 @@ for epoch in range(config["max_epochs"]):
     n_correct = 0
     n_samples = 0
 
+    each_label_correct = defaultdict(int)
+    each_label_total = defaultdict(int)
+
     model.train(True)
-    for input_ids, attention_mask, target in train_loader:
+    for input_ids, attention_mask, target in tqdm(train_loader, desc="Training", unit="batch"):
         input_ids = input_ids.to(device)
         attention_mask = attention_mask.to(device)
         target = target.to(device)
@@ -205,6 +210,11 @@ for epoch in range(config["max_epochs"]):
         n_correct += (result == target).sum().item()
         n_samples += target.size(0)
 
+        for prediction, ground_truth in zip(result, target):
+            if prediction == ground_truth:
+                each_label_correct[ground_truth.item()] += 1
+            each_label_total[ground_truth.item()] += 1
+
         loss.backward()
         optimizer.step()
         optimizer.zero_grad()
@@ -215,6 +225,12 @@ for epoch in range(config["max_epochs"]):
     logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': [train_loss], 'epoch': [epoch+1], 'stage': ['train']})], ignore_index=True)
     print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Training Loss: {train_loss:.4f}, Training Accuracy: {acc:.2f}%')
 
+    for label, correct_count in each_label_correct.items():
+        total_count = each_label_total[label]
+        false_count = total_count - correct_count
+        classification_report = pd.concat([classification_report, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [epoch+1], 'stage': ['train']})], ignore_index=True)
+        print(f"Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
+
     model.eval()
     with torch.no_grad():
         val_loss = 0
@@ -222,7 +238,10 @@ for epoch in range(config["max_epochs"]):
         n_correct = 0
         n_samples = 0
 
-        for input_ids, attention_mask, target in valid_loader:
+        each_label_correct = defaultdict(int)
+        each_label_total = defaultdict(int)
+
+        for input_ids, attention_mask, target in tqdm(valid_loader, desc="Validation", unit="batch"):
             input_ids = input_ids.to(device)
             attention_mask = attention_mask.to(device)
             target = target.to(device)
@@ -237,12 +256,23 @@ for epoch in range(config["max_epochs"]):
             n_correct += (result == target).sum().item()
             n_samples += target.size(0)
 
+            for prediction, ground_truth in zip(result, target):
+                if prediction == ground_truth:
+                    each_label_correct[ground_truth.item()] += 1
+                each_label_total[ground_truth.item()] += 1
+
             model.zero_grad()
 
         val_loss /= n_batch
         acc = 100.0 * n_correct / n_samples
         logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': [val_loss], 'epoch': [epoch+1], 'stage': ['valid']})], ignore_index=True)
         print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Validation Loss: {val_loss:.4f}, Validation Accuracy: {acc:.2f}%')
+
+        for label, correct_count in each_label_correct.items():
+            total_count = each_label_total[label]
+            false_count = total_count - correct_count
+            classification_report = pd.concat([classification_report, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [epoch+1], 'stage': ['valid']})], ignore_index=True)
+            print(f"Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
         
         if round(val_loss, 2) < round(best_loss, 2):
             if not os.path.exists('checkpoints'):
@@ -255,8 +285,11 @@ for epoch in range(config["max_epochs"]):
                 "epoch": epoch + 1,
                 "model_state": model.state_dict(),
             }
-                
-            torch.save(checkpoint, 'checkpoints/model_classifier.pt')
+
+            print("Saving Checkpoint...")   
+            with open('checkpoints/model_result.pkl', 'wb') as temp:
+                pickle.dump(checkpoint, temp)
+
             best_loss = val_loss
             failed_counter = 0
 
@@ -264,7 +297,9 @@ for epoch in range(config["max_epochs"]):
             failed_counter += 1
 
 print("Test Stage...")
-checkpoint = torch.load("checkpoints/model_classifier.pt")
+with open("checkpoints/model_result.pkl", 'rb') as temp:
+    checkpoint = pickle.load(temp)
+
 print("Loading Checkpoint from Epoch", checkpoint['epoch'])
 model.load_state_dict(checkpoint['model_state'])
 
@@ -273,7 +308,10 @@ with torch.no_grad():
     n_correct = 0
     n_samples = 0
 
-    for input_ids, attention_mask, target in test_loader:
+    each_label_correct = defaultdict(int)
+    each_label_total = defaultdict(int)
+
+    for input_ids, attention_mask, target in tqdm(test_loader, desc="Test", unit="batch"):
         input_ids = input_ids.to(device)
         attention_mask = attention_mask.to(device)
         target = target.to(device)
@@ -283,8 +321,20 @@ with torch.no_grad():
         n_samples += target.size(0)
         n_correct += (result == target).sum().item()
 
+        for prediction, ground_truth in zip(result, target):
+            if prediction == ground_truth:
+                each_label_correct[ground_truth.item()] += 1
+            each_label_total[ground_truth.item()] += 1
+
     acc = 100.0 * n_correct / n_samples
     logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': ['-'], 'epoch': [epoch+1], 'stage': ['test']})], ignore_index=True)
     print(f'Test Accuracy: {acc:.2f}%')
 
+    for label, correct_count in each_label_correct.items():
+        total_count = each_label_total[label]
+        false_count = total_count - correct_count
+        classification_report = pd.concat([classification_report, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': ["-"], 'stage': ['test']})], ignore_index=True)
+        print(f"Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
+
 logger.to_csv('metrics.csv', index=False, encoding='utf-8')
+classification_report.to_csv('classification_report.csv', index=False, encoding='utf-8')
