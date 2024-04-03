@@ -11,6 +11,8 @@ import multiprocessing
 import pandas as pd
 import torch.nn as nn
 import torch.nn.functional as F
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 
 from transformers import BertTokenizer, BertModel
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
@@ -22,6 +24,7 @@ from collections import defaultdict
 
 # setup
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+pd.options.display.float_format = '{:,.2f}'.format  
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data", type=str, default="abstrak")
@@ -327,7 +330,7 @@ with torch.no_grad():
             each_label_total[ground_truth.item()] += 1
 
     acc = 100.0 * n_correct / n_samples
-    logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': ['-'], 'epoch': [epoch+1], 'stage': ['test']})], ignore_index=True)
+    logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': ['-'], 'epoch': ['-'], 'stage': ['test']})], ignore_index=True)
     print(f'Test Accuracy: {acc:.2f}%')
 
     for label, correct_count in each_label_correct.items():
@@ -336,5 +339,38 @@ with torch.no_grad():
         classification_report = pd.concat([classification_report, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': ["-"], 'stage': ['test']})], ignore_index=True)
         print(f"Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
 
-logger.to_csv('metrics.csv', index=False, encoding='utf-8')
-classification_report.to_csv('classification_report.csv', index=False, encoding='utf-8')
+if not os.path.exists('logs'):
+    os.makedirs('logs')
+
+logger.to_csv('logs/metrics.csv', index=False, encoding='utf-8')
+classification_report.to_csv('logs/classification_report.csv', index=False, encoding='utf-8')
+
+
+# create graph
+train_log = logger[logger['stage'] == 'train'].reset_index(drop=True)
+valid_log = logger[logger['stage'] == 'valid'].reset_index(drop=True)
+test_log = logger[logger['stage'] == 'test'].reset_index(drop=True)
+
+plt.title('Test Accuracy: {:.2f} | Test Loss: {:.2f}'.format(test_log['accuracy'][0], test_log['loss'][0]), ha='center', fontsize='medium')
+plt.xlabel('Epoch')
+plt.ylabel('Value')
+plt.plot(train_log['epoch'], train_log['accuracy'], marker='o', label='Train Accuracy')
+plt.plot(valid_log['epoch'], valid_log['accuracy'], marker='o', label='Validation Accuracy')
+plt.plot(train_log['epoch'], train_log['loss'], marker='o', label='Train Loss')
+plt.plot(valid_log['epoch'], valid_log['loss'], marker='o', label='Validation Loss')
+plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
+
+for metric in ['accuracy', 'loss']:
+    for stage, logger in enumerate([train_log, valid_log]):
+        for index, value in enumerate(logger[metric]):
+            value_label = '{:.2f}'.format(value)
+            plt.annotate(value_label,
+                        (logger['epoch'][index], value),
+                        textcoords='offset points',
+                        xytext=(0, 4),
+                        fontsize='small',
+                        ha='right' if stage == 0 else 'left')
+
+plt.legend()
+plt.savefig('metrics.png')
+plt.clf()
