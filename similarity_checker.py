@@ -54,4 +54,4 @@ counts = clamp(mask.sum(1), min=1e-9)
 mean_pooled = (summed / counts).detach().numpy()
 
 similary = cosine_similarity([mean_pooled[0]], [mean_pooled[1]])    
-print(similary)
+print(similary[0][0])
