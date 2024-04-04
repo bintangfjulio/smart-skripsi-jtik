@@ -312,6 +312,8 @@ model.load_state_dict(pretrained_model['model_state'])
 
 model.eval()
 with torch.no_grad():
+    test_loss = 0
+    n_batch = 0
     n_correct = 0
     n_samples = 0
 
@@ -322,7 +324,12 @@ with torch.no_grad():
         input_ids = input_ids.to(device)
         attention_mask = attention_mask.to(device)
         target = target.to(device)
+
         preds = model(input_ids=input_ids, attention_mask=attention_mask)
+        loss = criterion(preds, target)
+
+        test_loss += loss.item()
+        n_batch += 1
 
         result = torch.argmax(preds, dim=1) 
         n_samples += target.size(0)
@@ -333,9 +340,10 @@ with torch.no_grad():
                 each_label_correct[ground_truth.item()] += 1
             each_label_total[ground_truth.item()] += 1
 
+    test_loss /= n_batch
     acc = 100.0 * n_correct / n_samples
-    logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': [0], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
-    print(f'Test Accuracy: {acc:.2f}%')
+    logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': [test_loss], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
+    print(f'Test Loss: {test_loss:.4f}, Test Accuracy: {acc:.2f}%')
 
     for label, correct_count in each_label_correct.items():
         total_count = each_label_total[label]
