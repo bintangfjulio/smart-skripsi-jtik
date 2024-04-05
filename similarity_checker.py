@@ -21,7 +21,7 @@ stop_words = StopWordRemoverFactory().get_stop_words()
 stemmer = StemmerFactory().create_stemmer()
 model = BertModel.from_pretrained(config["bert_model"])
 
-sentences = [input("Please enter first sentence: "), input("Please enter second sentence: ")]
+sentences = [input("Please enter first text: "), input("Please enter second text: ")]
 
 
 # preprocessor
@@ -44,7 +44,7 @@ token = tokenizer([sentences[0], sentences[1]], max_length=config['max_length'],
 attention_mask = token.attention_mask
 
 outputs = model(**token)
-embeddings = outputs[0]
+embeddings = outputs.last_hidden_state
 
 mask = attention_mask.unsqueeze(-1).expand(embeddings.size()).float()
 masked_embeddings = embeddings * mask

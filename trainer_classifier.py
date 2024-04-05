@@ -147,7 +147,7 @@ class BERT_CNN(nn.Module):
 
     def forward(self, input_ids, attention_mask):
         bert_output = self.pretrained_bert(input_ids=input_ids, attention_mask=attention_mask)
-        bert_hidden_states = bert_output[2]
+        bert_hidden_states = bert_output.hidden_states
         bert_hidden_states = torch.stack(bert_hidden_states, dim=1)
         stacked_hidden_states = bert_hidden_states[:, -4:]
 
