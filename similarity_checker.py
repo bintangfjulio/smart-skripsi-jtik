@@ -13,7 +13,7 @@ from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 # setup
 parser = argparse.ArgumentParser()
 parser.add_argument("--bert_model", type=str, default="indolem/indobert-base-uncased")
-parser.add_argument("--max_length", type=int, default=400)
+parser.add_argument("--max_length", type=int, default=360)
 config = vars(parser.parse_args())
 
 tokenizer = BertTokenizer.from_pretrained(config["bert_model"])
