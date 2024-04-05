@@ -5,7 +5,6 @@ import re
 import torch
 import random
 import os
-import pickle
 import numpy as np
 import multiprocessing
 import pandas as pd
@@ -56,7 +55,7 @@ max_length = max(len(str(row[config["data"]]).split()) for row in dataset.to_dic
 
 
 # preprocessor
-if not os.path.exists("datasets/train_set.pkl") and not os.path.exists("datasets/valid_set.pkl") and not os.path.exists("datasets/test_set.pkl"):
+if not os.path.exists("datasets/train_set.pt") and not os.path.exists("datasets/valid_set.pt") and not os.path.exists("datasets/test_set.pt"):
     print("\nPreprocessing Data...")
     input_ids, attention_mask, target = [], [], []
 
@@ -91,25 +90,15 @@ if not os.path.exists("datasets/train_set.pkl") and not os.path.exists("datasets
     valid_size = len(train_valid_set) - train_size
 
     train_set, valid_set = torch.utils.data.random_split(train_valid_set, [train_size, valid_size])
-    with open("datasets/train_set.pkl", 'wb') as train_preprocessed:
-        pickle.dump(train_set, train_preprocessed)
-
-    with open("datasets/valid_set.pkl", 'wb') as valid_preprocessed:
-        pickle.dump(valid_set, valid_preprocessed)
-
-    with open("datasets/test_set.pkl", 'wb') as test_preprocessed:
-        pickle.dump(test_set, test_preprocessed)
+    torch.save(train_set, 'datasets/train_set.pt')
+    torch.save(valid_set, 'datasets/valid_set.pt')
+    torch.save(test_set, 'datasets/test_set.pt')
     print('[ Preprocessing Completed ]\n')
 
 print("\nLoading Data...")
-with open("datasets/train_set.pkl", 'rb') as train_preprocessed:
-    train_set = pickle.load(train_preprocessed)
-    
-with open("datasets/valid_set.pkl", 'rb') as valid_preprocessed:
-    valid_set = pickle.load(valid_preprocessed)
-    
-with open("datasets/test_set.pkl", 'rb') as test_preprocessed:
-    test_set = pickle.load(test_preprocessed)
+train_set = torch.load("datasets/train_set.pt")
+valid_set = torch.load("datasets/valid_set.pt")
+test_set = torch.load("datasets/test_set.pt")
 print('[ Loading Completed ]\n')
 
 train_loader = torch.utils.data.DataLoader(dataset=train_set, 
@@ -285,8 +274,8 @@ for epoch in range(config["max_epochs"]):
             if not os.path.exists('checkpoints'):
                 os.makedirs('checkpoints')
 
-            if os.path.exists('checkpoints/model_result.pkl'):
-                os.remove('checkpoints/model_result.pkl')
+            if os.path.exists('checkpoints/model_result.pt'):
+                os.remove('checkpoints/model_result.pt')
 
             checkpoint = {
                 "epoch": epoch + 1,
@@ -294,8 +283,7 @@ for epoch in range(config["max_epochs"]):
             }
 
             print("Saving Checkpoint...")   
-            with open('checkpoints/model_result.pkl', 'wb') as temp:
-                pickle.dump(checkpoint, temp)
+            torch.save(checkpoint, 'checkpoints/model_result.pt')
 
             best_loss = val_loss
             failed_counter = 0
@@ -304,8 +292,7 @@ for epoch in range(config["max_epochs"]):
             failed_counter += 1
 
 print("Test Stage...")
-with open("checkpoints/model_result.pkl", 'rb') as checkpoint_path:
-    pretrained_model = pickle.load(checkpoint_path)
+pretrained_model = torch.load('checkpoints/model_result.pt')
 
 print("Loading Checkpoint from Epoch", pretrained_model['epoch'])
 model.load_state_dict(pretrained_model['model_state'])

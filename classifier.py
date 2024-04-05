@@ -3,7 +3,6 @@ import argparse
 import emoji
 import re
 import torch
-import pickle
 import torch.nn as nn
 import pandas as pd
 import torch.nn.functional as F
@@ -94,8 +93,7 @@ class BERT_CNN(nn.Module):
         return preds
     
 model = BERT_CNN(len(labels), config["bert_model"], config["dropout"])
-with open("checkpoints/model_result.pkl", 'rb') as checkpoint_path:
-    pretrained_model = pickle.load(checkpoint_path)
+pretrained_model = torch.load('checkpoints/model_result.pt')
 
 print("Loading Checkpoint from Epoch", pretrained_model['epoch'])
 model.load_state_dict(pretrained_model['model_state'])
