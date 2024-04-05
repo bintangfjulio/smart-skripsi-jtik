@@ -35,7 +35,7 @@ parser.add_argument("--max_epochs", type=int, default=30)
 parser.add_argument("--lr", type=float, default=2e-5)
 parser.add_argument("--dropout", type=float, default=0.1)
 parser.add_argument("--patience", type=int, default=3)
-parser.add_argument("--max_length", type=int, default=360)
+parser.add_argument("--max_length", type=int, default=375)
 config = vars(parser.parse_args())
 
 np.random.seed(config["seed"]) 
@@ -282,11 +282,8 @@ for epoch in range(config["max_epochs"]):
                 "model_state": model.state_dict(),
             }
 
-            print("Saving Checkpoint...")   
+            print("Saving Checkpoint...")
             torch.save(checkpoint, 'checkpoints/model_result.pt')
-
-            torch.save(model.state_dict(), 'checkpoints/tes.pt')
-            print(model.state_dict().keys())
 
             best_loss = val_loss
             failed_counter = 0

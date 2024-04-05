@@ -20,7 +20,7 @@ parser.add_argument("--data", type=str, default="abstrak")
 parser.add_argument("--dataset", type=str, default='data_skripsi_jtik.csv')
 parser.add_argument("--bert_model", type=str, default="indolem/indobert-base-uncased")
 parser.add_argument("--dropout", type=float, default=0.1)
-parser.add_argument("--max_length", type=int, default=360)
+parser.add_argument("--max_length", type=int, default=375)
 config = vars(parser.parse_args())
 
 text = input('Insert text to classify: ')
@@ -93,10 +93,8 @@ class BERT_CNN(nn.Module):
         return preds
     
 model = BERT_CNN(len(labels), config["bert_model"], config["dropout"])
-pretrained_model = torch.load('checkpoints/tes.pt', map_location=device)
-
-# print("Loading Checkpoint from Epoch", pretrained_model['epoch'])
-print(pretrained_model['model_state'].keys())
+pretrained_model = torch.load('checkpoints/model_result.pt', map_location=device)
+print("Loading Checkpoint from Epoch", pretrained_model['epoch'])
 model.load_state_dict(pretrained_model['model_state'])
 model.to(device)
 
