@@ -231,8 +231,8 @@ for epoch in range(config["max_epochs"]):
     logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': [train_loss], 'epoch': [epoch+1], 'stage': ['train']})], ignore_index=True)
     print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Training Loss: {train_loss:.4f}, Training Accuracy: {acc:.2f}%')
 
-    for label, correct_count in each_label_correct.items():
-        total_count = each_label_total[label]
+    for label, total_count in each_label_total.items():
+        correct_count = each_label_correct.get(label, 0)  
         false_count = total_count - correct_count
         classification_report = pd.concat([classification_report, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [epoch+1], 'stage': ['train']})], ignore_index=True)
         print(f"Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
@@ -275,8 +275,8 @@ for epoch in range(config["max_epochs"]):
         logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': [val_loss], 'epoch': [epoch+1], 'stage': ['valid']})], ignore_index=True)
         print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Validation Loss: {val_loss:.4f}, Validation Accuracy: {acc:.2f}%')
 
-        for label, correct_count in each_label_correct.items():
-            total_count = each_label_total[label]
+        for label, total_count in each_label_total.items():
+            correct_count = each_label_correct.get(label, 0)  
             false_count = total_count - correct_count
             classification_report = pd.concat([classification_report, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [epoch+1], 'stage': ['valid']})], ignore_index=True)
             print(f"Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
@@ -345,8 +345,8 @@ with torch.no_grad():
     logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': [test_loss], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
     print(f'Test Loss: {test_loss:.4f}, Test Accuracy: {acc:.2f}%')
 
-    for label, correct_count in each_label_correct.items():
-        total_count = each_label_total[label]
+    for label, total_count in each_label_total.items():
+        correct_count = each_label_correct.get(label, 0)  
         false_count = total_count - correct_count
         classification_report = pd.concat([classification_report, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
         print(f"Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
