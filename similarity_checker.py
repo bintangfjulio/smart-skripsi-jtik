@@ -12,7 +12,7 @@ from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 
 # setup
 parser = argparse.ArgumentParser()
-parser.add_argument("--bert_model", type=str, default="indolem/indobertweet-base-uncased")
+parser.add_argument("--bert_model", type=str, default="indolem/indobert-base-uncased")
 parser.add_argument("--max_length", type=int, default=512)
 config = vars(parser.parse_args())
 

@@ -29,12 +29,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--data", type=str, default="abstrak")
 parser.add_argument("--dataset", type=str, default='data_skripsi_jtik.csv')
 parser.add_argument("--batch_size", type=int, default=32)
-parser.add_argument("--bert_model", type=str, default="indolem/indobertweet-base-uncased")
+parser.add_argument("--bert_model", type=str, default="indolem/indobert-base-uncased")
 parser.add_argument("--seed", type=int, default=42)
 parser.add_argument("--max_epochs", type=int, default=30)
 parser.add_argument("--lr", type=float, default=2e-5)
 parser.add_argument("--dropout", type=float, default=0.1)
 parser.add_argument("--patience", type=int, default=3)
+parser.add_argument("--max_length", type=int, default=512)
 config = vars(parser.parse_args())
 
 np.random.seed(config["seed"]) 
@@ -51,7 +52,6 @@ stop_words = StopWordRemoverFactory().get_stop_words()
 tokenizer = BertTokenizer.from_pretrained(config["bert_model"])
 stemmer = StemmerFactory().create_stemmer()
 labels = sorted(dataset['prodi'].unique().tolist())
-max_length = max(len(str(row[config["data"]]).split()) for row in dataset.to_dict('records')) + 5
 
 
 # preprocessor
@@ -72,7 +72,7 @@ if not os.path.exists("datasets/train_set.pt") and not os.path.exists("datasets/
         text = stemmer.stem(text)
         text = text.strip()      
 
-        token = tokenizer(text=text, max_length=max_length, padding="max_length", truncation=True)  
+        token = tokenizer(text=text, max_length=config["max_length"], padding="max_length", truncation=True)  
         input_ids.append(token['input_ids'])
         attention_mask.append(token['attention_mask'])
         target.append(label)

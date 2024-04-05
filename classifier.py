@@ -18,8 +18,9 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 parser = argparse.ArgumentParser()
 parser.add_argument("--data", type=str, default="abstrak")
 parser.add_argument("--dataset", type=str, default='data_skripsi_jtik.csv')
-parser.add_argument("--bert_model", type=str, default="indolem/indobertweet-base-uncased")
+parser.add_argument("--bert_model", type=str, default="indolem/indobert-base-uncased")
 parser.add_argument("--dropout", type=float, default=0.1)
+parser.add_argument("--max_length", type=int, default=512)
 config = vars(parser.parse_args())
 
 text = input('Insert text to classify: ')
@@ -29,7 +30,6 @@ stop_words = StopWordRemoverFactory().get_stop_words()
 tokenizer = BertTokenizer.from_pretrained(config["bert_model"])
 stemmer = StemmerFactory().create_stemmer()
 labels = sorted(dataset['prodi'].unique().tolist())
-max_length = max(len(str(row[config["data"]]).split()) for row in dataset.to_dict('records')) + 5
 
 
 # preprocessor
@@ -46,7 +46,7 @@ text = text.strip()
 token = tokenizer.encode_plus(
         text=text,
         add_special_tokens=True,
-        max_length=max_length,
+        max_length=config["max_length"],
         return_tensors='pt',
         padding="max_length", 
         truncation=True)
