@@ -20,7 +20,7 @@ parser.add_argument("--data", type=str, default="abstrak")
 parser.add_argument("--dataset", type=str, default='data_skripsi_jtik.csv')
 parser.add_argument("--bert_model", type=str, default="indolem/indobert-base-uncased")
 parser.add_argument("--dropout", type=float, default=0.1)
-parser.add_argument("--max_length", type=int, default=512)
+parser.add_argument("--max_length", type=int, default=400)
 config = vars(parser.parse_args())
 
 text = input('Insert text to classify: ')
