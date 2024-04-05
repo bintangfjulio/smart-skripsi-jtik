@@ -93,9 +93,10 @@ class BERT_CNN(nn.Module):
         return preds
     
 model = BERT_CNN(len(labels), config["bert_model"], config["dropout"])
-pretrained_model = torch.load('checkpoints/model_result.pt')
+pretrained_model = torch.load('checkpoints/tes.pt', map_location=device)
 
-print("Loading Checkpoint from Epoch", pretrained_model['epoch'])
+# print("Loading Checkpoint from Epoch", pretrained_model['epoch'])
+print(pretrained_model['model_state'].keys())
 model.load_state_dict(pretrained_model['model_state'])
 model.to(device)
 

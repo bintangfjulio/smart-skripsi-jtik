@@ -285,6 +285,9 @@ for epoch in range(config["max_epochs"]):
             print("Saving Checkpoint...")   
             torch.save(checkpoint, 'checkpoints/model_result.pt')
 
+            torch.save(model.state_dict(), 'checkpoints/tes.pt')
+            print(model.state_dict().keys())
+
             best_loss = val_loss
             failed_counter = 0
 
