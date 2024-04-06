@@ -284,6 +284,7 @@ for epoch in range(config["max_epochs"]):
 
             print("Saving Checkpoint...")
             torch.save(checkpoint, 'checkpoints/model_result.pt')
+            print(checkpoint["model_state"].keys())
 
             best_loss = val_loss
             failed_counter = 0
@@ -296,6 +297,7 @@ pretrained_model = torch.load('checkpoints/model_result.pt')
 
 print("Loading Checkpoint from Epoch", pretrained_model['epoch'])
 model.load_state_dict(pretrained_model['model_state'])
+print(pretrained_model["model_state"].keys())
 
 model.eval()
 with torch.no_grad():
