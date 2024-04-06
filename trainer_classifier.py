@@ -35,7 +35,7 @@ parser.add_argument("--max_epochs", type=int, default=30)
 parser.add_argument("--lr", type=float, default=2e-5)
 parser.add_argument("--dropout", type=float, default=0.1)
 parser.add_argument("--patience", type=int, default=3)
-parser.add_argument("--max_length", type=int, default=375)
+parser.add_argument("--max_length", type=int, default=350)
 config = vars(parser.parse_args())
 
 np.random.seed(config["seed"]) 
