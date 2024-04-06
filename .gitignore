@@ -1,2 +1,5 @@
 checkpoints
 logs
+datasets/test_set.pt
+datasets/train_set.pt
+datasets/valid_set.pt
