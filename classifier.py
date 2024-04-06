@@ -27,9 +27,10 @@ text = input('Insert text to classify: ')
 
 dataset = pd.read_csv(f'datasets/{config["dataset"]}')
 stop_words = StopWordRemoverFactory().get_stop_words()
-tokenizer = BertTokenizer.from_pretrained(config["bert_model"])
+tokenizer = BertTokenizer.from_pretrained(config["bert_model"], use_fast=False)
 stemmer = StemmerFactory().create_stemmer()
 labels = sorted(dataset['prodi'].unique().tolist())
+pretrained_bert = BertModel.from_pretrained(config["bert_model"], output_attentions=False, output_hidden_states=True)
 
 
 # preprocessor
@@ -54,9 +55,9 @@ token = tokenizer.encode_plus(
 
 # model
 class BERT_CNN(nn.Module):
-    def __init__(self, num_classes, bert_model, dropout, input_size=768, window_sizes=[1, 2, 3, 4, 5], in_channels=4, out_channels=32):
+    def __init__(self, num_classes, pretrained_bert, dropout, num_bert_states=4, input_size=768, window_sizes=[1, 2, 3, 4, 5], in_channels=4, out_channels=32):
         super(BERT_CNN, self).__init__()
-        self.pretrained_bert = BertModel.from_pretrained(bert_model, output_hidden_states=True)
+        self.pretrained_bert = pretrained_bert
 
         conv_layers = []
         for window_size in window_sizes:
@@ -67,13 +68,12 @@ class BERT_CNN(nn.Module):
         self.dropout = nn.Dropout(dropout) 
         self.window_length = len(window_sizes)
         self.out_channels_length = out_channels
+        self.num_bert_states = num_bert_states
         self.output_layer = nn.Linear(len(window_sizes) * out_channels, num_classes)
 
     def forward(self, input_ids, attention_mask):
         bert_output = self.pretrained_bert(input_ids=input_ids, attention_mask=attention_mask)
-        bert_hidden_states = bert_output.hidden_states
-        bert_hidden_states = torch.stack(bert_hidden_states, dim=1)
-        stacked_hidden_states = bert_hidden_states[:, -4:]
+        stacked_hidden_states = torch.stack(bert_output.hidden_states[-self.num_bert_states:], dim=1)
 
         pooling = []
         for layer in self.cnn:
@@ -92,7 +92,7 @@ class BERT_CNN(nn.Module):
         
         return preds
     
-model = BERT_CNN(len(labels), config["bert_model"], config["dropout"])
+model = BERT_CNN(len(labels), pretrained_bert, config["dropout"])
 pretrained_model = torch.load('checkpoints/model_result.pt', map_location=device)
 print("Loading Checkpoint from Epoch", pretrained_model['epoch'])
 model.load_state_dict(pretrained_model['model_state'])

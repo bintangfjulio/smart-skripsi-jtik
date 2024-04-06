@@ -16,10 +16,10 @@ parser.add_argument("--bert_model", type=str, default="indolem/indobert-base-unc
 parser.add_argument("--max_length", type=int, default=350)
 config = vars(parser.parse_args())
 
-tokenizer = BertTokenizer.from_pretrained(config["bert_model"])
+tokenizer = BertTokenizer.from_pretrained(config["bert_model"], use_fast=False)
 stop_words = StopWordRemoverFactory().get_stop_words()
 stemmer = StemmerFactory().create_stemmer()
-model = BertModel.from_pretrained(config["bert_model"])
+model = BertModel.from_pretrained(config["bert_model"], output_attentions=False, output_hidden_states=False)
 
 sentences = [input("Please enter first text: "), input("Please enter second text: ")]
 
