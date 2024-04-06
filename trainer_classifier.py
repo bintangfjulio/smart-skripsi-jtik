@@ -277,14 +277,8 @@ for epoch in range(config["max_epochs"]):
             if os.path.exists('checkpoints/model_result.pt'):
                 os.remove('checkpoints/model_result.pt')
 
-            checkpoint = {
-                "epoch": epoch + 1,
-                "model_state": model.state_dict(),
-            }
-
             print("Saving Checkpoint...")
-            torch.save(checkpoint, 'checkpoints/model_result.pt')
-            print(checkpoint["model_state"].keys())
+            torch.save(model.state_dict(), 'checkpoints/model_result.pt')
 
             best_loss = val_loss
             failed_counter = 0
@@ -293,11 +287,7 @@ for epoch in range(config["max_epochs"]):
             failed_counter += 1
 
 print("Test Stage...")
-pretrained_model = torch.load('checkpoints/model_result.pt')
-
-print("Loading Checkpoint from Epoch", pretrained_model['epoch'])
-model.load_state_dict(pretrained_model['model_state'])
-print(pretrained_model["model_state"].keys())
+model.load_state_dict(torch.load('checkpoints/model_result.pt', map_location=device))
 
 model.eval()
 with torch.no_grad():

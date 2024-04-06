@@ -23,7 +23,7 @@ parser.add_argument("--dropout", type=float, default=0.1)
 parser.add_argument("--max_length", type=int, default=350)
 config = vars(parser.parse_args())
 
-text = input('Insert text to classify: ')
+text = input('Please insert text: ')
 
 dataset = pd.read_csv(f'datasets/{config["dataset"]}')
 stop_words = StopWordRemoverFactory().get_stop_words()
@@ -93,9 +93,7 @@ class BERT_CNN(nn.Module):
         return preds
     
 model = BERT_CNN(len(labels), pretrained_bert, config["dropout"])
-pretrained_model = torch.load('checkpoints/model_result.pt', map_location=device)
-print("Loading Checkpoint from Epoch", pretrained_model['epoch'])
-model.load_state_dict(pretrained_model['model_state'])
+model.load_state_dict(torch.load('checkpoints/model_result.pt', map_location=device))
 model.to(device)
 
 
