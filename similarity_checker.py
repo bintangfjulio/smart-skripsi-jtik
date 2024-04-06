@@ -26,7 +26,6 @@ sentences = [input("Please enter first text: "), input("Please enter second text
 
 # preprocessor
 for index, text in enumerate(sentences):
-    text = str(text) 
     text = text.lower()
     text = emoji.replace_emoji(text, replace='') 
     text = re.sub(r'\n', ' ', text) 

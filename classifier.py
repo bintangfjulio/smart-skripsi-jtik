@@ -16,7 +16,6 @@ from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--data", type=str, default="abstrak")
 parser.add_argument("--dataset", type=str, default='data_skripsi_jtik.csv')
 parser.add_argument("--bert_model", type=str, default="indolem/indobert-base-uncased")
 parser.add_argument("--dropout", type=float, default=0.1)
