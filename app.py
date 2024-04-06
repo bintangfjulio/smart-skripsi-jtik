@@ -110,9 +110,11 @@ def similarity_checker(text_1, text_2):
     outputs = model(**token)
     embeddings = outputs.last_hidden_state
 
+    # match embedding shape
     mask = attention_mask.unsqueeze(-1).expand(embeddings.size()).float()
     masked_embeddings = embeddings * mask
 
+    # mean pooling
     summed = masked_embeddings.sum(1)
     counts = clamp(mask.sum(1), min=1e-9)
     mean_pooled = (summed / counts).detach().numpy()
