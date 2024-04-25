@@ -118,7 +118,7 @@ test_loader = torch.utils.data.DataLoader(dataset=test_set,
                                         num_workers=multiprocessing.cpu_count())
 
 
-# model
+# fine-tune
 model = BERT_CNN(len(labels), pretrained_bert, config["dropout"])
 model.to(device)
 
@@ -126,7 +126,6 @@ criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
 
 
-# fine-tune
 best_loss = 9.99
 failed_counter = 0
 
