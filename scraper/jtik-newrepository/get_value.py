@@ -5,7 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 
 
-driver = webdriver.Edge() 
+driver = webdriver.Firefox() 
 df = pd.read_csv('url.csv')
 
 url = []

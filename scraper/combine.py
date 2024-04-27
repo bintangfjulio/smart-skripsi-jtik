@@ -9,7 +9,7 @@ df = pd.concat([df1, df2], ignore_index=True)
 df['kata_kunci'] = df['kata_kunci'].str.lower()
 df = df.drop_duplicates(subset="kata_kunci")
 
-df['judul'] = df['judul'].str.lower()
+df['judul'] = df['judul'].str.upper()
 df = df.drop_duplicates(subset="judul")
 
 df['abstrak'] = df['abstrak'].str.lower()
