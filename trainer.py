@@ -59,7 +59,7 @@ pretrained_bert = BertModel.from_pretrained(config["bert_model"], output_attenti
 
 
 # preprocessor
-if not os.path.exists("dataset/train_set.pt") and not os.path.exists("dataset/valid_set.pt") and not os.path.exists("dataset/test_set.pt"):
+if not os.path.exists("dataset/preprocessed/flat_train_set.pt") and not os.path.exists("dataset/preprocessed/flat_valid_set.pt") and not os.path.exists("dataset/preprocessed/flat_test_set.pt"):
     print("\nPreprocessing Data...")
     input_ids, attention_mask, target = [], [], []
 
@@ -94,15 +94,15 @@ if not os.path.exists("dataset/train_set.pt") and not os.path.exists("dataset/va
     valid_size = len(train_valid_set) - train_size
 
     train_set, valid_set = torch.utils.data.random_split(train_valid_set, [train_size, valid_size])
-    torch.save(train_set, 'dataset/train_set.pt')
-    torch.save(valid_set, 'dataset/valid_set.pt')
-    torch.save(test_set, 'dataset/test_set.pt')
+    torch.save(train_set, 'dataset/preprocessed/flat_train_set.pt')
+    torch.save(valid_set, 'dataset/preprocessed/flat_valid_set.pt')
+    torch.save(test_set, 'dataset/preprocessed/flat_test_set.pt')
     print('[ Preprocessing Completed ]\n')
 
 print("\nLoading Data...")
-train_set = torch.load("dataset/train_set.pt")
-valid_set = torch.load("dataset/valid_set.pt")
-test_set = torch.load("dataset/test_set.pt")
+train_set = torch.load("dataset/preprocessed/flat_train_set.pt")
+valid_set = torch.load("dataset/preprocessed/flat_valid_set.pt")
+test_set = torch.load("dataset/preprocessed/flat_test_set.pt")
 print('[ Loading Completed ]\n')
 
 train_loader = torch.utils.data.DataLoader(dataset=train_set, 
@@ -316,12 +316,12 @@ with torch.no_grad():
 if not os.path.exists('logs'):
     os.makedirs('logs')
 
-logger.to_csv('logs/metrics.csv', index=False, encoding='utf-8')
-classification_report.to_csv('logs/classification_report.csv', index=False, encoding='utf-8')
+logger.to_csv('logs/flat_metrics.csv', index=False, encoding='utf-8')
+classification_report.to_csv('logs/flat_classification_report.csv', index=False, encoding='utf-8')
 
 
 # create graph
-logger = pd.read_csv("logs/metrics.csv", dtype={'accuracy': float, 'loss': float})
+logger = pd.read_csv("logs/flat_metrics.csv", dtype={'accuracy': float, 'loss': float})
 
 train_log = logger[logger['stage'] == 'train']
 valid_log = logger[logger['stage'] == 'valid']
@@ -334,12 +334,12 @@ plt.plot(train_log['epoch'], train_log['accuracy'], marker='o', label='Train Acc
 plt.plot(valid_log['epoch'], valid_log['accuracy'], marker='o', label='Validation Accuracy')
 plt.title(f'Best Training Accuracy: {train_log["accuracy"].max():.2f} | Best Validation Accuracy: {valid_log["accuracy"].max():.2f}', ha='center', fontsize='medium')
 plt.legend()
-plt.savefig('logs/accuracy_metrics.png')
+plt.savefig('logs/flat_accuracy_metrics.png')
 plt.clf()
 
 plt.plot(train_log['epoch'], train_log['loss'], marker='o', label='Train Loss')
 plt.plot(valid_log['epoch'], valid_log['loss'], marker='o', label='Validation Loss')
 plt.title(f'Best Training Loss: {train_log["loss"].min():.2f} | Best Validation Loss: {valid_log["loss"].min():.2f}', ha='center', fontsize='medium')
 plt.legend()
-plt.savefig('logs/loss_metrics.png')
+plt.savefig('logs/flat_loss_metrics.png')
 plt.clf()
