@@ -35,7 +35,7 @@ def classification(text):
         truncation=True)
     
     pretrained_bert = BertModel.from_pretrained(config["bert_model"], output_attentions=False, output_hidden_states=True)
-    model = BERT_CNN(len(labels), pretrained_bert, config["dropout"])
+    model = model = BERT_CNN(num_classes=len(labels), pretrained_bert=pretrained_bert, dropout=config["dropout"], window_sizes=config["window_sizes"], in_channels=config["in_channels"], out_channels=config["out_channels"], num_bert_states=config["num_bert_states"])
     model.load_state_dict(torch.load('checkpoints/model_result.pt', map_location=device))
     model.to(device)
 
@@ -73,7 +73,11 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str, default='data_repo_jtik.csv')
     parser.add_argument("--bert_model", type=str, default="indolem/indobert-base-uncased")
     parser.add_argument("--dropout", type=float, default=0.1)
-    parser.add_argument("--max_length", type=int, default=350)
+    parser.add_argument("--max_length", type=int, default=360)
+    parser.add_argument("--in_channels", type=int, default=4)
+    parser.add_argument("--out_channels", type=int, default=32)
+    parser.add_argument("--window_sizes", nargs="+", type=int, default=[1, 2, 3, 4, 5])
+    parser.add_argument("--num_bert_states", type=int, default=4)
     config = vars(parser.parse_args())
 
     dataset = pd.read_csv(f'dataset/{config["dataset"]}')

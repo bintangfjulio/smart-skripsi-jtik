@@ -4,14 +4,15 @@ import torch.nn.functional as F
 
 
 class BERT_CNN(nn.Module):
-    def __init__(self, num_classes, pretrained_bert, dropout, num_bert_states=4, input_size=768, window_sizes=[1, 2, 3, 4, 5], in_channels=4, out_channels=32):
+    def __init__(self, num_classes, pretrained_bert, dropout, window_sizes, in_channels, out_channels, num_bert_states):
         super(BERT_CNN, self).__init__()
         self.pretrained_bert = pretrained_bert
 
         conv_layers = []
         for window_size in window_sizes:
-            conv_layer = nn.Conv2d(in_channels, out_channels, (window_size, input_size))
+            conv_layer = nn.Conv2d(in_channels, out_channels, (window_size, pretrained_bert.embeddings.word_embeddings.weight.size(1)))
             conv_layers.append(conv_layer)
+            
         self.cnn = nn.ModuleList(conv_layers)
 
         self.dropout = nn.Dropout(dropout) 

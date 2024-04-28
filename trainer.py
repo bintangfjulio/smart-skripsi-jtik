@@ -26,7 +26,6 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 pd.options.display.float_format = '{:,.2f}'.format  
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--data", type=str, default="abstrak")
 parser.add_argument("--dataset", type=str, default='data_repo_jtik.csv')
 parser.add_argument("--batch_size", type=int, default=32)
 parser.add_argument("--bert_model", type=str, default="indolem/indobert-base-uncased")
@@ -35,7 +34,11 @@ parser.add_argument("--max_epochs", type=int, default=30)
 parser.add_argument("--lr", type=float, default=2e-5)
 parser.add_argument("--dropout", type=float, default=0.1)
 parser.add_argument("--patience", type=int, default=3)
-parser.add_argument("--max_length", type=int, default=350)
+parser.add_argument("--max_length", type=int, default=360)
+parser.add_argument("--in_channels", type=int, default=4)
+parser.add_argument("--out_channels", type=int, default=32)
+parser.add_argument("--window_sizes", nargs="+", type=int, default=[1, 2, 3, 4, 5])
+parser.add_argument("--num_bert_states", type=int, default=4)
 config = vars(parser.parse_args())
 
 np.random.seed(config["seed"]) 
@@ -62,7 +65,7 @@ if not os.path.exists("dataset/train_set.pt") and not os.path.exists("dataset/va
 
     for row in tqdm(dataset.to_dict('records'), desc="Preprocessing"):
         label = labels.index(row["prodi"])
-        text = str(row[config["data"]]) 
+        text = str(row["kata_kunci"]) + " - " + str(row["abstrak"])
         text = text.lower()
         text = emoji.replace_emoji(text, replace='') 
         text = re.sub(r'\n', ' ', text) 
@@ -119,7 +122,7 @@ test_loader = torch.utils.data.DataLoader(dataset=test_set,
 
 
 # fine-tune
-model = BERT_CNN(len(labels), pretrained_bert, config["dropout"])
+model = BERT_CNN(num_classes=len(labels), pretrained_bert=pretrained_bert, dropout=config["dropout"], window_sizes=config["window_sizes"], in_channels=config["in_channels"], out_channels=config["out_channels"], num_bert_states=config["num_bert_states"])
 model.to(device)
 
 criterion = nn.CrossEntropyLoss()
