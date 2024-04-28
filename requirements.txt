@@ -2,10 +2,3 @@ Sastrawi
 transformers
 selenium
 emoji
-torch
-pandas
-sklearn
-argparse
-re
-matplotlib
-tqdm
