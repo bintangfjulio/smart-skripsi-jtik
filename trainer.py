@@ -93,6 +93,9 @@ if not os.path.exists("dataset/preprocessed/flat_train_set.pt") and not os.path.
     train_size = round(len(train_valid_set) * 0.9)
     valid_size = len(train_valid_set) - train_size
 
+    if not os.path.exists('dataset/preprocessed'):
+        os.makedirs('dataset/preprocessed')
+
     train_set, valid_set = torch.utils.data.random_split(train_valid_set, [train_size, valid_size])
     torch.save(train_set, 'dataset/preprocessed/flat_train_set.pt')
     torch.save(valid_set, 'dataset/preprocessed/flat_valid_set.pt')
@@ -253,8 +256,8 @@ for epoch in range(config["max_epochs"]):
             print("Saving Checkpoint...")
 
             checkpoint = {
-                "model_state": model.state_dict(),
-                "output_layer_state": output_layer.state_dict(),
+                "hidden_states": model.state_dict(),
+                "last_hidden_state": output_layer.state_dict(),
             }
 
             torch.save(checkpoint, 'checkpoints/flat_model.pt')
@@ -267,8 +270,8 @@ for epoch in range(config["max_epochs"]):
 
 print("Test Stage...")
 checkpoint = torch.load('checkpoints/flat_model.pt', map_location=device)
-model.load_state_dict(checkpoint["model_state"])
-output_layer.load_state_dict(checkpoint["output_layer_state"])
+model.load_state_dict(checkpoint["hidden_states"])
+output_layer.load_state_dict(checkpoint["last_hidden_state"])
 
 model.eval()
 with torch.no_grad():
