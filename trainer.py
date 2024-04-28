@@ -122,12 +122,14 @@ test_loader = torch.utils.data.DataLoader(dataset=test_set,
 
 
 # fine-tune
-model = BERT_CNN(num_classes=len(labels), pretrained_bert=pretrained_bert, dropout=config["dropout"], window_sizes=config["window_sizes"], in_channels=config["in_channels"], out_channels=config["out_channels"], num_bert_states=config["num_bert_states"])
+model = BERT_CNN(pretrained_bert=pretrained_bert, dropout=config["dropout"], window_sizes=config["window_sizes"], in_channels=config["in_channels"], out_channels=config["out_channels"], num_bert_states=config["num_bert_states"])
 model.to(device)
+
+output_layer = nn.Linear(len(config["window_sizes"]) * config["out_channels"], len(labels))
+output_layer.to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
-
 
 best_loss = 9.99
 failed_counter = 0
@@ -137,6 +139,7 @@ classification_report = pd.DataFrame(columns=['label', 'correct_prediction', 'fa
 
 optimizer.zero_grad()
 model.zero_grad()
+output_layer.zero_grad()
 
 print("Training Stage...")
 for epoch in range(config["max_epochs"]):
@@ -159,6 +162,8 @@ for epoch in range(config["max_epochs"]):
         target = target.to(device)
 
         preds = model(input_ids=input_ids, attention_mask=attention_mask)
+        preds = output_layer(preds)
+
         loss = criterion(preds, target)
 
         train_loss += loss.item()
@@ -178,6 +183,7 @@ for epoch in range(config["max_epochs"]):
 
         optimizer.zero_grad()
         model.zero_grad()
+        output_layer.zero_grad()
 
     train_loss /= n_batch
     acc = 100.0 * n_correct / n_samples
@@ -206,6 +212,8 @@ for epoch in range(config["max_epochs"]):
             target = target.to(device)
 
             preds = model(input_ids=input_ids, attention_mask=attention_mask)
+            preds = output_layer(preds)
+
             loss = criterion(preds, target)
 
             val_loss += loss.item()
@@ -222,6 +230,7 @@ for epoch in range(config["max_epochs"]):
 
             optimizer.zero_grad()
             model.zero_grad()
+            output_layer.zero_grad()
 
         val_loss /= n_batch
         acc = 100.0 * n_correct / n_samples
@@ -238,11 +247,17 @@ for epoch in range(config["max_epochs"]):
             if not os.path.exists('checkpoints'):
                 os.makedirs('checkpoints')
 
-            if os.path.exists('checkpoints/model_result.pt'):
-                os.remove('checkpoints/model_result.pt')
+            if os.path.exists('checkpoints/flat_model.pt'):
+                os.remove('checkpoints/flat_model.pt')
 
             print("Saving Checkpoint...")
-            torch.save(model.state_dict(), 'checkpoints/model_result.pt')
+
+            checkpoint = {
+                "model_state": model.state_dict(),
+                "output_layer_state": output_layer.state_dict(),
+            }
+
+            torch.save(checkpoint, 'checkpoints/flat_model.pt')
 
             best_loss = val_loss
             failed_counter = 0
@@ -251,7 +266,9 @@ for epoch in range(config["max_epochs"]):
             failed_counter += 1
 
 print("Test Stage...")
-model.load_state_dict(torch.load('checkpoints/model_result.pt', map_location=device))
+checkpoint = torch.load('checkpoints/flat_model.pt', map_location=device)
+model.load_state_dict(checkpoint["model_state"])
+output_layer.load_state_dict(checkpoint["output_layer_state"])
 
 model.eval()
 with torch.no_grad():
@@ -269,6 +286,8 @@ with torch.no_grad():
         target = target.to(device)
 
         preds = model(input_ids=input_ids, attention_mask=attention_mask)
+        preds = output_layer(preds)
+
         loss = criterion(preds, target)
 
         test_loss += loss.item()

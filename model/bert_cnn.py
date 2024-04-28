@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 
 class BERT_CNN(nn.Module):
-    def __init__(self, num_classes, pretrained_bert, dropout, window_sizes, in_channels, out_channels, num_bert_states):
+    def __init__(self, pretrained_bert, dropout, window_sizes, in_channels, out_channels, num_bert_states):
         super(BERT_CNN, self).__init__()
         self.pretrained_bert = pretrained_bert
 
@@ -19,7 +19,6 @@ class BERT_CNN(nn.Module):
         self.window_length = len(window_sizes)
         self.out_channels_length = out_channels
         self.num_bert_states = num_bert_states
-        self.output_layer = nn.Linear(len(window_sizes) * out_channels, num_classes)
 
     def forward(self, input_ids, attention_mask):
         bert_output = self.pretrained_bert(input_ids=input_ids, attention_mask=attention_mask)
@@ -36,8 +35,7 @@ class BERT_CNN(nn.Module):
             pooled_features = F.max_pool1d(features, features.size(2)).squeeze(2)
             max_pooling.append(pooled_features)
         
-        flatten = torch.cat(max_pooling, dim=1)
-        logits = self.dropout(flatten)
-        preds = self.output_layer(logits)
+        concatenated = torch.cat(max_pooling, dim=1)
+        preds = self.dropout(concatenated)
         
         return preds
