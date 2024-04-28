@@ -35,7 +35,7 @@ def classification(text):
         truncation=True)
     
     pretrained_bert = BertModel.from_pretrained(config["bert_model"], output_attentions=False, output_hidden_states=True)
-    model = model = BERT_CNN(num_classes=len(labels), pretrained_bert=pretrained_bert, dropout=config["dropout"], window_sizes=config["window_sizes"], in_channels=config["in_channels"], out_channels=config["out_channels"], num_bert_states=config["num_bert_states"])
+    model = BERT_CNN(num_classes=len(labels), pretrained_bert=pretrained_bert, dropout=config["dropout"], window_sizes=config["window_sizes"], in_channels=config["in_channels"], out_channels=config["out_channels"], num_bert_states=config["num_bert_states"])
     model.load_state_dict(torch.load('checkpoints/model_result.pt', map_location=device))
     model.to(device)
 
