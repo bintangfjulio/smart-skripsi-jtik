@@ -26,6 +26,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 pd.options.display.float_format = '{:,.2f}'.format  
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--target", type=str, default="nama_pembimbing")
 parser.add_argument("--dataset", type=str, default='data_repo_jtik.csv')
 parser.add_argument("--batch_size", type=int, default=32)
 parser.add_argument("--bert_model", type=str, default="indolem/indobert-base-uncased")
@@ -51,10 +52,12 @@ if torch.cuda.is_available():
     torch.backends.cudnn.deterministic = True
 
 dataset = pd.read_csv(f'dataset/{config["dataset"]}')
+dataset = dataset[dataset['nama_pembimbing'] != '-']
+
 stop_words = StopWordRemoverFactory().get_stop_words()
 tokenizer = BertTokenizer.from_pretrained(config["bert_model"], use_fast=False)
 stemmer = StemmerFactory().create_stemmer()
-labels = sorted(dataset['prodi'].unique().tolist())
+labels = sorted(dataset[config["target"]].unique().tolist())
 pretrained_bert = BertModel.from_pretrained(config["bert_model"], output_attentions=False, output_hidden_states=True)
 
 
@@ -64,7 +67,7 @@ if not os.path.exists("dataset/preprocessed/flat_train_set.pt") and not os.path.
     input_ids, attention_mask, target = [], [], []
 
     for row in tqdm(dataset.to_dict('records'), desc="Preprocessing"):
-        label = labels.index(row["prodi"])
+        label = labels.index(row[config["target"]])
         text = str(row["kata_kunci"]) + " - " + str(row["abstrak"])
         text = text.lower()
         text = emoji.replace_emoji(text, replace='') 
