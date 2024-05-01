@@ -11,17 +11,17 @@ target = [
     {
         "url": "http://jurusan.tik.pnj.ac.id/newrepositori/v2/kategori/1",
         "max_page": 36,
-        "prodi": "TI"
+        "prodi": "Teknik Informatika"
     },
     {
         "url": "http://jurusan.tik.pnj.ac.id/newrepositori/v2/kategori/2",
         "max_page": 12,
-        "prodi": "TMJ"
+        "prodi": "Teknik Multimedia dan Jaringan"
     },
     {
         "url": "http://jurusan.tik.pnj.ac.id/newrepositori/v2/kategori/3",
         "max_page": 6,
-        "prodi": "TMD"
+        "prodi": "Teknik Multimedia Digital"
     },
 ]
 

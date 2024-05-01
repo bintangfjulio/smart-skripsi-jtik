@@ -330,19 +330,37 @@ train_log = logger[logger['stage'] == 'train']
 valid_log = logger[logger['stage'] == 'valid']
 
 plt.xlabel('Epoch')
-plt.ylabel('Value')
+plt.ylabel('Accuracy')
 plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
 
 plt.plot(train_log['epoch'], train_log['accuracy'], marker='o', label='Train Accuracy')
 plt.plot(valid_log['epoch'], valid_log['accuracy'], marker='o', label='Validation Accuracy')
-plt.title(f'Best Training Accuracy: {train_log["accuracy"].max():.2f} | Best Validation Accuracy: {valid_log["accuracy"].max():.2f}', ha='center', fontsize='medium')
+
+best_train_accuracy = train_log['accuracy'].max()
+best_valid_accuracy = valid_log['accuracy'].max()
+
+plt.annotate('best', xy=(train_log['epoch'][train_log['accuracy'].idxmax()], best_train_accuracy), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
+plt.annotate('best', xy=(valid_log['epoch'][valid_log['accuracy'].idxmax()], best_valid_accuracy), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
+
+plt.title(f'Best Training Accuracy: {best_train_accuracy:.2f} | Best Validation Accuracy: {best_valid_accuracy:.2f}', ha='center', fontsize='medium')
 plt.legend()
 plt.savefig('logs/flat_accuracy_metrics.png')
 plt.clf()
 
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
+
 plt.plot(train_log['epoch'], train_log['loss'], marker='o', label='Train Loss')
 plt.plot(valid_log['epoch'], valid_log['loss'], marker='o', label='Validation Loss')
-plt.title(f'Best Training Loss: {train_log["loss"].min():.2f} | Best Validation Loss: {valid_log["loss"].min():.2f}', ha='center', fontsize='medium')
+
+best_train_loss = train_log['loss'].min()
+best_valid_loss = valid_log['loss'].min()
+
+plt.annotate('best', xy=(train_log['epoch'][train_log['loss'].idxmin()], best_train_loss), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
+plt.annotate('best', xy=(valid_log['epoch'][valid_log['loss'].idxmin()], best_valid_loss), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
+
+plt.title(f'Best Training Loss: {best_train_loss:.2f} | Best Validation Loss: {best_valid_loss:.2f}', ha='center', fontsize='medium')
 plt.legend()
 plt.savefig('logs/flat_loss_metrics.png')
 plt.clf()

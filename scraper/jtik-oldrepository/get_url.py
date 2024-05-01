@@ -11,17 +11,17 @@ target = [
     {
         "url": "http://jurusan.tik.pnj.ac.id/repositori/kat/Skripsi/TI",
         "max_page": 14,
-        "prodi": "TI"
+        "prodi": "Teknik Informatika"
     },
     {
         "url": "http://jurusan.tik.pnj.ac.id/repositori/kat/Skripsi/TMJ",
         "max_page": 6,
-        "prodi": "TMJ"
+        "prodi": "Teknik Multimedia dan Jaringan"
     },
     {
         "url": "http://jurusan.tik.pnj.ac.id/repositori/kat/Skripsi/TMD",
         "max_page": 3,
-        "prodi": "TMD"
+        "prodi": "Teknik Multimedia Digital"
     },
 ]
 
