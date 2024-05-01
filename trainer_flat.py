@@ -22,6 +22,7 @@ from model.bert_cnn import BERT_CNN
 
 
 # setup
+print("Starting to Develop Classifier with Flat Approach...")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 pd.options.display.float_format = '{:,.2f}'.format  
 
