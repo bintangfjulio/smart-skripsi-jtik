@@ -340,7 +340,7 @@
                         <button type="button" class="btn btn-primary btn-sm" onclick="showModal(
                             '${doc.id}', '${data.kompetensi}', '${
               data.judul
-            }', '${data.abstrak}',
+            }', '${data.abstrak.replace(/'/g, "")}',
                             '${data.kata_kunci}', '${data.nama_pembimbing}', '${
               data.prodi
             }',
