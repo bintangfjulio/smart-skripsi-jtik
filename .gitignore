@@ -1,4 +1,4 @@
-checkpoints
-logs
-dataset/preprocessed
+checkpoint
+log
 model/__pycache__
+util/__pycache__

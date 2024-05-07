@@ -1,10 +1,8 @@
 # import
 import argparse
-import emoji
-import re
-import torch
 import random
 import os
+import torch
 import numpy as np
 import multiprocessing
 import pandas as pd
@@ -12,35 +10,33 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
-from transformers import BertTokenizer, BertModel
-from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
+from transformers import BertModel
 from tqdm import tqdm
-from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
-from torch.utils.data import TensorDataset
 from collections import defaultdict
 from model.bert_cnn import BERT_CNN
+from util.preprocessor import Preprocessor
 
 
 # setup
-print("Starting Flat Classification...")
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 pd.options.display.float_format = '{:,.2f}'.format  
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--target", type=str, default='nama_pembimbing', help='Target Column')
 parser.add_argument("--dataset", type=str, default='init_data_repo_jtik.json', help='Dataset Path')
 parser.add_argument("--batch_size", type=int, default=32, help='Batch Size')
-parser.add_argument("--bert_model", type=str, default="indolem/indobert-base-uncased", help='BERT Model API')
+parser.add_argument("--bert_model", type=str, default="indolem/indobert-base-uncased", help='BERT Model')
 parser.add_argument("--seed", type=int, default=42, help='Random Seed')
 parser.add_argument("--max_epochs", type=int, default=30, help='Number of Epochs')
 parser.add_argument("--lr", type=float, default=2e-5, help='Learning Rate')
 parser.add_argument("--dropout", type=float, default=0.1, help='Dropout')
 parser.add_argument("--patience", type=int, default=3, help='Patience')
+parser.add_argument("--num_bert_states", type=int, default=4, help='Number of BERT Last States')
 parser.add_argument("--max_length", type=int, default=360, help='Max Length')
 parser.add_argument("--in_channels", type=int, default=4, help='CNN In Channels')
 parser.add_argument("--out_channels", type=int, default=32, help='CNN Out Channels')
 parser.add_argument("--window_sizes", nargs="+", type=int, default=[1, 2, 3, 4, 5], help='CNN Kernel')
-parser.add_argument("--num_bert_states", type=int, default=4, help='Number of BERT Last States')
-parser.add_argument("--target", choices=['nama_pembimbing', 'kompetensi', 'prodi'], required=True, help='Target Column Name')
+
 config = vars(parser.parse_args())
 
 np.random.seed(config["seed"]) 
@@ -53,67 +49,23 @@ if torch.cuda.is_available():
     torch.backends.cudnn.deterministic = True
 
 dataset = pd.read_json(f'dataset/{config["dataset"]}')
-dataset = dataset[dataset['nama_pembimbing'] != '-']
-
-stop_words = StopWordRemoverFactory().get_stop_words()
-tokenizer = BertTokenizer.from_pretrained(config["bert_model"], use_fast=False)
-stemmer = StemmerFactory().create_stemmer()
 pretrained_bert = BertModel.from_pretrained(config["bert_model"], output_attentions=False, output_hidden_states=True)
-
-
-# flat target
-labels = sorted(dataset[config["target"]].unique().tolist())
+preprocessor = Preprocessor(bert_model=config["bert_model"], max_length=config["max_length"])
 
 
 # preprocessor
-if not os.path.exists("dataset/preprocessed/flat_train_set.pt") and not os.path.exists("dataset/preprocessed/flat_valid_set.pt") and not os.path.exists("dataset/preprocessed/flat_test_set.pt"):
-    print("\nPreprocessing Data...")
-    input_ids, attention_mask, target = [], [], []
+if not os.path.exists("dataset/preprocessed_set.pkl"):
+    tqdm.pandas(desc="Preprocessing Stage")
+    dataset[['input_ids', 'attention_mask']] = dataset.progress_apply(lambda row: preprocessor.text_processing(row), axis=1, result_type='expand')
+    dataset.to_pickle("dataset/preprocessed_set.pkl")
 
-    for row in tqdm(dataset.to_dict('records'), desc="Preprocessing"):
-        label = labels.index(row[config["target"]])
-        text = str(row["kata_kunci"]) + " - " + str(row["abstrak"])
-        text = text.lower()
-        text = emoji.replace_emoji(text, replace='') 
-        text = re.sub(r'\n', ' ', text) 
-        text = re.sub(r'http\S+', '', text)  
-        text = re.sub(r'\d+', '', text)  
-        text = re.sub(r'[^a-zA-Z ]', '', text)  
-        text = ' '.join([word for word in text.split() if word not in stop_words])  
-        text = stemmer.stem(text)
-        text = text.strip()      
+dataset = pd.read_pickle("dataset/preprocessed_set.pkl")
 
-        token = tokenizer(text=text, max_length=config["max_length"], padding="max_length", truncation=True)  
-        input_ids.append(token['input_ids'])
-        attention_mask.append(token['attention_mask'])
-        target.append(label)
+labels = preprocessor.get_labels(dataset=dataset)
+dataset["target"] = dataset[config["target"]].apply(lambda row: labels.index(row))
 
-    input_ids = torch.tensor(input_ids)
-    attention_mask = torch.tensor(attention_mask)
-    target = torch.tensor(target)
-    tensor_dataset = TensorDataset(input_ids, attention_mask, target)
-
-    train_valid_size = round(len(tensor_dataset) * 0.8)
-    test_size = len(tensor_dataset) - train_valid_size
-    train_valid_set, test_set = torch.utils.data.random_split(tensor_dataset, [train_valid_size, test_size])
-
-    train_size = round(len(train_valid_set) * 0.9)
-    valid_size = len(train_valid_set) - train_size
-
-    if not os.path.exists('dataset/preprocessed'):
-        os.makedirs('dataset/preprocessed')
-
-    train_set, valid_set = torch.utils.data.random_split(train_valid_set, [train_size, valid_size])
-    torch.save(train_set, 'dataset/preprocessed/flat_train_set.pt')
-    torch.save(valid_set, 'dataset/preprocessed/flat_valid_set.pt')
-    torch.save(test_set, 'dataset/preprocessed/flat_test_set.pt')
-    print('[ Preprocessing Completed ]\n')
-
-print("\nLoading Data...")
-train_set = torch.load("dataset/preprocessed/flat_train_set.pt")
-valid_set = torch.load("dataset/preprocessed/flat_valid_set.pt")
-test_set = torch.load("dataset/preprocessed/flat_test_set.pt")
-print('[ Loading Completed ]\n')
+train_set, test_set = preprocessor.train_test_split(dataset=dataset, train_percentage=0.8)
+train_set, valid_set = preprocessor.train_valid_split(train_set=train_set, train_percentage=0.9)
 
 train_loader = torch.utils.data.DataLoader(dataset=train_set, 
                                         batch_size=config["batch_size"], 
@@ -151,7 +103,6 @@ optimizer.zero_grad()
 model.zero_grad()
 output_layer.zero_grad()
 
-print("Training Stage...")
 for epoch in range(config["max_epochs"]):
     if failed_counter == config["patience"]:
         print("Early Stopping")
@@ -254,20 +205,18 @@ for epoch in range(config["max_epochs"]):
             print(f"Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
         
         if round(val_loss, 2) < round(best_loss, 2):
-            if not os.path.exists('checkpoints'):
-                os.makedirs('checkpoints')
+            if not os.path.exists('checkpoint'):
+                os.makedirs('checkpoint')
 
-            if os.path.exists('checkpoints/flat_model.pt'):
-                os.remove('checkpoints/flat_model.pt')
-
-            print("Saving Checkpoint...")
+            if os.path.exists('checkpoint/flat_model.pt'):
+                os.remove('checkpoint/flat_model.pt')
 
             checkpoint = {
                 "hidden_states": model.state_dict(),
                 "last_hidden_state": output_layer.state_dict(),
             }
 
-            torch.save(checkpoint, 'checkpoints/flat_model.pt')
+            torch.save(checkpoint, 'checkpoint/flat_model.pt')
 
             best_loss = val_loss
             failed_counter = 0
@@ -275,8 +224,7 @@ for epoch in range(config["max_epochs"]):
         else:
             failed_counter += 1
 
-print("Test Stage...")
-checkpoint = torch.load('checkpoints/flat_model.pt', map_location=device)
+checkpoint = torch.load('checkpoint/flat_model.pt', map_location=device)
 model.load_state_dict(checkpoint["hidden_states"])
 output_layer.load_state_dict(checkpoint["last_hidden_state"])
 
@@ -290,7 +238,7 @@ with torch.no_grad():
     each_label_correct = defaultdict(int)
     each_label_total = defaultdict(int)
 
-    for input_ids, attention_mask, target in tqdm(test_loader, desc="Test", unit="batch"):
+    for input_ids, attention_mask, target in tqdm(test_loader, desc="Test Stage", unit="batch"):
         input_ids = input_ids.to(device)
         attention_mask = attention_mask.to(device)
         target = target.to(device)
@@ -323,15 +271,15 @@ with torch.no_grad():
         classification_report = pd.concat([classification_report, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
         print(f"Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
 
-if not os.path.exists('logs'):
-    os.makedirs('logs')
+if not os.path.exists('log'):
+    os.makedirs('log')
 
-logger.to_csv('logs/flat_metrics.csv', index=False, encoding='utf-8')
-classification_report.to_csv('logs/flat_classification_report.csv', index=False, encoding='utf-8')
+logger.to_csv('log/flat_metrics.csv', index=False, encoding='utf-8')
+classification_report.to_csv('log/flat_classification_report.csv', index=False, encoding='utf-8')
 
 
-# create graph
-logger = pd.read_csv("logs/flat_metrics.csv", dtype={'accuracy': float, 'loss': float})
+# convert graph
+logger = pd.read_csv("log/flat_metrics.csv", dtype={'accuracy': float, 'loss': float})
 
 train_log = logger[logger['stage'] == 'train']
 valid_log = logger[logger['stage'] == 'valid']
@@ -351,7 +299,7 @@ plt.annotate('best', xy=(valid_log['epoch'][valid_log['accuracy'].idxmax()], bes
 
 plt.title(f'Best Training Accuracy: {best_train_accuracy:.2f} | Best Validation Accuracy: {best_valid_accuracy:.2f}', ha='center', fontsize='medium')
 plt.legend()
-plt.savefig('logs/flat_accuracy_metrics.png')
+plt.savefig('log/flat_accuracy_metrics.png')
 plt.clf()
 
 plt.xlabel('Epoch')
@@ -369,5 +317,5 @@ plt.annotate('best', xy=(valid_log['epoch'][valid_log['loss'].idxmin()], best_va
 
 plt.title(f'Best Training Loss: {best_train_loss:.2f} | Best Validation Loss: {best_valid_loss:.2f}', ha='center', fontsize='medium')
 plt.legend()
-plt.savefig('logs/flat_loss_metrics.png')
+plt.savefig('log/flat_loss_metrics.png')
 plt.clf()
