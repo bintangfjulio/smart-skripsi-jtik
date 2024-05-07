@@ -15,8 +15,8 @@ class Preprocessor:
         self.stemmer = StemmerFactory().create_stemmer()
         self.max_length = max_length
 
-    def text_processing(self, row):
-        text = str(row["kata_kunci"]) + " - " + str(row["abstrak"])
+    def text_processing(self, data):
+        text = str(data["kata_kunci"]) + " - " + str(data["abstrak"])
         text = text.lower()
         text = emoji.replace_emoji(text, replace='') 
         text = re.sub(r'\n', ' ', text) 
@@ -32,7 +32,7 @@ class Preprocessor:
     
     def get_labels(self, dataset, target):
         labels = dataset[target].unique().tolist()
-        labels = sorted(dataset)
+        labels = sorted(labels)
         
         return labels
     
@@ -56,4 +56,3 @@ class Preprocessor:
         train_set, valid_set = torch.utils.data.random_split(train_set, [train_size, valid_size])
 
         return train_set, valid_set
-

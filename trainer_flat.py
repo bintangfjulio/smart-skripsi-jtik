@@ -56,13 +56,13 @@ preprocessor = Preprocessor(bert_model=config["bert_model"], max_length=config["
 # preprocessor
 if not os.path.exists("dataset/preprocessed_set.pkl"):
     tqdm.pandas(desc="Preprocessing Stage")
-    dataset[['input_ids', 'attention_mask']] = dataset.progress_apply(lambda row: preprocessor.text_processing(row), axis=1, result_type='expand')
+    dataset[['input_ids', 'attention_mask']] = dataset.progress_apply(lambda data: preprocessor.text_processing(data), axis=1, result_type='expand')
     dataset.to_pickle("dataset/preprocessed_set.pkl")
 
 dataset = pd.read_pickle("dataset/preprocessed_set.pkl")
 
 labels = preprocessor.get_labels(dataset=dataset, target=config["target"])
-dataset["target"] = dataset[config["target"]].apply(lambda row: labels.index(row))
+dataset["target"] = dataset[config["target"]].apply(lambda data: labels.index(data))
 
 train_set, test_set = preprocessor.train_test_split(dataset=dataset, train_percentage=0.8)
 train_set, valid_set = preprocessor.train_valid_split(train_set=train_set, train_percentage=0.9)
@@ -208,15 +208,15 @@ for epoch in range(config["max_epochs"]):
             if not os.path.exists('checkpoint'):
                 os.makedirs('checkpoint')
 
-            if os.path.exists('checkpoint/flat_model.pt'):
-                os.remove('checkpoint/flat_model.pt')
+            if os.path.exists(f'checkpoint/flat_{config["target"]}_model.pt'):
+                os.remove(f'checkpoint/flat_{config["target"]}_model.pt')
 
             checkpoint = {
                 "hidden_states": model.state_dict(),
                 "last_hidden_state": output_layer.state_dict(),
             }
 
-            torch.save(checkpoint, 'checkpoint/flat_model.pt')
+            torch.save(checkpoint, f'checkpoint/flat_{config["target"]}_model.pt')
 
             best_loss = val_loss
             failed_counter = 0
@@ -224,7 +224,7 @@ for epoch in range(config["max_epochs"]):
         else:
             failed_counter += 1
 
-checkpoint = torch.load('checkpoint/flat_model.pt', map_location=device)
+checkpoint = torch.load(f'checkpoint/flat_{config["target"]}_model.pt', map_location=device)
 model.load_state_dict(checkpoint["hidden_states"])
 output_layer.load_state_dict(checkpoint["last_hidden_state"])
 
@@ -274,12 +274,12 @@ with torch.no_grad():
 if not os.path.exists('log'):
     os.makedirs('log')
 
-logger.to_csv('log/flat_metrics.csv', index=False, encoding='utf-8')
-classification_report.to_csv('log/flat_classification_report.csv', index=False, encoding='utf-8')
+logger.to_csv(f'log/flat_{config["target"]}_metrics.csv', index=False, encoding='utf-8')
+classification_report.to_csv(f'log/flat_{config["target"]}_classification_report.csv', index=False, encoding='utf-8')
 
 
 # convert graph
-logger = pd.read_csv("log/flat_metrics.csv", dtype={'accuracy': float, 'loss': float})
+logger = pd.read_csv(f"log/flat_{config["target"]}_metrics.csv", dtype={'accuracy': float, 'loss': float})
 
 train_log = logger[logger['stage'] == 'train']
 valid_log = logger[logger['stage'] == 'valid']
@@ -299,7 +299,7 @@ plt.annotate('best', xy=(valid_log['epoch'][valid_log['accuracy'].idxmax()], bes
 
 plt.title(f'Best Training Accuracy: {best_train_accuracy:.2f} | Best Validation Accuracy: {best_valid_accuracy:.2f}', ha='center', fontsize='medium')
 plt.legend()
-plt.savefig('log/flat_accuracy_metrics.png')
+plt.savefig(f'log/flat_{config["target"]}_accuracy_metrics.png')
 plt.clf()
 
 plt.xlabel('Epoch')
@@ -317,5 +317,5 @@ plt.annotate('best', xy=(valid_log['epoch'][valid_log['loss'].idxmin()], best_va
 
 plt.title(f'Best Training Loss: {best_train_loss:.2f} | Best Validation Loss: {best_valid_loss:.2f}', ha='center', fontsize='medium')
 plt.legend()
-plt.savefig('log/flat_loss_metrics.png')
+plt.savefig(f'log/flat_{config["target"]}_loss_metrics.png')
 plt.clf()
