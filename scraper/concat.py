@@ -15,4 +15,4 @@ df = df.drop_duplicates(subset="judul")
 df['abstrak'] = df['abstrak'].str.lower()
 df = df.drop_duplicates(subset="abstrak")
 
-df.to_csv("raw_data_repo_jtik.csv", index=False)
+df.to_csv("data_repo_jtik.csv", index=False)
