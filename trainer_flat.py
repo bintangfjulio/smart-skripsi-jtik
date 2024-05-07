@@ -61,7 +61,7 @@ if not os.path.exists("dataset/preprocessed_set.pkl"):
 
 dataset = pd.read_pickle("dataset/preprocessed_set.pkl")
 
-labels = preprocessor.get_labels(dataset=dataset)
+labels = preprocessor.get_labels(dataset=dataset, target=config["target"])
 dataset["target"] = dataset[config["target"]].apply(lambda row: labels.index(row))
 
 train_set, test_set = preprocessor.train_test_split(dataset=dataset, train_percentage=0.8)

@@ -30,8 +30,8 @@ class Preprocessor:
 
         return token['input_ids'], token['attention_mask']
     
-    def get_labels(self, dataset):
-        labels = dataset["target"].unique().tolist()
+    def get_labels(self, dataset, target):
+        labels = dataset[target].unique().tolist()
         labels = sorted(dataset)
         
         return labels
