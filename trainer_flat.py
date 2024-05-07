@@ -61,7 +61,7 @@ stemmer = StemmerFactory().create_stemmer()
 pretrained_bert = BertModel.from_pretrained(config["bert_model"], output_attentions=False, output_hidden_states=True)
 
 
-# Flat Target
+# flat target
 labels = sorted(dataset[config["target"]].unique().tolist())
 
 
