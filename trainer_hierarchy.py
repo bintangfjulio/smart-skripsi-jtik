@@ -47,17 +47,16 @@ if not os.path.exists("dataset/preprocessed_set.pkl"):
 dataset = pd.read_pickle("dataset/preprocessed_set.pkl")
 root_labels, node_labels = preprocessor.get_grouped_labels(dataset=dataset, root=config["root"], node=config["node"])
 
-dataset["root"] = dataset[config["root"]].apply(lambda data: root_labels[data])
+dataset["root"] = dataset[config["root"]].apply(lambda data: root_labels.index(data))
 dataset["node"] = ""
 
-for key in root_labels.keys():
+for key in root_labels:
     grouped_dataset = dataset[dataset[config["root"]] == key]
     grouped_dataset.loc[:, "node"] = grouped_dataset[config["node"]].apply(lambda data: node_labels[key].index(data))
     dataset.update(grouped_dataset)
 
 dataset = dataset.sample(frac=1)
-dataset_size = dataset.shape[0]
-train_valid_size = round(dataset_size * 0.8)
+train_valid_size = round(dataset.shape[0] * (1.0 - config["test_size"]))
 
 train_valid_set = pd.DataFrame(dataset.iloc[:train_valid_size, :])
 test_set = pd.DataFrame(dataset.iloc[train_valid_size:, :])
@@ -73,7 +72,35 @@ test_loader = torch.utils.data.DataLoader(dataset=test_set,
                                         shuffle=False,
                                         num_workers=multiprocessing.cpu_count())
 
-def fit(section, train_loader, valid_loader):
+def fit_dataloader(dataset, section):
+    if section != "root":
+        dataset = dataset[dataset[config["root"]] == section]
+
+    input_ids = torch.tensor(dataset['input_ids'].tolist())
+    attention_mask = torch.tensor(dataset['attention_mask'].tolist())
+    root = torch.tensor(dataset['root'].tolist())
+    node = torch.tensor(dataset["node"].tolist())
+    dataset = TensorDataset(input_ids, attention_mask, root, node)
+
+    train_size = round(len(dataset) * (1.0 - config["valid_size"]))
+    valid_size = len(dataset) - train_size
+    train_set, valid_set = torch.utils.data.random_split(dataset, [train_size, valid_size])
+
+    train_loader = torch.utils.data.DataLoader(dataset=train_set, 
+                                            batch_size=config["batch_size"], 
+                                            shuffle=True,
+                                            num_workers=multiprocessing.cpu_count())
+
+    valid_loader = torch.utils.data.DataLoader(dataset=valid_set, 
+                                            batch_size=config["batch_size"], 
+                                            shuffle=False,
+                                            num_workers=multiprocessing.cpu_count())
+
+    return train_loader, valid_loader
+
+
+# hierarchical fine-tune
+def finetune(section, train_loader, valid_loader):
     if section == "root":
         labels = root_labels
 
@@ -92,8 +119,13 @@ def fit(section, train_loader, valid_loader):
     best_loss = 9.99
     failed_counter = 0
 
-    logger = pd.DataFrame(columns=['accuracy', 'loss', 'epoch', 'stage', 'section']) 
-    classification_report = pd.DataFrame(columns=['label', 'correct_prediction', 'false_prediction', 'total_prediction', 'epoch', 'stage', 'section'])
+    if(os.exists('log/hierarchy_metrics.csv') and os.exists('log/hierarchy_classification_report.csv')):
+        logger = pd.read_csv('log/hierarchy_metrics.csv')
+        classification_report = pd.read_csv('log/hierarchy_classification_report.csv')
+        
+    else:
+        logger = pd.DataFrame(columns=['accuracy', 'loss', 'epoch', 'stage', 'section']) 
+        classification_report = pd.DataFrame(columns=['label', 'correct_prediction', 'false_prediction', 'total_prediction', 'epoch', 'stage', 'section'])
 
     if section == "root":
         checkpoint = {}
@@ -167,7 +199,7 @@ def fit(section, train_loader, valid_loader):
                 y = root_labels[label]
 
             else: 
-                y = node_labels[section].index(label)
+                y = node_labels[section][label]
 
             classification_report = pd.concat([classification_report, pd.DataFrame({'label': [y], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [epoch+1], 'stage': ['train'], 'section': [section]})], ignore_index=True)
             print(f"Section: {section}, Label: {y}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
@@ -226,7 +258,7 @@ def fit(section, train_loader, valid_loader):
                     y = root_labels[label]
 
                 else: 
-                    y = node_labels[section].index(label)
+                    y = node_labels[section][label]
 
                 classification_report = pd.concat([classification_report, pd.DataFrame({'label': [y], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [epoch+1], 'stage': ['valid'], 'section': [section]})], ignore_index=True)
                 print(f"Section: {section}, Label: {y}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
@@ -249,143 +281,119 @@ def fit(section, train_loader, valid_loader):
             else:
                 failed_counter += 1
 
-    # checkpoint = torch.load(f'checkpoint/hierarchy_model.pt', map_location=device)
-    # model.load_state_dict(checkpoint["root_hidden_states"])
-    # output_layer.load_state_dict(checkpoint["root_last_hidden_state"])
+    if not os.path.exists('log'):
+        os.makedirs('log')
 
-    # if not os.path.exists('log'):
-    #     os.makedirs('log')
+    logger.to_csv('log/hierarchy_metrics.csv', index=False, encoding='utf-8')
+    classification_report.to_csv('log/hierarchy_classification_report.csv', index=False, encoding='utf-8')
 
-    # logger.to_csv(f'log/hierarchy_metrics.csv', index=False, encoding='utf-8')
-    # classification_report.to_csv(f'log/hierarchy_classification_report.csv', index=False, encoding='utf-8')
+train_loader, valid_loader = fit_dataloader(dataset=train_valid_set, section="root")
+finetune(section="root", train_loader=train_loader, valid_loader=valid_loader)
+
+for key in root_labels:
+    train_loader, valid_loader = fit_dataloader(dataset=train_valid_set, section=key)
+    finetune(section=key, train_loader=train_loader, valid_loader=valid_loader)
 
 
-    # convert graph
-    # logger = pd.read_csv(f"log/flat_{config['target']}_metrics.csv", dtype={'accuracy': float, 'loss': float})
+# checkpoint = torch.load(f'checkpoint/hierarchy_model.pt', map_location=device)
+# model.load_state_dict(checkpoint["root_hidden_states"])
+# output_layer.load_state_dict(checkpoint["root_last_hidden_state"])
 
-    # train_log = logger[logger['stage'] == 'train']
-    # valid_log = logger[logger['stage'] == 'valid']
+# model.eval()
+# with torch.no_grad():
+#     test_loss = 0
+#     n_batch = 0
+#     n_correct = 0
+#     n_samples = 0
 
-    # plt.xlabel('Epoch')
-    # plt.ylabel('Accuracy')
-    # plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
+#     each_label_correct = defaultdict(int)
+#     each_label_total = defaultdict(int)
 
-    # plt.plot(train_log['epoch'], train_log['accuracy'], marker='o', label='Train Accuracy')
-    # plt.plot(valid_log['epoch'], valid_log['accuracy'], marker='o', label='Validation Accuracy')
+#     for input_ids, attention_mask, target in tqdm(test_loader, desc="Test Stage", unit="batch"):
+#         input_ids = input_ids.to(device)
+#         attention_mask = attention_mask.to(device)
 
-    # best_train_accuracy = train_log['accuracy'].max()
-    # best_valid_accuracy = valid_log['accuracy'].max()
+#         if section == "root":
+#             target = root.to(device)
 
-    # plt.annotate('best', xy=(train_log['epoch'][train_log['accuracy'].idxmax()], best_train_accuracy), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
-    # plt.annotate('best', xy=(valid_log['epoch'][valid_log['accuracy'].idxmax()], best_valid_accuracy), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
+#         else:
+#             target = node.to(device)
 
-    # plt.title(f'Best Training Accuracy: {best_train_accuracy:.2f} | Best Validation Accuracy: {best_valid_accuracy:.2f}', ha='center', fontsize='medium')
-    # plt.legend()
-    # plt.savefig(f'log/hierarchy_accuracy_metrics.png')
-    # plt.clf()
+#         preds = model(input_ids=input_ids, attention_mask=attention_mask)
+#         preds = output_layer(preds)
 
-    # plt.xlabel('Epoch')
-    # plt.ylabel('Loss')
-    # plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
+#         loss = criterion(preds, target)
 
-    # plt.plot(train_log['epoch'], train_log['loss'], marker='o', label='Train Loss')
-    # plt.plot(valid_log['epoch'], valid_log['loss'], marker='o', label='Validation Loss')
+#         test_loss += loss.item()
+#         n_batch += 1
 
-    # best_train_loss = train_log['loss'].min()
-    # best_valid_loss = valid_log['loss'].min()
+#         result = torch.argmax(preds, dim=1) 
+#         n_samples += target.size(0)
+#         n_correct += (result == target).sum().item()
 
-    # plt.annotate('best', xy=(train_log['epoch'][train_log['loss'].idxmin()], best_train_loss), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
-    # plt.annotate('best', xy=(valid_log['epoch'][valid_log['loss'].idxmin()], best_valid_loss), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
+#         for prediction, ground_truth in zip(result, target):
+#             if prediction == ground_truth:
+#                 each_label_correct[ground_truth.item()] += 1
+#             each_label_total[ground_truth.item()] += 1
 
-    # plt.title(f'Best Training Loss: {best_train_loss:.2f} | Best Validation Loss: {best_valid_loss:.2f}', ha='center', fontsize='medium')
-    # plt.legend()
-    # plt.savefig(f'log/hierarchy_loss_metrics.png')
-    # plt.clf()
+#     test_loss /= n_batch
+#     acc = 100.0 * n_correct / n_samples
+#     logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': [test_loss], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
+#     print(f'Test Loss: {test_loss:.4f}, Test Accuracy: {acc:.2f}%')
 
-# def test(model, section, output_layer, criterion, test_loader, labels):
-#     model.eval()
-#     with torch.no_grad():
-#         test_loss = 0
-#         n_batch = 0
-#         n_correct = 0
-#         n_samples = 0
+#     for label, total_count in each_label_total.items():
+#         correct_count = each_label_correct.get(label, 0)  
+#         false_count = total_count - correct_count
 
-#         each_label_correct = defaultdict(int)
-#         each_label_total = defaultdict(int)
+#         if(section == "root"):
+#             y = root_labels[label]
 
-#         for input_ids, attention_mask, target in tqdm(test_loader, desc="Test Stage", unit="batch"):
-#             input_ids = input_ids.to(device)
-#             attention_mask = attention_mask.to(device)
+#         else: 
+#             y = node_labels[section][label]
 
-#             if section == "root":
-#                 target = root.to(device)
+#         classification_report = pd.concat([classification_report, pd.DataFrame({'label': [y], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
+#         print(f"Label: {y}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
 
-#             else:
-#                 target = node.to(device)
 
-#             preds = model(input_ids=input_ids, attention_mask=attention_mask)
-#             preds = output_layer(preds)
 
-#             loss = criterion(preds, target)
+# convert graph
+# logger = pd.read_csv(f"log/flat_{config['target']}_metrics.csv", dtype={'accuracy': float, 'loss': float})
 
-#             test_loss += loss.item()
-#             n_batch += 1
+# train_log = logger[logger['stage'] == 'train']
+# valid_log = logger[logger['stage'] == 'valid']
 
-#             result = torch.argmax(preds, dim=1) 
-#             n_samples += target.size(0)
-#             n_correct += (result == target).sum().item()
+# plt.xlabel('Epoch')
+# plt.ylabel('Accuracy')
+# plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
 
-#             for prediction, ground_truth in zip(result, target):
-#                 if prediction == ground_truth:
-#                     each_label_correct[ground_truth.item()] += 1
-#                 each_label_total[ground_truth.item()] += 1
+# plt.plot(train_log['epoch'], train_log['accuracy'], marker='o', label='Train Accuracy')
+# plt.plot(valid_log['epoch'], valid_log['accuracy'], marker='o', label='Validation Accuracy')
 
-#         test_loss /= n_batch
-#         acc = 100.0 * n_correct / n_samples
-#         logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': [test_loss], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
-#         print(f'Test Loss: {test_loss:.4f}, Test Accuracy: {acc:.2f}%')
+# best_train_accuracy = train_log['accuracy'].max()
+# best_valid_accuracy = valid_log['accuracy'].max()
 
-#         for label, total_count in each_label_total.items():
-#             correct_count = each_label_correct.get(label, 0)  
-#             false_count = total_count - correct_count
+# plt.annotate('best', xy=(train_log['epoch'][train_log['accuracy'].idxmax()], best_train_accuracy), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
+# plt.annotate('best', xy=(valid_log['epoch'][valid_log['accuracy'].idxmax()], best_valid_accuracy), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
 
-            # if(section == "root"):
-            #     y = root_labels[label]
+# plt.title(f'Best Training Accuracy: {best_train_accuracy:.2f} | Best Validation Accuracy: {best_valid_accuracy:.2f}', ha='center', fontsize='medium')
+# plt.legend()
+# plt.savefig(f'log/hierarchy_accuracy_metrics.png')
+# plt.clf()
 
-            # else: 
-            #     y = node_labels[section].index(label)
-#             classification_report = pd.concat([classification_report, pd.DataFrame({'label': [y], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
-#             print(f"Label: {y}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
+# plt.xlabel('Epoch')
+# plt.ylabel('Loss')
+# plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
 
-def section_dataloader(dataset, section):
-    if section != "root":
-        dataset = dataset[dataset[config["root"]] == section]
+# plt.plot(train_log['epoch'], train_log['loss'], marker='o', label='Train Loss')
+# plt.plot(valid_log['epoch'], valid_log['loss'], marker='o', label='Validation Loss')
 
-    input_ids = torch.tensor(dataset['input_ids'].tolist())
-    attention_mask = torch.tensor(dataset['attention_mask'].tolist())
-    root = torch.tensor(dataset['root'].tolist())
-    node = torch.tensor(dataset["node"].tolist())
-    dataset = TensorDataset(input_ids, attention_mask, root, node)
+# best_train_loss = train_log['loss'].min()
+# best_valid_loss = valid_log['loss'].min()
 
-    train_size = round(len(dataset) * 0.9)
-    valid_size = len(dataset) - train_size
-    train_set, valid_set = torch.utils.data.random_split(dataset, [train_size, valid_size])
+# plt.annotate('best', xy=(train_log['epoch'][train_log['loss'].idxmin()], best_train_loss), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
+# plt.annotate('best', xy=(valid_log['epoch'][valid_log['loss'].idxmin()], best_valid_loss), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
 
-    train_loader = torch.utils.data.DataLoader(dataset=train_set, 
-                                            batch_size=config["batch_size"], 
-                                            shuffle=True,
-                                            num_workers=multiprocessing.cpu_count())
-
-    valid_loader = torch.utils.data.DataLoader(dataset=valid_set, 
-                                            batch_size=config["batch_size"], 
-                                            shuffle=False,
-                                            num_workers=multiprocessing.cpu_count())
-
-    return train_loader, valid_loader
-
-train_loader, valid_loader = section_dataloader(dataset=train_valid_set, section="root")
-fit(section="root", train_loader=train_loader, valid_loader=valid_loader)
-
-for key in root_labels.keys():
-    train_loader, valid_loader = section_dataloader(dataset=train_valid_set, section=key)
-    fit(section=key, train_loader=train_loader, valid_loader=valid_loader)
+# plt.title(f'Best Training Loss: {best_train_loss:.2f} | Best Validation Loss: {best_valid_loss:.2f}', ha='center', fontsize='medium')
+# plt.legend()
+# plt.savefig(f'log/hierarchy_loss_metrics.png')
+# plt.clf()

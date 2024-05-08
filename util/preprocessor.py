@@ -36,6 +36,6 @@ class Preprocessor:
     
     def get_grouped_labels(self, dataset, root, node):
         node_labels = dataset.groupby(root)[node].unique().apply(sorted).to_dict()
-        root_labels = {key: idx for idx, key in enumerate(node_labels)}  
+        root_labels = list(node_labels.keys())
         
         return root_labels, node_labels
