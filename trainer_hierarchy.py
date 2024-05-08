@@ -50,9 +50,9 @@ root_labels, node_labels = preprocessor.get_grouped_labels(dataset=dataset, root
 dataset["root"] = dataset[config["root"]].apply(lambda data: root_labels.index(data))
 dataset["node"] = ""
 
-for key in root_labels:
-    grouped_dataset = dataset[dataset[config["root"]] == key]
-    grouped_dataset.loc[:, "node"] = grouped_dataset[config["node"]].apply(lambda data: node_labels[key].index(data))
+for root in root_labels:
+    grouped_dataset = dataset[dataset[config["root"]] == root]
+    grouped_dataset.loc[:, "node"] = grouped_dataset[config["node"]].apply(lambda data: node_labels[root].index(data))
     dataset.update(grouped_dataset)
 
 dataset = dataset.sample(frac=1)
@@ -290,10 +290,59 @@ def finetune(section, train_loader, valid_loader):
 train_loader, valid_loader = fit_dataloader(dataset=train_valid_set, section="root")
 finetune(section="root", train_loader=train_loader, valid_loader=valid_loader)
 
-for key in root_labels:
-    train_loader, valid_loader = fit_dataloader(dataset=train_valid_set, section=key)
-    finetune(section=key, train_loader=train_loader, valid_loader=valid_loader)
+for root in root_labels:
+    train_loader, valid_loader = fit_dataloader(dataset=train_valid_set, section=root)
+    finetune(section=root, train_loader=train_loader, valid_loader=valid_loader)
 
+
+# convert graph
+logger = pd.read_csv('log/hierarchy_metrics.csv', dtype={'accuracy': float, 'loss': float})
+
+for root in root_labels:
+    train_log = logger[(logger['stage'] == 'train') & (logger['section'] == root)]
+    valid_log = logger[(logger['stage'] == 'valid') & (logger['section'] == root)]
+
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
+
+    plt.plot(train_log['epoch'], train_log['accuracy'], marker='o', label='Train Accuracy')
+    plt.plot(valid_log['epoch'], valid_log['accuracy'], marker='o', label='Validation Accuracy')
+
+    best_train_accuracy = train_log['accuracy'].max()
+    best_valid_accuracy = valid_log['accuracy'].max()
+
+    plt.annotate('best', xy=(train_log['epoch'][train_log['accuracy'].idxmax()], best_train_accuracy), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
+    plt.annotate('best', xy=(valid_log['epoch'][valid_log['accuracy'].idxmax()], best_valid_accuracy), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
+
+    plt.title(f'Best Training Accuracy: {best_train_accuracy:.2f} | Best Validation Accuracy: {best_valid_accuracy:.2f}', ha='center', fontsize='medium')
+    plt.legend()
+    plt.savefig(f'log/hierarchy_{root.lower().replace(" ", "_")}_accuracy_metrics.png')
+    plt.clf()
+
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
+
+    plt.plot(train_log['epoch'], train_log['loss'], marker='o', label='Train Loss')
+    plt.plot(valid_log['epoch'], valid_log['loss'], marker='o', label='Validation Loss')
+
+    best_train_loss = train_log['loss'].min()
+    best_valid_loss = valid_log['loss'].min()
+
+    plt.annotate('best', xy=(train_log['epoch'][train_log['loss'].idxmin()], best_train_loss), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
+    plt.annotate('best', xy=(valid_log['epoch'][valid_log['loss'].idxmin()], best_valid_loss), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
+
+    plt.title(f'Best Training Loss: {best_train_loss:.2f} | Best Validation Loss: {best_valid_loss:.2f}', ha='center', fontsize='medium')
+    plt.legend()
+    plt.savefig(f'log/hierarchy_{root.lower().replace(" ", "_")}_loss_metrics.png')
+    plt.clf()
+
+
+# hierarchical test
+# model = {}
+# output_layer = {}
+# section = ""
 
 # checkpoint = torch.load(f'checkpoint/hierarchy_model.pt', map_location=device)
 # model.load_state_dict(checkpoint["root_hidden_states"])
@@ -301,14 +350,6 @@ for key in root_labels:
 
 # model.eval()
 # with torch.no_grad():
-#     test_loss = 0
-#     n_batch = 0
-#     n_correct = 0
-#     n_samples = 0
-
-#     each_label_correct = defaultdict(int)
-#     each_label_total = defaultdict(int)
-
 #     for input_ids, attention_mask, target in tqdm(test_loader, desc="Test Stage", unit="batch"):
 #         input_ids = input_ids.to(device)
 #         attention_mask = attention_mask.to(device)
@@ -322,78 +363,4 @@ for key in root_labels:
 #         preds = model(input_ids=input_ids, attention_mask=attention_mask)
 #         preds = output_layer(preds)
 
-#         loss = criterion(preds, target)
-
-#         test_loss += loss.item()
-#         n_batch += 1
-
 #         result = torch.argmax(preds, dim=1) 
-#         n_samples += target.size(0)
-#         n_correct += (result == target).sum().item()
-
-#         for prediction, ground_truth in zip(result, target):
-#             if prediction == ground_truth:
-#                 each_label_correct[ground_truth.item()] += 1
-#             each_label_total[ground_truth.item()] += 1
-
-#     test_loss /= n_batch
-#     acc = 100.0 * n_correct / n_samples
-#     logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': [test_loss], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
-#     print(f'Test Loss: {test_loss:.4f}, Test Accuracy: {acc:.2f}%')
-
-#     for label, total_count in each_label_total.items():
-#         correct_count = each_label_correct.get(label, 0)  
-#         false_count = total_count - correct_count
-
-#         if(section == "root"):
-#             y = root_labels[label]
-
-#         else: 
-#             y = node_labels[section][label]
-
-#         classification_report = pd.concat([classification_report, pd.DataFrame({'label': [y], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
-#         print(f"Label: {y}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
-
-
-
-# convert graph
-# logger = pd.read_csv(f"log/flat_{config['target']}_metrics.csv", dtype={'accuracy': float, 'loss': float})
-
-# train_log = logger[logger['stage'] == 'train']
-# valid_log = logger[logger['stage'] == 'valid']
-
-# plt.xlabel('Epoch')
-# plt.ylabel('Accuracy')
-# plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
-
-# plt.plot(train_log['epoch'], train_log['accuracy'], marker='o', label='Train Accuracy')
-# plt.plot(valid_log['epoch'], valid_log['accuracy'], marker='o', label='Validation Accuracy')
-
-# best_train_accuracy = train_log['accuracy'].max()
-# best_valid_accuracy = valid_log['accuracy'].max()
-
-# plt.annotate('best', xy=(train_log['epoch'][train_log['accuracy'].idxmax()], best_train_accuracy), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
-# plt.annotate('best', xy=(valid_log['epoch'][valid_log['accuracy'].idxmax()], best_valid_accuracy), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
-
-# plt.title(f'Best Training Accuracy: {best_train_accuracy:.2f} | Best Validation Accuracy: {best_valid_accuracy:.2f}', ha='center', fontsize='medium')
-# plt.legend()
-# plt.savefig(f'log/hierarchy_accuracy_metrics.png')
-# plt.clf()
-
-# plt.xlabel('Epoch')
-# plt.ylabel('Loss')
-# plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
-
-# plt.plot(train_log['epoch'], train_log['loss'], marker='o', label='Train Loss')
-# plt.plot(valid_log['epoch'], valid_log['loss'], marker='o', label='Validation Loss')
-
-# best_train_loss = train_log['loss'].min()
-# best_valid_loss = valid_log['loss'].min()
-
-# plt.annotate('best', xy=(train_log['epoch'][train_log['loss'].idxmin()], best_train_loss), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
-# plt.annotate('best', xy=(valid_log['epoch'][valid_log['loss'].idxmin()], best_valid_loss), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
-
-# plt.title(f'Best Training Loss: {best_train_loss:.2f} | Best Validation Loss: {best_valid_loss:.2f}', ha='center', fontsize='medium')
-# plt.legend()
-# plt.savefig(f'log/hierarchy_loss_metrics.png')
-# plt.clf()
