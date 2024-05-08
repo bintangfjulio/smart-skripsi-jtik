@@ -179,8 +179,15 @@ def fit(section, train_loader, valid_loader):
         for label, total_count in each_label_total.items():
             correct_count = each_label_correct.get(label, 0)  
             false_count = total_count - correct_count
-            classification_report = pd.concat([classification_report, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [epoch+1], 'stage': ['train'], 'section': [section]})], ignore_index=True)
-            print(f"Section: {section}, Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
+
+            if(section == "root"):
+                y = root_labels[label]
+
+            else: 
+                y = node_labels[section].index(label)
+
+            classification_report = pd.concat([classification_report, pd.DataFrame({'label': [y], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [epoch+1], 'stage': ['train'], 'section': [section]})], ignore_index=True)
+            print(f"Section: {section}, Label: {y}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
 
         model.eval()
         with torch.no_grad():
@@ -231,8 +238,15 @@ def fit(section, train_loader, valid_loader):
             for label, total_count in each_label_total.items():
                 correct_count = each_label_correct.get(label, 0)  
                 false_count = total_count - correct_count
-                classification_report = pd.concat([classification_report, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [epoch+1], 'stage': ['valid'], 'section': [section]})], ignore_index=True)
-                print(f"Section: {section}, Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
+
+                if(section == "root"):
+                    y = root_labels[label]
+
+                else: 
+                    y = node_labels[section].index(label)
+
+                classification_report = pd.concat([classification_report, pd.DataFrame({'label': [y], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [epoch+1], 'stage': ['valid'], 'section': [section]})], ignore_index=True)
+                print(f"Section: {section}, Label: {y}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
             
             if round(val_loss, 2) < round(best_loss, 2):
                 if not os.path.exists('checkpoint'):
@@ -241,8 +255,8 @@ def fit(section, train_loader, valid_loader):
                 if os.path.exists('checkpoint/hierarchy_model.pt'):
                     os.remove('checkpoint/hierarchy_model.pt')
 
-                checkpoint[f"{section.lower().replace(" ", "_")}_hidden_states"] = model.state_dict()
-                checkpoint[f"{section.lower().replace(" ", "_")}_last_hidden_state"] = output_layer.state_dict()
+                checkpoint[f'{section.lower().replace(" ", "_")}_hidden_states'] = model.state_dict()
+                checkpoint[f'{section.lower().replace(" ", "_")}_last_hidden_state'] = output_layer.state_dict()
 
                 torch.save(checkpoint, 'checkpoint/hierarchy_model.pt')
 
@@ -351,8 +365,14 @@ def fit(section, train_loader, valid_loader):
 #         for label, total_count in each_label_total.items():
 #             correct_count = each_label_correct.get(label, 0)  
 #             false_count = total_count - correct_count
-#             classification_report = pd.concat([classification_report, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
-#             print(f"Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
+
+            # if(section == "root"):
+            #     y = root_labels[label]
+
+            # else: 
+            #     y = node_labels[section].index(label)
+#             classification_report = pd.concat([classification_report, pd.DataFrame({'label': [y], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
+#             print(f"Label: {y}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
 
 def section_dataloader(dataset, section):
     if section != "root":
