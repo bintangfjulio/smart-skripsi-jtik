@@ -119,7 +119,7 @@ def finetune(section, train_loader, valid_loader):
     best_loss = 9.99
     failed_counter = 0
 
-    if(os.exists('log/hierarchy_metrics.csv') and os.exists('log/hierarchy_classification_report.csv')):
+    if(os.path.exists('log/hierarchy_metrics.csv') and os.path.exists('log/hierarchy_classification_report.csv')):
         logger = pd.read_csv('log/hierarchy_metrics.csv')
         classification_report = pd.read_csv('log/hierarchy_classification_report.csv')
         
