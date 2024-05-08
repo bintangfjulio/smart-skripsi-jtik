@@ -1,5 +1,4 @@
 # import
-import argparse
 import random
 import os
 import torch
@@ -16,29 +15,14 @@ from tqdm import tqdm
 from collections import defaultdict
 from model.bert_cnn import BERT_CNN
 from util.preprocessor import Preprocessor
+from util.hyperparameter import get_hyperparameters
 
 
 # setup
+config = get_hyperparameters()
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 pd.options.display.float_format = '{:,.2f}'.format  
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--target", type=str, default='nama_pembimbing', help='Target Column')
-parser.add_argument("--dataset", type=str, default='init_data_repo_jtik.json', help='Dataset Path')
-parser.add_argument("--batch_size", type=int, default=32, help='Batch Size')
-parser.add_argument("--bert_model", type=str, default="indolem/indobert-base-uncased", help='BERT Model')
-parser.add_argument("--seed", type=int, default=42, help='Random Seed')
-parser.add_argument("--max_epochs", type=int, default=30, help='Number of Epochs')
-parser.add_argument("--lr", type=float, default=2e-5, help='Learning Rate')
-parser.add_argument("--dropout", type=float, default=0.1, help='Dropout')
-parser.add_argument("--patience", type=int, default=3, help='Patience')
-parser.add_argument("--num_bert_states", type=int, default=4, help='Number of BERT Last States')
-parser.add_argument("--max_length", type=int, default=360, help='Max Length')
-parser.add_argument("--in_channels", type=int, default=4, help='CNN In Channels')
-parser.add_argument("--out_channels", type=int, default=32, help='CNN Out Channels')
-parser.add_argument("--window_sizes", nargs="+", type=int, default=[1, 2, 3, 4, 5], help='CNN Kernel')
-
-config = vars(parser.parse_args())
 
 np.random.seed(config["seed"]) 
 torch.manual_seed(config["seed"])
@@ -69,11 +53,11 @@ attention_mask = torch.tensor(dataset['attention_mask'])
 target = torch.tensor(dataset['target'])
 tensor_dataset = TensorDataset(input_ids, attention_mask, target)
 
-train_valid_size = round(len(tensor_dataset) * 0.8)
+train_valid_size = round(len(tensor_dataset) * (1.0 - config["test_size"]))
 test_size = len(tensor_dataset) - train_valid_size
 train_valid_set, test_set = torch.utils.data.random_split(tensor_dataset, [train_valid_size, test_size])
 
-train_size = round(len(train_valid_set) * 0.9)
+train_size = round(len(train_valid_set) * (1.0 - config["valid_size"]))
 valid_size = len(train_valid_set) - train_size
 train_set, valid_set = torch.utils.data.random_split(train_valid_set, [train_size, valid_size])
 
