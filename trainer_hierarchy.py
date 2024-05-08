@@ -214,7 +214,7 @@ def finetune(section, train_loader, valid_loader):
             each_label_correct = defaultdict(int)
             each_label_total = defaultdict(int)
 
-            for input_ids, attention_mask, target in tqdm(valid_loader, desc="Validation Stage", unit="batch"):
+            for input_ids, attention_mask, root, node in tqdm(valid_loader, desc="Validation Stage", unit="batch"):
                 input_ids = input_ids.to(device)
                 attention_mask = attention_mask.to(device)
                 
@@ -350,7 +350,7 @@ for root in root_labels:
 
 # model.eval()
 # with torch.no_grad():
-#     for input_ids, attention_mask, target in tqdm(test_loader, desc="Test Stage", unit="batch"):
+#     for input_ids, attention_mask, root, node in tqdm(test_loader, desc="Test Stage", unit="batch"):
 #         input_ids = input_ids.to(device)
 #         attention_mask = attention_mask.to(device)
 
