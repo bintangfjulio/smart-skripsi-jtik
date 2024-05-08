@@ -1,11 +1,9 @@
 import emoji
 import re
-import torch
 
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from transformers import BertTokenizer
-from torch.utils.data import TensorDataset
 
 
 class Preprocessor:
@@ -36,23 +34,8 @@ class Preprocessor:
         
         return labels
     
-    def train_test_split(self, dataset, train_percentage):
-        input_ids = torch.tensor(dataset['input_ids'])
-        attention_mask = torch.tensor(dataset['attention_mask'])
-        target = torch.tensor(dataset['target'])
-
-        tensor_dataset = TensorDataset(input_ids, attention_mask, target)
-
-        train_size = round(len(tensor_dataset) * train_percentage)
-        test_size = len(tensor_dataset) - train_size
-        train_set, test_set = torch.utils.data.random_split(tensor_dataset, [train_size, test_size])
-
-        return train_set, test_set
-
-    def train_valid_split(self, train_set, train_percentage):
-        train_size = round(len(train_set) * train_percentage)
-        valid_size = len(train_set) - train_size
-
-        train_set, valid_set = torch.utils.data.random_split(train_set, [train_size, valid_size])
-
-        return train_set, valid_set
+    def get_grouped_labels(self, dataset, root, node):
+        node_labels = dataset.groupby(root)[node].unique().apply(sorted).to_dict()
+        root_labels = {key: idx for idx, key in enumerate(node_labels)}  
+        
+        return root_labels, node_labels

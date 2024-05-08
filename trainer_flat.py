@@ -10,6 +10,7 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
+from torch.utils.data import TensorDataset
 from transformers import BertModel
 from tqdm import tqdm
 from collections import defaultdict
@@ -60,12 +61,21 @@ if not os.path.exists("dataset/preprocessed_set.pkl"):
     dataset.to_pickle("dataset/preprocessed_set.pkl")
 
 dataset = pd.read_pickle("dataset/preprocessed_set.pkl")
-
 labels = preprocessor.get_labels(dataset=dataset, target=config["target"])
 dataset["target"] = dataset[config["target"]].apply(lambda data: labels.index(data))
 
-train_set, test_set = preprocessor.train_test_split(dataset=dataset, train_percentage=0.8)
-train_set, valid_set = preprocessor.train_valid_split(train_set=train_set, train_percentage=0.9)
+input_ids = torch.tensor(dataset['input_ids'])
+attention_mask = torch.tensor(dataset['attention_mask'])
+target = torch.tensor(dataset['target'])
+tensor_dataset = TensorDataset(input_ids, attention_mask, target)
+
+train_valid_size = round(len(tensor_dataset) * 0.8)
+test_size = len(tensor_dataset) - train_valid_size
+train_valid_set, test_set = torch.utils.data.random_split(tensor_dataset, [train_valid_size, test_size])
+
+train_size = round(len(train_valid_set) * 0.9)
+valid_size = len(train_valid_set) - train_size
+train_set, valid_set = torch.utils.data.random_split(train_valid_set, [train_size, valid_size])
 
 train_loader = torch.utils.data.DataLoader(dataset=train_set, 
                                         batch_size=config["batch_size"], 
