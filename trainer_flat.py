@@ -272,7 +272,7 @@ logger.to_csv(f'log/flat_{config["target"]}_metrics.csv', index=False, encoding=
 classification_report.to_csv(f'log/flat_{config["target"]}_classification_report.csv', index=False, encoding='utf-8')
 
 
-# convert graph
+# generate result
 logger = pd.read_csv(f"log/flat_{config['target']}_metrics.csv", dtype={'accuracy': float, 'loss': float})
 
 train_log = logger[logger['stage'] == 'train']

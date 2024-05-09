@@ -59,20 +59,10 @@ dataset = dataset.sample(frac=1)
 train_valid_size = round(dataset.shape[0] * (1.0 - config["test_size"]))
 
 train_valid_set = pd.DataFrame(dataset.iloc[:train_valid_size, :])
-test_set = pd.DataFrame(dataset.iloc[train_valid_size:, :])
+df_test = pd.DataFrame(dataset.iloc[train_valid_size:, :])
+df_test['id_test'] = df_test.reset_index().index + 1
 
-input_ids = torch.tensor(test_set['input_ids'].tolist())
-attention_mask = torch.tensor(test_set['attention_mask'].tolist())
-root = torch.tensor(test_set['root'].tolist())
-node = torch.tensor(test_set["node"].tolist())
-test_set = TensorDataset(input_ids, attention_mask, root, node)
-
-test_loader = torch.utils.data.DataLoader(dataset=test_set, 
-                                        batch_size=config["batch_size"], 
-                                        shuffle=False,
-                                        num_workers=multiprocessing.cpu_count())
-
-def fit_dataloader(dataset, section):
+def finetune_dataloader(dataset, section):
     if section != "root":
         dataset = dataset[dataset[config["root"]] == section]
 
@@ -287,17 +277,108 @@ def finetune(section, train_loader, valid_loader):
     logger.to_csv('log/hierarchy_metrics.csv', index=False, encoding='utf-8')
     classification_report.to_csv('log/hierarchy_classification_report.csv', index=False, encoding='utf-8')
 
-train_loader, valid_loader = fit_dataloader(dataset=train_valid_set, section="root")
+train_loader, valid_loader = finetune_dataloader(dataset=train_valid_set, section="root")
 finetune(section="root", train_loader=train_loader, valid_loader=valid_loader)
 
 for root in root_labels:
-    train_loader, valid_loader = fit_dataloader(dataset=train_valid_set, section=root)
+    train_loader, valid_loader = finetune_dataloader(dataset=train_valid_set, section=root)
     finetune(section=root, train_loader=train_loader, valid_loader=valid_loader)
 
 
-# convert graph
-logger = pd.read_csv('log/hierarchy_metrics.csv', dtype={'accuracy': float, 'loss': float})
+# hierarchical test
+def test(section, test_loader):
+    if section == "root":
+        labels = root_labels
 
+    else:
+        labels = node_labels[section]
+
+    if(os.path.exists('log/hierarchy_test_temp.csv')):
+        helper = pd.read_csv('log/hierarchy_test_temp.csv')
+        
+    else:
+        helper = pd.DataFrame(columns=['id_test', 'predicted_root', 'predicted_node']) 
+
+    model = BERT_CNN(pretrained_bert=pretrained_bert, dropout=config["dropout"], window_sizes=config["window_sizes"], in_channels=config["in_channels"], out_channels=config["out_channels"], num_bert_states=config["num_bert_states"])
+    model.to(device)
+
+    output_layer = nn.Linear(len(config["window_sizes"]) * config["out_channels"], len(labels))
+    output_layer.to(device)
+
+    checkpoint = torch.load(f'checkpoint/hierarchy_model.pt', map_location=device)
+    model.load_state_dict(checkpoint[f'{section.lower().replace(" ", "_")}_hidden_states'])
+    output_layer.load_state_dict(checkpoint[f'{section.lower().replace(" ", "_")}_last_hidden_state'])
+
+    model.eval()
+    with torch.no_grad():
+        for input_ids, attention_mask, _, _, id_test in tqdm(test_loader, desc="Test Stage", unit="batch"):
+            input_ids = input_ids.to(device)
+            attention_mask = attention_mask.to(device)
+
+            preds = model(input_ids=input_ids, attention_mask=attention_mask)
+            preds = output_layer(preds)
+
+            result = torch.argmax(preds, dim=1) 
+
+            for idx, prediction in zip(id_test, result):
+                if section == "root":
+                    helper = pd.concat([helper, pd.DataFrame({'id_test': [idx], 'predicted_root': [prediction]})], ignore_index=True)
+
+                else:
+                    helper.set_index('id_test', inplace=True)  
+                    helper.loc[idx, 'predicted_node'] = prediction
+                    helper.reset_index(inplace=True) 
+
+    helper.to_csv('log/hierarchy_test_temp.csv', index=False, encoding='utf-8')
+
+def test_dataloader(dataset, section):
+    if section != "root":
+        temp = pd.read_csv('log/hierarchy_test_temp.csv')
+        merged_temp = pd.merge(dataset, temp, on='id_test', how='inner')
+        dataset = merged_temp[root_labels[merged_temp["predicted_root"]] == section]
+
+    input_ids = torch.tensor(dataset['input_ids'].tolist())
+    attention_mask = torch.tensor(dataset['attention_mask'].tolist())
+    root = torch.tensor(dataset['root'].tolist())
+    node = torch.tensor(dataset["node"].tolist())
+    id_test = torch.tensor(dataset["id_test"].tolist())
+    test_set = TensorDataset(input_ids, attention_mask, root, node, id_test)
+
+    test_loader = torch.utils.data.DataLoader(dataset=test_set, 
+                                            batch_size=config["batch_size"], 
+                                            shuffle=False,
+                                            num_workers=multiprocessing.cpu_count())
+    
+    return test_loader
+
+test_loader = test_dataloader(dataset=df_test, section="root")
+test(section="root", test_loader=test_loader)
+
+for root in root_labels:
+    test_loader = test_dataloader(dataset=df_test, section=root)
+    test(section=root, test_loader=test_loader)
+
+
+# generate result
+test_result = pd.merge(df_test, pd.read_csv('log/hierarchy_test_temp.csv'), on='id_test', how='inner')
+n_samples = 0
+n_correct_root = 0
+n_correct_node = 0
+
+for row in test_result.iterrows():
+    n_samples += 1
+    if row["root"] == row["predicted_root"]:
+        n_correct_root += 1
+
+        if row["node"] == row["predicted_node"]:
+            n_correct_node += 1
+
+root_acc = 100.0 * n_correct_root / n_samples
+node_acc = 100.0 * n_correct_node / n_samples
+print(f'Test Root Accuracy: {root_acc:.2f}%')
+print(f'Test Node Accuracy: {node_acc:.2f}%')
+
+logger = pd.read_csv('log/hierarchy_metrics.csv', dtype={'accuracy': float, 'loss': float})
 for root in root_labels:
     train_log = logger[(logger['stage'] == 'train') & (logger['section'] == root)]
     valid_log = logger[(logger['stage'] == 'valid') & (logger['section'] == root)]
@@ -337,30 +418,3 @@ for root in root_labels:
     plt.legend()
     plt.savefig(f'log/hierarchy_{root.lower().replace(" ", "_")}_loss_metrics.png')
     plt.clf()
-
-
-# hierarchical test
-# model = {}
-# output_layer = {}
-# section = ""
-
-# checkpoint = torch.load(f'checkpoint/hierarchy_model.pt', map_location=device)
-# model.load_state_dict(checkpoint["root_hidden_states"])
-# output_layer.load_state_dict(checkpoint["root_last_hidden_state"])
-
-# model.eval()
-# with torch.no_grad():
-#     for input_ids, attention_mask, root, node in tqdm(test_loader, desc="Test Stage", unit="batch"):
-#         input_ids = input_ids.to(device)
-#         attention_mask = attention_mask.to(device)
-
-#         if section == "root":
-#             target = root.to(device)
-
-#         else:
-#             target = node.to(device)
-
-#         preds = model(input_ids=input_ids, attention_mask=attention_mask)
-#         preds = output_layer(preds)
-
-#         result = torch.argmax(preds, dim=1) 
