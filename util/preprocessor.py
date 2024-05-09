@@ -1,5 +1,6 @@
 import emoji
 import re
+import pandas as pd
 
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
@@ -39,3 +40,12 @@ class Preprocessor:
         root_labels = list(node_labels.keys())
         
         return root_labels, node_labels
+    
+    def train_test_split(self, dataset, test_size):
+        dataset = dataset.sample(frac=1)
+        train_valid_size = round(dataset.shape[0] * (1.0 - test_size))
+
+        train_valid_set = pd.DataFrame(dataset.iloc[:train_valid_size, :])
+        test_set = pd.DataFrame(dataset.iloc[train_valid_size:, :])
+
+        return train_valid_set, test_set
