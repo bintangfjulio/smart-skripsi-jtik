@@ -1,12 +1,9 @@
 import emoji
 import re
-import torch
-import pandas as pd
 
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from transformers import BertTokenizer
-from torch.utils.data import TensorDataset
 
 
 class Preprocessor:
@@ -42,16 +39,3 @@ class Preprocessor:
         root_labels = list(node_labels.keys())
         
         return root_labels, node_labels
-    
-    def train_test_split(dataset, test_size, add_id_tes):
-        dataset = dataset.sample(frac=1)
-        train_valid_size = round(dataset.shape[0] * (1.0 - test_size))
-        train_valid_set = pd.DataFrame(dataset.iloc[:train_valid_size, :])
-        df_test = pd.DataFrame(dataset.iloc[train_valid_size:, :])
-
-        if add_id_tes:
-            df_test['id_test'] = df_test.reset_index().index + 1
-
-        test_set = TensorDataset(torch.tensor(df_test['input_ids'].tolist()), df_test['attention_mask'].tolist(), torch.tensor(df_test['target'].tolist()))
-
-        return train_valid_set, test_set

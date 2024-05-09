@@ -48,9 +48,15 @@ dataset = pd.read_pickle("dataset/preprocessed_set.pkl")
 labels = preprocessor.get_labels(dataset=dataset, target=config["target"])
 dataset["target"] = dataset[config["target"]].apply(lambda data: labels.index(data))
 
-train_valid_set, test_set = preprocessor.train_test_split(dataset=dataset, test_size=config["test_size"], add_id_tes_tes=False)
+input_ids = torch.tensor(dataset['input_ids'].tolist())
+attention_mask = torch.tensor(dataset['attention_mask'].tolist())
+target = torch.tensor(dataset['target'].tolist())
+tensor_dataset = TensorDataset(input_ids, attention_mask, target)
 
-train_valid_set = TensorDataset(torch.tensor(train_valid_set['input_ids'].tolist()), train_valid_set['attention_mask'].tolist(), torch.tensor(train_valid_set['target'].tolist()))
+train_valid_size = round(len(tensor_dataset) * (1.0 - config["test_size"]))
+test_size = len(tensor_dataset) - train_valid_size
+train_valid_set, test_set = torch.utils.data.random_split(tensor_dataset, [train_valid_size, test_size])
+
 train_size = round(len(train_valid_set) * (1.0 - config["valid_size"]))
 valid_size = len(train_valid_set) - train_size
 train_set, valid_set = torch.utils.data.random_split(train_valid_set, [train_size, valid_size])

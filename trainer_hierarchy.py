@@ -55,7 +55,12 @@ for root in root_labels:
     grouped_dataset.loc[:, "node"] = grouped_dataset[config["node"]].apply(lambda data: node_labels[root].index(data))
     dataset.update(grouped_dataset)
 
-train_valid_set, test_set = preprocessor.train_test_split(dataset=dataset, test_size=config["test_size"], add_id_tes=True)
+dataset = dataset.sample(frac=1)
+train_valid_size = round(dataset.shape[0] * (1.0 - config["test_size"]))
+
+train_valid_set = pd.DataFrame(dataset.iloc[:train_valid_size, :])
+df_test = pd.DataFrame(dataset.iloc[train_valid_size:, :])
+df_test['id_test'] = df_test.reset_index().index + 1
 
 def finetune_dataloader(dataset, section):
     if section != "root":
@@ -348,16 +353,16 @@ def test_dataloader(dataset, section):
     
     return test_loader
 
-test_loader = test_dataloader(dataset=test_set, section="root")
+test_loader = test_dataloader(dataset=df_test, section="root")
 test(section="root", test_loader=test_loader)
 
 for root in root_labels:
-    test_loader = test_dataloader(dataset=test_set, section=root)
+    test_loader = test_dataloader(dataset=df_test, section=root)
     test(section=root, test_loader=test_loader)
 
 
 # generate result
-test_result = pd.merge(test_set, pd.read_csv('log/hierarchy_test_temp.csv'), on='id_test', how='inner')
+test_result = pd.merge(df_test, pd.read_csv('log/hierarchy_test_temp.csv'), on='id_test', how='inner')
 n_samples = 0
 n_correct_root = 0
 n_correct_node = 0
