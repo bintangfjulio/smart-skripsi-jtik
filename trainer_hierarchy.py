@@ -321,8 +321,10 @@ def test(section, test_loader):
             result = torch.argmax(preds, dim=1) 
 
             for idx, prediction in zip(id_test, result):
+                idx = idx.item()
+                prediction = prediction.cpu().numpy()
                 if section == "root":
-                    helper = pd.concat([helper, pd.DataFrame({'id_test': [idx], 'predicted_root': [prediction]})], ignore_index=True)
+                    helper = pd.concat([helper, pd.DataFrame({'id_test': [idx], 'predicted_root': [prediction], 'predicted_node': [0]})], ignore_index=True)
 
                 else:
                     helper.set_index('id_test', inplace=True)  
@@ -335,7 +337,7 @@ def test_dataloader(dataset, section):
     if section != "root":
         temp = pd.read_csv('log/hierarchy_test_temp.csv')
         merged_temp = pd.merge(dataset, temp, on='id_test', how='inner')
-        dataset = merged_temp[root_labels[merged_temp["predicted_root"]] == section]
+        dataset = merged_temp[merged_temp["predicted_root"] == root_labels.index(section)]
 
     input_ids = torch.tensor(dataset['input_ids'].tolist())
     attention_mask = torch.tensor(dataset['attention_mask'].tolist())
@@ -365,7 +367,7 @@ n_samples = 0
 n_correct_root = 0
 n_correct_node = 0
 
-for row in test_result.iterrows():
+for _, row in test_result.iterrows():
     n_samples += 1
     if row["root"] == row["predicted_root"]:
         n_correct_root += 1
