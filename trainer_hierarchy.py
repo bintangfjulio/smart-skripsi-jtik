@@ -55,7 +55,7 @@ for root in root_labels:
     grouped_dataset.loc[:, "node"] = grouped_dataset[config["node"]].apply(lambda data: node_labels[root].index(data))
     dataset.update(grouped_dataset)
 
-train_valid_set, test_set = preprocessor.train_test_split(dataset=dataset, test_size=config["test_size"], add_id_test=True)
+train_valid_set, test_set = preprocessor.train_test_split(dataset=dataset, test_size=config["test_size"], add_id_tes=True)
 
 def finetune_dataloader(dataset, section):
     if section != "root":

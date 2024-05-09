@@ -48,7 +48,7 @@ dataset = pd.read_pickle("dataset/preprocessed_set.pkl")
 labels = preprocessor.get_labels(dataset=dataset, target=config["target"])
 dataset["target"] = dataset[config["target"]].apply(lambda data: labels.index(data))
 
-train_valid_set, test_set = preprocessor.train_test_split(dataset=dataset, test_size=config["test_size"], add_id_test=False)
+train_valid_set, test_set = preprocessor.train_test_split(dataset=dataset, test_size=config["test_size"], add_id_tes_tes=False)
 
 train_valid_set = TensorDataset(torch.tensor(train_valid_set['input_ids'].tolist()), train_valid_set['attention_mask'].tolist(), torch.tensor(train_valid_set['target'].tolist()))
 train_size = round(len(train_valid_set) * (1.0 - config["valid_size"]))
