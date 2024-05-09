@@ -367,10 +367,9 @@ node_acc = 100.0 * n_correct_node / n_samples
 print(f'Test Root Accuracy: {root_acc:.2f}%')
 print(f'Test Node Accuracy: {node_acc:.2f}%')
 
-logger = pd.read_csv('log/hierarchy_metrics.csv', dtype={'accuracy': float, 'loss': float})
-for root in root_labels:
-    train_log = logger[(logger['stage'] == 'train') & (logger['section'] == root)]
-    valid_log = logger[(logger['stage'] == 'valid') & (logger['section'] == root)]
+def plotting_graph(section):
+    train_log = logger[(logger['stage'] == 'train') & (logger['section'] == section)]
+    valid_log = logger[(logger['stage'] == 'valid') & (logger['section'] == section)]
 
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
@@ -387,7 +386,7 @@ for root in root_labels:
 
     plt.title(f'Best Training Accuracy: {best_train_accuracy:.2f} | Best Validation Accuracy: {best_valid_accuracy:.2f}', ha='center', fontsize='medium')
     plt.legend()
-    plt.savefig(f'log/hierarchy_{root.lower().replace(" ", "_")}_accuracy_metrics.png')
+    plt.savefig(f'log/hierarchy_{section.lower().replace(" ", "_")}_accuracy_metrics.png')
     plt.clf()
 
     plt.xlabel('Epoch')
@@ -405,5 +404,11 @@ for root in root_labels:
 
     plt.title(f'Best Training Loss: {best_train_loss:.2f} | Best Validation Loss: {best_valid_loss:.2f}', ha='center', fontsize='medium')
     plt.legend()
-    plt.savefig(f'log/hierarchy_{root.lower().replace(" ", "_")}_loss_metrics.png')
+    plt.savefig(f'log/hierarchy_{section.lower().replace(" ", "_")}_loss_metrics.png')
     plt.clf()
+
+logger = pd.read_csv('log/hierarchy_metrics.csv', dtype={'accuracy': float, 'loss': float})
+plotting_graph(section="root")
+
+for root in root_labels:
+    plotting_graph(section=root)
