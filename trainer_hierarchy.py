@@ -90,6 +90,14 @@ def finetune(section, train_loader, valid_loader):
         labels = node_labels[section]
     
     model = BERT_CNN(pretrained_bert=pretrained_bert, dropout=config["dropout"], window_sizes=config["window_sizes"], in_channels=config["in_channels"], out_channels=config["out_channels"], num_bert_states=config["num_bert_states"])
+    
+    if section == "root":
+        checkpoint = {}
+
+    else:
+        checkpoint = torch.load('checkpoint/hierarchy_model.pt', map_location=device)
+        model.load_state_dict(checkpoint["root_hidden_states"])
+    
     model.to(device)
 
     output_layer = nn.Linear(len(config["window_sizes"]) * config["out_channels"], len(labels))
@@ -108,13 +116,6 @@ def finetune(section, train_loader, valid_loader):
     else:
         logger = pd.DataFrame(columns=['accuracy', 'loss', 'epoch', 'stage', 'section']) 
         classification_report = pd.DataFrame(columns=['label', 'correct_prediction', 'false_prediction', 'total_prediction', 'epoch', 'stage', 'section'])
-
-    if section == "root":
-        checkpoint = {}
-
-    else:
-        checkpoint = torch.load('checkpoint/hierarchy_model.pt', map_location=device)
-        model.load_state_dict(checkpoint["root_hidden_states"])
 
     optimizer.zero_grad()
     model.zero_grad()
@@ -292,14 +293,14 @@ def test(section, test_loader):
         helper = pd.DataFrame(columns=['id_test', 'predicted_root', 'predicted_node']) 
 
     model = BERT_CNN(pretrained_bert=pretrained_bert, dropout=config["dropout"], window_sizes=config["window_sizes"], in_channels=config["in_channels"], out_channels=config["out_channels"], num_bert_states=config["num_bert_states"])
-    model.to(device)
-
     output_layer = nn.Linear(len(config["window_sizes"]) * config["out_channels"], len(labels))
-    output_layer.to(device)
 
     checkpoint = torch.load(f'checkpoint/hierarchy_model.pt', map_location=device)
     model.load_state_dict(checkpoint[f'{section.lower().replace(" ", "_")}_hidden_states'])
     output_layer.load_state_dict(checkpoint[f'{section.lower().replace(" ", "_")}_last_hidden_state'])
+
+    model.to(device)
+    output_layer.to(device)
 
     model.eval()
     with torch.no_grad():
