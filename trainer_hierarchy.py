@@ -134,7 +134,14 @@ def finetune(section, train_loader, valid_loader):
         each_label_correct = defaultdict(int)
         each_label_total = defaultdict(int)
 
-        model.train(True)
+        if section == "root":
+            model.train(True)
+            output_layer.train(True)
+
+        else:
+            model.eval()
+            output_layer.train(True)
+
         for input_ids, attention_mask, root, node in tqdm(train_loader, desc="Training Stage", unit="batch"):
             input_ids = input_ids.to(device)
             attention_mask = attention_mask.to(device)
