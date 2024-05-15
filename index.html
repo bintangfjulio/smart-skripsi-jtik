@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web Labeling Skripsi</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <style>
+      .spinner {
+        position: fixed;
+        top: calc(50% - 60px);
+        left: calc(50% - 60px);
+        border: 16px solid #f3f3f3;
+        border-top: 16px solid rgb(29, 73, 153);
+        border-radius: 50%;
+        width: 120px;
+        height: 120px;
+        animation: spin 2s linear infinite;
+        z-index: 1501;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1500;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="overlay d-none"></div>
+    <div class="spinner d-none"></div>
+
+    <div class="container-fluid mt-4 px-4">
+      <div class="row">
+        <div class="col-4 mb-3">
+          <select class="form-select" id="prodiFilter">
+            <option value="Teknik Informatika" selected>
+              Teknik Informatika
+            </option>
+            <option value="Teknik Multimedia dan Jaringan">
+              Teknik Multimedia dan Jaringan
+            </option>
+            <option value="Teknik Multimedia Digital">
+              Teknik Multimedia Digital
+            </option>
+          </select>
+        </div>
+
+        <div class="col-8 mb-3 text-end">
+          <button type="button" class="btn btn-outline-primary">
+            Export Dataset
+          </button>
+        </div>
+
+        <div class="col-12 mb-2">
+          <table class="table table-striped table-bordered border-dark">
+            <thead>
+              <tr class="text-center">
+                <th scope="col">No</th>
+                <th scope="col">Judul</th>
+                <th scope="col">Prodi</th>
+                <th scope="col">Kompetensi</th>
+                <th scope="col">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="col-12 justify-content-center d-flex">
+          <nav aria-label="Page navigation example">
+            <ul class="pagination"></ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="editModal"
+      tabindex="-1"
+      aria-labelledby="editModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editModalLabel">Edit Data</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="mb-3">
+                <label for="judulInput" class="form-label">Judul</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="judulInput"
+                  disabled
+                />
+              </div>
+              <div class="mb-3">
+                <label for="abstrakTextarea" class="form-label">Abstrak</label>
+                <textarea
+                  class="form-control"
+                  id="abstrakTextarea"
+                  rows="4"
+                  disabled
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="keywordInput" class="form-label">Kata Kunci</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="keywordInput"
+                  disabled
+                />
+              </div>
+              <div class="mb-3">
+                <label for="dosenInput" class="form-label">Pembimbing</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="dosenInput"
+                  disabled
+                />
+              </div>
+              <div class="mb-3">
+                <label for="prodiInput" class="form-label">Prodi</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="prodiInput"
+                  disabled
+                />
+              </div>
+              <div class="mb-3">
+                <label for="urlInput" class="form-label">Url</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="urlInput"
+                  disabled
+                />
+              </div>
+              <div class="mb-3">
+                <label for="kompetensiSelect" class="form-label"
+                  >Kompetensi</label
+                >
+                <select class="form-select" id="kompetensiSelect">
+                  <option value="" selected disabled>Pilih Kompetensi</option>
+                  <option value="Sistem Cerdas">Sistem Cerdas</option>
+                  <option value="Rekayasa Perangkat Lunak">
+                    Rekayasa Perangkat Lunak
+                  </option>
+                  <option value="Jaringan & IoT">Jaringan & IoT</option>
+                  <option
+                    value="Multimedia & Teknologi: Kecerdasan Artifisial Game"
+                  >
+                    Multimedia & Teknologi: Kecerdasan Artifisial Game
+                  </option>
+                </select>
+                <input type="hidden" id="docIdInput" />
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Batal
+            </button>
+            <button type="button" class="btn btn-primary" id="saveChangesBtn">
+              Simpan
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/bootstrap.min.js"></script>
+    <script>
+      const editModal = new bootstrap.Modal(
+        document.getElementById("editModal")
+      );
+      const tableBody = document.getElementById("tableBody");
+      const overlay = document.querySelector(".overlay");
+      const spinner = document.querySelector(".spinner");
+      var selectedProdi = "Teknik Informatika";
+      var totalPage = {
+        "Teknik Informatika": 412,
+        "Teknik Multimedia dan Jaringan": 144,
+        "Teknik Multimedia Digital": 73,
+      };
+
+      var currentPage = 1;
+      var maxPage = 5;
+
+      function showModal(
+        id,
+        kompetensi,
+        judul,
+        abstrak,
+        kata_kunci,
+        nama_pembimbing,
+        prodi,
+        url
+      ) {
+        document.getElementById("docIdInput").value = id;
+        document.getElementById("kompetensiSelect").value = kompetensi;
+        document.getElementById("judulInput").value = judul;
+        document.getElementById("abstrakTextarea").value = abstrak;
+        document.getElementById("keywordInput").value = kata_kunci;
+        document.getElementById("dosenInput").value = nama_pembimbing;
+        document.getElementById("prodiInput").value = prodi;
+        document.getElementById("urlInput").value = url;
+        editModal.show();
+      }
+
+      function renderPagination() {
+        const pagination = document.querySelector(".pagination");
+
+        btnHtml = "";
+
+        btnHtml += `<li class="page-item ${
+          maxPage == 5 ? "disabled" : ""
+        }" id="prev">
+                    <a class="page-link" href="#">
+                      <span aria-hidden="true">&laquo;</span>
+                    </a>
+                  </li>`;
+
+        const totalPages = Math.ceil(totalPage[selectedProdi] / 5);
+        const lastPage = Math.min(maxPage, totalPages);
+
+        for (let i = lastPage - 4; i <= lastPage; i++) {
+          btnHtml += `<li class="page-item" id="page-${i}"><a class="page-link btn-no">${i}</a></li>`;
+        }
+
+        btnHtml += `<li class="page-item ${
+          maxPage >= totalPages ? "disabled" : ""
+        }" id="next">
+                    <a class="page-link" href="#">
+                      <span aria-hidden="true">&raquo;</span>
+                    </a>
+                  </li>`;
+        pagination.innerHTML = btnHtml;
+
+        document.querySelector(`#page-${currentPage}`).classList.add("active");
+      }
+    </script>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        getDocs,
+        doc,
+        query,
+        limit,
+        where,
+        orderBy,
+        updateDoc,
+        addDoc,
+      } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyByjJsv_lcR--zXqKsOkPDRGgKON8JvcH4",
+        authDomain: "repo-jtik-pnj.firebaseapp.com",
+        projectId: "repo-jtik-pnj",
+        storageBucket: "repo-jtik-pnj.appspot.com",
+        messagingSenderId: "1033716148713",
+        appId: "1:1033716148713:web:53591cf871eef71de04378",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      async function fetchData(id_sequence) {
+        overlay.classList.remove("d-none");
+        spinner.classList.remove("d-none");
+
+        try {
+          let queryRef = collection(db, "skripsi");
+
+          queryRef = query(
+            queryRef,
+            where("prodi", "==", selectedProdi),
+            where(
+              "id_sequence_prodi",
+              ">",
+              id_sequence == 1 ? id_sequence - 1 : (id_sequence - 1) * 5
+            ),
+            where("id_sequence_prodi", "<=", id_sequence * 5),
+            orderBy("id_sequence_prodi")
+          );
+
+          const querySnapshot = await getDocs(queryRef);
+          let tableHtml = "";
+
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const kompetensiClass = data.kompetensi
+              ? "text-success"
+              : "text-danger";
+            tableHtml += `
+                <tr>
+                    <th scope="row" class="text-center">${
+                      data.id_sequence_prodi
+                    }</th>
+                    <td>${data.judul}</td>
+                    <td>${data.prodi}</td>
+                    <td class="${kompetensiClass}">${
+              data.kompetensi || "Belum Ada"
+            }</td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-primary btn-sm" onclick="showModal(
+                            '${doc.id}', '${data.kompetensi}', '${
+              data.judul
+            }', '${data.abstrak.replace(/'/g, "")}',
+                            '${data.kata_kunci}', '${data.nama_pembimbing}', '${
+              data.prodi
+            }',
+                            '${data.url}')">Edit</button>
+                    </td>
+                </tr>`;
+          });
+          tableBody.innerHTML = tableHtml;
+          renderPagination();
+
+          document.querySelectorAll(".btn-no").forEach((link) => {
+            link.addEventListener("click", (event) => {
+              event.preventDefault();
+              currentPage = parseInt(event.target.textContent);
+              fetchData(currentPage);
+            });
+          });
+
+          document.querySelector("#next").addEventListener("click", (event) => {
+            event.preventDefault();
+
+            const totalPages = Math.ceil(totalPage[selectedProdi] / 5);
+
+            if (maxPage < totalPages) {
+              maxPage += 5;
+              currentPage = maxPage - 4;
+              fetchData(currentPage);
+            }
+          });
+
+          document.querySelector("#prev").addEventListener("click", (event) => {
+            event.preventDefault();
+            if (maxPage > 5) {
+              maxPage -= 5;
+              currentPage = maxPage - 4;
+              fetchData(currentPage);
+            }
+          });
+        } catch (error) {
+          console.error("Error fetching data: ", error);
+        } finally {
+          overlay.classList.add("d-none");
+          spinner.classList.add("d-none");
+        }
+      }
+
+      window.onload = () => fetchData(currentPage);
+
+      document
+        .getElementById("saveChangesBtn")
+        .addEventListener("click", async () => {
+          const kompetensi = document.getElementById("kompetensiSelect").value;
+
+          if (kompetensi == "") {
+            alert("Pilih kompetensi terlebih dahulu");
+            return;
+          }
+
+          overlay.classList.remove("d-none");
+          spinner.classList.remove("d-none");
+
+          const docId = document.getElementById("docIdInput").value;
+
+          try {
+            const docRef = doc(db, "skripsi", docId);
+            await updateDoc(docRef, { kompetensi });
+            fetchData(currentPage);
+            editModal.hide();
+          } catch (error) {
+            console.error("Error updating document: ", error);
+          }
+        });
+
+      document
+        .getElementById("prodiFilter")
+        .addEventListener("change", function () {
+          selectedProdi = this.value;
+          currentPage = 1;
+          maxPage = 5;
+          fetchData(currentPage);
+        });
+
+      document
+        .querySelector("button.btn-outline-primary")
+        .addEventListener("click", async () => {
+          overlay.classList.remove("d-none");
+          spinner.classList.remove("d-none");
+
+          try {
+            const querySnapshot = await getDocs(collection(db, "skripsi"));
+            const skripsiData = [];
+            querySnapshot.forEach((doc) => {
+              skripsiData.push(doc.data());
+            });
+
+            const jsonData = JSON.stringify(skripsiData, null, 2);
+            const blob = new Blob([jsonData], { type: "application/json" });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+
+            a.href = url;
+            a.download = "dataset_repo_jtik.json";
+            document.body.appendChild(a);
+            a.click();
+
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+          } catch (error) {
+            console.error("Error fetching data: ", error);
+          }
+
+          overlay.classList.add("d-none");
+          spinner.classList.add("d-none");
+        });
+
+      const init = false;
+      if (init) {
+        fetch("init_data_repo_jtik.json")
+          .then((response) => response.json())
+          .then((data) => {
+            data.forEach(async (item) => {
+              try {
+                await addDoc(collection(db, "skripsi"), item);
+                console.log("Document successfully written to Firestore!");
+              } catch (error) {
+                console.error("Error writing document: ", error);
+              }
+            });
+          })
+          .catch((error) => {
+            console.error("Error reading the JSON file:", error);
+          });
+      }
+    </script>
+  </body>
+</html>
