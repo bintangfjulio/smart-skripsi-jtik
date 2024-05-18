@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>{% block title %}{% endblock title %}</title>
+
+    <link
+      rel="shortcut icon"
+      href="{{ url_for('static', filename='images/favicon.png') }}"
+    />
+
+    <script
+      defer
+      src="{{ url_for('static', filename='plugins/fontawesome/js/all.min.js') }}"
+    ></script>
+    <link
+      id="theme-style"
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/portal.css') }}"
+    />
+  </head>
+
+  <body>
+    <div class="row g-0 app-auth-wrapper">
+      <div class="col-12 auth-main-col text-center p-5">
+        <div class="d-flex flex-column align-content-end">
+          <div class="app-auth-body mx-auto mt-2">
+            <div class="app-auth-branding mb-4">
+              <a class="app-logo" href=""
+                ><img
+                  class="logo-icon me-2"
+                  src="{{ url_for('static', filename='images/logotik.png') }}"
+                  alt="logo"
+              /></a>
+            </div>
+            <div class="auth-form-container text-start">
+              {% block content %} {% endblock content %}
+            </div>
+          </div>
+
+          <footer class="app-auth-footer">
+            <div class="container text-center py-3">
+              <small class="copyright"
+                >Copyright <span style="color: #128c9b">JTIK PNJ</span>. Created
+                by Bintang Fajar Julio</small
+              >
+            </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
