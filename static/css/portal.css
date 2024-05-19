@@ -12013,8 +12013,8 @@ button.close:focus {
   margin-bottom: 1rem;
 }
 .app-branding .logo-icon {
-  width: 36px;
-  height: 36px;
+  width: 115px;
+  height: auto;
 }
 .app-branding .logo-text {
   color: #252930;
@@ -12667,7 +12667,7 @@ button.close:focus {
   width: 100%;
 }
 .app-auth-wrapper {
-  background: #fff;
+  background: #f5f6fe;
   height: 100vh;
 }
 .app-auth-wrapper .app-auth-body {
@@ -12724,4 +12724,7 @@ button.close:focus {
   .app-auth-wrapper .app-auth-body {
     width: 100%;
   }
+}
+.swt-alert-btn {
+  background-color: #128c9b !important;
 }

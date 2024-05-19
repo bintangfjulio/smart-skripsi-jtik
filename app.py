@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, redirect
+from flask import Flask, redirect, render_template
 from views import views
 
 
@@ -16,6 +16,10 @@ for view in views:
 @app.route('/')
 def index():
     return redirect('/sign-in')
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
 if __name__ == '__main__':
     app.run(debug=True)

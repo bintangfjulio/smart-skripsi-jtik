@@ -1,2 +1,5 @@
+setuptools
 python-dotenv
-flask
+Flask
+Pyrebase4
+firebase_admin

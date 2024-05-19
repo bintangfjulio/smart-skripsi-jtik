@@ -16,6 +16,7 @@
       defer
       src="{{ url_for('static', filename='plugins/fontawesome/js/all.min.js') }}"
     ></script>
+
     <link
       id="theme-style"
       rel="stylesheet"
@@ -53,4 +54,26 @@
       </div>
     </div>
   </body>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+          {% for category, (title, message) in messages %}
+              Swal.fire({
+                  title: '{{ title }}',
+                  text: '{{ message }}',
+                  icon: '{{ category }}' === 'error' ? 'error' : 'success',
+                  confirmButtonText: 'Baik, saya mengerti',
+                  customClass: {
+                    confirmButton: 'swt-alert-btn'
+                  }
+              }).then((result) => {
+                  if (result.isConfirmed && '{{ category }}' === 'success') {
+                      window.location.href = "{{ url_for('auth.sign_in') }}";
+                  }
+              });
+          {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </script>
 </html>
