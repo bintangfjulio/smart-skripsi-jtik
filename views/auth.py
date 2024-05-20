@@ -29,7 +29,7 @@ def sign_up():
             data = {
                 'nama': nama,
                 'email': email,
-                'is_admin': True
+                'role': 'user'
             }
 
             firebase_db.collection('users').document(user['localId']).set(data)
