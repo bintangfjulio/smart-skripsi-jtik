@@ -92,7 +92,7 @@ def sign_in():
             login_user(user)
         
             if user.role == 'admin':
-                    return redirect(url_for('dashboard.lecturer'))
+                return redirect(url_for('dashboard.lecturer'))
             
             elif user.role == "user":
                 return redirect(url_for('dashboard.classifier'))
