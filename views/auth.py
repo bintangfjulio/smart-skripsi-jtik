@@ -90,7 +90,12 @@ def sign_in():
 
         if user:
             login_user(user)
-            return redirect(url_for('dashboard.lecturer'))
+        
+            if user.role == 'admin':
+                    return redirect(url_for('dashboard.lecturer'))
+            
+            elif user.role == "user":
+                return redirect(url_for('dashboard.classifier'))
 
     return render_template('auth/sign_in.html')
 

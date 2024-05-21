@@ -4,4 +4,3 @@ Flask
 Pyrebase4
 firebase_admin
 flask_login
-functools

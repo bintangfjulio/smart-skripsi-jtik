@@ -2,8 +2,9 @@ import os
 import middleware
 
 from dotenv import load_dotenv
-from flask import Flask, redirect, render_template
+from flask import Flask, redirect, render_template, url_for
 from views import views
+from flask_login import current_user
 
 
 load_dotenv(override=True)
@@ -18,15 +19,22 @@ for view in views:
 
 @app.route('/')
 def index():
+    if current_user.is_authenticated:
+        if current_user.role == 'admin':
+            return redirect(url_for('dashboard.lecturer'))
+        
+        elif current_user.role == "user":
+            return redirect(url_for('dashboard.classifier'))
+        
     return redirect('/sign-in')
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('404.html'), 404
+    return render_template('error.html', message="Page Not Found", code=404), 404
 
 @app.route('/unauthorized')
 def unauthorized():
-    return "Unauthorized Access", 403
+    return render_template('error.html', message="Forbidden Access", code=403), 403
 
 if __name__ == '__main__':
     app.run(debug=True)

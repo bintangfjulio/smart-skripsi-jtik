@@ -10,6 +10,6 @@ def lecturer():
     return render_template('dashboard/lecturer.html')
 
 @dashboard.route('/classifier', methods=['GET'])
-@role_required('admin')
+@role_required('user')
 def classifier():
     return render_template('dashboard/classifier.html')

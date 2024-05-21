@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Page Not Found</title>
+    <title>{{ message }}</title>
 
     <link
       rel="shortcut icon"
@@ -40,9 +40,11 @@
           <!--//app-branding-->
           <div class="app-card p-5 text-center shadow-sm">
             <h1 class="page-title mb-4">
-              404<br /><span class="font-weight-light">Page Not Found</span>
+              {{ code }}<br /><span class="font-weight-light"
+                >{{ message }}</span
+              >
             </h1>
-            <div class="mb-4">Halaman yang anda cari tidak ditemukan.</div>
+            <div class="mb-4">Halaman yang anda cari tidak dapat diakses.</div>
             <a class="btn app-btn-primary" href="/">Kembali ke Halaman Utama</a>
           </div>
         </div>
