@@ -12175,7 +12175,7 @@ button.close:focus {
   min-height: 100vh;
   height: 100%;
   width: 100%;
-  background: #fafbfe;
+  background: #f8f9fc;
   padding-top: 56px;
   overflow-x: hidden;
 }
@@ -12667,7 +12667,7 @@ button.close:focus {
   width: 100%;
 }
 .app-auth-wrapper {
-  background: #fafbfe;
+  background: #f8f9fc;
   height: 100vh;
 }
 .app-auth-wrapper .app-auth-body {

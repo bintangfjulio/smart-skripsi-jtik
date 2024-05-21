@@ -4,6 +4,9 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for
 from requests.exceptions import HTTPError
 from firebase_config import firebase_auth, firebase_db
 
+from flask_login import logout_user, login_user
+from middleware import load_user
+
 
 auth = Blueprint('auth', __name__, template_folder='templates')
 
@@ -82,7 +85,12 @@ def sign_in():
             flash(('Masuk Gagal', 'Server sedang bermasalah'), 'error')
             return render_template('auth/sign_in.html')
         
-        redirect(url_for(''))
+        user_id = user_info['localId']
+        user = load_user(user_id)
+
+        if user:
+            login_user(user)
+            return redirect(url_for('dashboard.lecturer'))
 
     return render_template('auth/sign_in.html')
 
@@ -112,3 +120,9 @@ def reset_password():
             flash(('Reset Password Gagal', 'Server sedang bermasalah'), 'error')
 
     return render_template('auth/reset_password.html')
+
+
+@auth.route('/sign-out')
+def sign_out():
+    logout_user()
+    return redirect(url_for('auth.sign_in'))

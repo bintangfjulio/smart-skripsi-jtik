@@ -1,5 +1,5 @@
 from .auth import auth
-from .admin.lecturer import lecturer
+from .dashboard import dashboard
 
 
-views = [auth, lecturer]
+views = [auth, dashboard]
