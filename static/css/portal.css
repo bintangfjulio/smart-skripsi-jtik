@@ -1464,7 +1464,7 @@ progress {
   }
   .col-xl-3 {
     flex: 0 0 auto;
-    width: 25%;
+    width: 24%;
   }
   .col-xl-4 {
     flex: 0 0 auto;
@@ -7759,9 +7759,6 @@ fieldset:disabled .btn {
 .me-1 {
   margin-right: 0.25rem !important;
 }
-.me-2 {
-  margin-right: 0.5rem !important;
-}
 .me-3 {
   margin-right: 1rem !important;
 }
@@ -11596,8 +11593,8 @@ a:hover {
 hr {
   background: #adb4c0;
 }
-.text-muted {
-  color: #9fa7b5 !important;
+.text-unmuted {
+  color: #128c9b !important;
 }
 .table-dark {
   background: #252930;
@@ -12007,9 +12004,8 @@ button.close:focus {
   border-radius: 0.5rem;
 }
 .app-branding {
-  height: 60px;
+  height: 75px;
   padding-top: 1rem;
-  padding-left: 1rem;
   margin-bottom: 1rem;
 }
 .app-branding .logo-icon {
@@ -12339,10 +12335,10 @@ button.close:focus {
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
 }
 .app-card-doc .app-card-thumb-holder {
-  background: #e9eaf1;
+  background: #0f8a9a;
   text-align: center;
   position: relative;
-  height: 112px;
+  height: 120px;
 }
 .app-card-doc .app-card-thumb-holder .app-card-thumb {
   overflow: hidden;
@@ -12359,14 +12355,6 @@ button.close:focus {
   opacity: 0.7;
   width: 100%;
   height: auto;
-}
-.app-card-doc .app-card-thumb-holder:hover {
-  background: #fafbff;
-}
-.app-card-doc .app-card-thumb-holder:hover .thumb-image {
-  -webkit-opacity: 1;
-  -moz-opacity: 1;
-  opacity: 1;
 }
 .app-card-doc .app-card-thumb-holder .badge {
   position: absolute;
@@ -12480,9 +12468,9 @@ button.close:focus {
   padding: 0.25rem 0.5rem;
 }
 .app-pagination .pagination .page-item.active .page-link {
-  background: #747f94;
+  background: #128c9b;
   color: #fff;
-  border-color: #747f94;
+  border-color: #128c9b;
 }
 .app-pagination .pagination .page-item.disabled .page-link {
   color: #9fa7b5;
@@ -12733,7 +12721,7 @@ button.close:focus {
   top: calc(50% - 60px);
   left: calc(50% - 60px);
   border: 16px solid #f3f3f3;
-  border-top: 16px solid #0f8a9a;
+  border-top: 16px solid #128c9b;
   border-radius: 50%;
   width: 120px;
   height: 120px;
