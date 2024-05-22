@@ -60,31 +60,32 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
-      document.querySelector('form').addEventListener('submit', function(event) {
-          document.querySelector('.overlay').classList.remove('d-none');
-          document.querySelector('.spinner').classList.remove('d-none');
+      $('form').submit(function(event) {
+        $('.overlay').removeClass('d-none');
+        $('.spinner').removeClass('d-none');
       });
 
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            {% for category, (title, message) in messages %}
-                Swal.fire({
-                    title: '{{ title }}',
-                    text: '{{ message }}',
-                    icon: '{{ category }}' === 'error' ? 'error' : 'success',
-                    confirmButtonText: 'Baik, saya mengerti',
-                    customClass: {
-                      confirmButton: 'swt-alert-btn'
-                    }
-                }).then((result) => {
-                  document.querySelector('.overlay').classList.add('d-none');
-                  document.querySelector('.spinner').classList.add('d-none');
-                    if (result.isConfirmed && '{{ category }}' === 'success') {
-                        window.location.href = "{{ url_for('auth.sign_in') }}";
-                    }
-                });
-            {% endfor %}
+          {% for category, (title, message) in messages %}
+            Swal.fire({
+              title: '{{ title }}',
+              text: '{{ message }}',
+              icon: '{{ category }}' === 'error' ? 'error' : 'success',
+              confirmButtonText: 'Baik, saya mengerti',
+              customClass: {
+                confirmButton: 'swt-alert-btn'
+              }
+            }).then((result) => {
+              $('.overlay').addClass('d-none');
+              $('.spinner').addClass('d-none');
+              if (result.isConfirmed && '{{ category }}' === 'success') {
+                window.location.href = "{{ url_for('auth.sign_in') }}";
+              }
+            });
+          {% endfor %}
         {% endif %}
       {% endwith %}
     </script>

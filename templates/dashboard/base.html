@@ -27,6 +27,9 @@
   </head>
 
   <body class="app">
+    <div class="overlay d-none"></div>
+    <div class="spinner d-none"></div>
+
     <header class="app-header fixed-top">
       <div class="app-header-inner">
         <div class="container-fluid py-2">
@@ -192,6 +195,11 @@
       </footer>
     </div>
 
+    {% block modal %}{% endblock modal %}
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
     <script src="{{ url_for('static', filename='plugins/popper.min.js') }}"></script>
     <script src="{{ url_for('static', filename='plugins/bootstrap/js/bootstrap.min.js') }}"></script>
     <script>
@@ -203,11 +211,11 @@
         menu = [];
       }
 
-      menu.forEach(function (x) {
-        document.querySelector(`#menu-${x}`).classList.remove("d-none");
+      $.each(menu, function (index, value) {
+        $(`#menu-${value}`).removeClass("d-none");
       });
 
-      document.querySelector("#{{ page }}").classList.add("active");
+      $("#{{ page }}").addClass("active");
     </script>
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>

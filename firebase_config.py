@@ -1,8 +1,10 @@
 import os
 import pyrebase
+import tempfile
+import uuid
 
 from dotenv import load_dotenv
-from firebase_admin import credentials, initialize_app, firestore
+from firebase_admin import credentials, initialize_app, firestore, storage
 
 
 load_dotenv(override=True)
@@ -32,7 +34,28 @@ firebase_admin_config = {
 }
 
 firebase = pyrebase.initialize_app(firebase_config)
-firebase_admin = initialize_app(credentials.Certificate(firebase_admin_config))
+firebase_admin = initialize_app(credentials.Certificate(firebase_admin_config), {
+    'storageBucket': os.getenv('FIREBASE_STORAGE_BUCKET')
+})
 
 firebase_auth = firebase.auth()
 firebase_db = firestore.client()
+firebase_storage = storage.bucket()
+
+def storage_upload_file(file, destination_folder):
+    temp = tempfile.NamedTemporaryFile(delete=False)
+    file.save(temp.name)
+    temp.close()
+
+    unique_filename = str(uuid.uuid4()) + '.' + file.filename.split('.')[-1]
+
+    blob = firebase_storage.blob(f'{destination_folder}/{unique_filename}')
+    blob.upload_from_filename(temp.name)
+    blob.make_public()
+
+    os.remove(temp.name)
+
+    return blob.public_url
+
+def storage_delete_file(public_url):
+    firebase_storage.blob(public_url.replace(f'https://storage.googleapis.com/{os.getenv('FIREBASE_STORAGE_BUCKET')}/', '')).delete()

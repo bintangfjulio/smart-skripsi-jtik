@@ -23,7 +23,13 @@
           </select>
         </div>
         <div class="col-auto">
-          <a class="btn app-btn-primary" href="#">Tambah</a>
+          <a
+            class="btn app-btn-primary"
+            href="#"
+            data-bs-toggle="modal"
+            data-bs-target="#modal"
+            >Tambah</a
+          >
         </div>
       </div>
     </div>
@@ -31,7 +37,10 @@
 </div>
 
 <div class="row g-4">
-  <div class="col-6 col-md-4 col-xl-3 col-xxl-2">
+  <p class="text-center mt-5">
+    <span class="text-unmuted">Tidak ada</span> data yang ditemukan
+  </p>
+  <!-- <div class="col-6 col-md-4 col-xl-3 col-xxl-2">
     <div class="app-card app-card-doc shadow-sm h-100">
       <div class="app-card-thumb-holder p-3 d-flex justify-content-center">
         <div
@@ -129,6 +138,205 @@
         </div>
       </div>
     </div>
+  </div> -->
+</div>
+{% endblock content %} {% block modal %}
+<div
+  class="modal fade"
+  id="modal"
+  data-bs-backdrop="static"
+  data-bs-keyboard="false"
+  tabindex="-1"
+  aria-labelledby="modalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="modalLabel">Data Dosen</h1>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form
+          id="lecturerForm"
+          method="post"
+          action="{{ url_for('lecturer.create') }}"
+          enctype="multipart/form-data"
+        >
+          <div class="d-flex justify-content-center mt-2">
+            <div
+              style="
+                width: 130px;
+                height: 130px;
+                overflow: hidden;
+                border-radius: 50%;
+                position: relative;
+              "
+            >
+              <img
+                id="image-display"
+                src="{{ url_for('static', filename='images/placeholder.jpg') }}"
+                style="width: 100%; height: 100%; object-fit: cover"
+              />
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-center mt-2">
+            <a
+              class="btn app-btn-primary"
+              href="#"
+              style="font-size: 0.8rem"
+              id="uploadFile"
+            >
+              <svg
+                width="1em"
+                height="1em"
+                viewBox="0 0 16 16"
+                class="bi bi-upload"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"
+                ></path>
+                <path
+                  fill-rule="evenodd"
+                  d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"
+                ></path></svg
+              >&nbsp;&nbsp;Upload</a
+            >
+
+            <input
+              type="file"
+              id="file-input"
+              class="d-none"
+              accept="image/*"
+              onchange="previewImage(event)"
+              name="foto"
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="nama" class="form-label">Nama Dosen</label>
+            <input
+              type="text"
+              class="form-control"
+              id="nama"
+              placeholder="Masukkan nama dosen"
+              oninput="removeNumbers(this)"
+              name="nama"
+            />
+          </div>
+          <div class="mb-5">
+            <label for="kompetensi" class="form-label">Kompetensi Dosen</label>
+            <select class="form-select" id="kompetensi" name="kompetensi">
+              <option selected value="" disabled>Pilih Kompetensi</option>
+              <option value="Sistem Cerdas">Sistem Cerdas</option>
+              <option value="Rekayasa Perangkat Lunak">
+                Rekayasa Perangkat Lunak
+              </option>
+              <option value="Jaringan & IoT">Jaringan & IoT</option>
+              <option
+                value="Multimedia & Teknologi: Kecerdasan Artifisial Game"
+              >
+                Multimedia & Teknologi: AI Game
+              </option>
+            </select>
+          </div>
+
+          <div class="row justify-content-between">
+            <div class="col-auto">
+              <a class="btn app-btn-secondary" href="#" data-bs-dismiss="modal"
+                >Batal</a
+              >
+            </div>
+            <div class="col-auto">
+              <a class="btn app-btn-primary" href="#" onclick="submitForm()"
+                >Simpan</a
+              >
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </div>
-{% endblock content %}
+{% endblock modal %} {% block script %}
+<script>
+  function previewImage(event) {
+    const file = event.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        $("#image-display").attr("src", e.target.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      Swal.fire({
+        title: "Upload File Gagal",
+        text: "Hanya menerima format file gambar",
+        icon: "error",
+        confirmButtonText: "Baik, saya mengerti",
+        customClass: {
+          confirmButton: "swt-alert-btn",
+        },
+      });
+    }
+  }
+
+  function submitForm() {
+    const form = $("#lecturerForm");
+    const fileInput = $("#file-input");
+    const nama = $("#nama");
+    const kompetensi = $("#kompetensi");
+
+    if (
+      fileInput[0].files.length > 0 &&
+      nama.val() !== "" &&
+      kompetensi.val() !== null
+    ) {
+      $(".spinner").removeClass("d-none");
+      $(".overlay").removeClass("d-none");
+      form.submit();
+    } else {
+      Swal.fire({
+        title: "Simpan Data Gagal",
+        text: "Seluruh isian harus lengkap",
+        icon: "error",
+        confirmButtonText: "Baik, saya mengerti",
+        customClass: {
+          confirmButton: "swt-alert-btn",
+        },
+      });
+    }
+  }
+
+  function removeNumbers(input) {
+    input.value = input.value.replace(/[0-9]/g, "");
+  }
+
+  $("#file-input").change(previewImage);
+
+  $("#uploadFile").click(function () {
+    $("#file-input").click();
+  });
+
+  $("#modal").on("hidden.bs.modal", function () {
+    $("#nama").val("");
+    $("#kompetensi").val("");
+
+    $("#file-input").val("");
+
+    $("#image-display").attr(
+      "src",
+      "{{ url_for('static', filename='images/placeholder.jpg') }}"
+    );
+  });
+</script>
+{% endblock script %}
