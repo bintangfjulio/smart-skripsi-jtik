@@ -7,7 +7,7 @@ dashboard = Blueprint('dashboard', __name__, template_folder='templates', url_pr
 @dashboard.route('/lecturer', methods=['GET'])
 @role_required('admin')
 def lecturer():
-    return render_template('dashboard/lecturer.html')
+    return render_template('dashboard/lecturer.html', page="lecturer")
 
 @dashboard.route('/classifier', methods=['GET'])
 @role_required('user')
