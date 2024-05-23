@@ -1,5 +1,5 @@
 from models.lecturer import Lecturer
-from flask import Blueprint, request, redirect, url_for
+from flask import Blueprint, request, redirect, url_for, flash
 from middleware import role_required
 from firebase_config import storage_upload_file
 
@@ -17,11 +17,9 @@ def create():
     try:
         lecturer = Lecturer(nama, kompetensi, foto)
         lecturer.save()
-
-        # flash('Tag berhasil dibuat', 'success')
-        return redirect(url_for('dashboard.lecturer'))
+        flash(('Tambah Data Sukses', 'Data dosen berhasil ditambahkan'), 'success')
 
     except Exception as e:
-        print('[ERROR] [CREATE TAG]: ', e)
-        # flash('Terjadi kesalahan server saat membuat tag', 'error')
-        # return redirect(url_for('dashboard.tag'))
+        flash(('Tambah Data Gagal', 'Terjadi kesalahan server saat menambahkan'), 'error')
+        
+    return redirect(url_for('dashboard.lecturer'))

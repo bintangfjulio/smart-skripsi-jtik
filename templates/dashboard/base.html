@@ -70,7 +70,7 @@
                     role="button"
                     aria-expanded="false"
                   >
-                    {{ current_user.nama }}
+                    <b>{{ current_user.nama }}</b>
                   </a>
                   <ul
                     class="dropdown-menu"
@@ -216,6 +216,22 @@
       });
 
       $("#{{ page }}").addClass("active");
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, (title, message) in messages %}
+            Swal.fire({
+              title: '{{ title }}',
+              text: '{{ message }}',
+              icon: '{{ category }}' === 'error' ? 'error' : 'success',
+              confirmButtonText: 'Baik, saya mengerti',
+              customClass: {
+                confirmButton: 'swt-alert-btn'
+              }
+            })
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
     </script>
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
