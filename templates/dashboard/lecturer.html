@@ -10,8 +10,8 @@
         class="row g-2 justify-content-start justify-content-md-end align-items-center"
       >
         <div class="col-auto">
-          <select class="form-select w-auto">
-            <option selected value="semua">Semua Kompetensi</option>
+          <select class="form-select w-auto" id="filter">
+            <option selected value="">Semua Kompetensi</option>
             <option value="Sistem Cerdas">Sistem Cerdas</option>
             <option value="Rekayasa Perangkat Lunak">
               Rekayasa Perangkat Lunak
@@ -38,7 +38,10 @@
 
 <div class="row g-4">
   {% if lecturers %} {% for lecture in lecturers %}
-  <div class="col-6 col-md-4 col-xl-3 col-xxl-2">
+  <div
+    class="col-6 col-md-4 col-xl-3 col-xxl-2 lecturer"
+    data-kompetensi="{{ lecture.kompetensi }}"
+  >
     <div class="app-card app-card-doc shadow-sm h-100">
       <div class="app-card-thumb-holder p-3 d-flex justify-content-center">
         <div
@@ -341,6 +344,21 @@
       "src",
       "{{ url_for('static', filename='images/placeholder.jpg') }}"
     );
+  });
+
+  $("#filter").change(function () {
+    var selectedKompetensi = $(this).val();
+    $(".lecturer").each(function () {
+      var lecturerKompetensi = $(this).data("kompetensi");
+      if (
+        selectedKompetensi === "" ||
+        lecturerKompetensi === selectedKompetensi
+      ) {
+        $(this).show();
+      } else {
+        $(this).hide();
+      }
+    });
   });
 </script>
 {% endblock script %}
