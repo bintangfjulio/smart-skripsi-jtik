@@ -18,7 +18,7 @@
             </option>
             <option value="Jaringan & IoT">Jaringan & IoT</option>
             <option value="Multimedia & Teknologi: Kecerdasan Artifisial Game">
-              Multimedia & Teknologi: AI Game
+              Multimedia & Teknologi: Kecerdasan Artifisial Game
             </option>
           </select>
         </div>
@@ -37,10 +37,10 @@
 </div>
 
 <div class="row g-4">
-  {% if lecturers %} {% for lecture in lecturers %}
+  {% for lecturer in lecturers %}
   <div
     class="col-6 col-md-4 col-xl-3 col-xxl-2 lecturer"
-    data-kompetensi="{{ lecture.kompetensi }}"
+    data-kompetensi="{{ lecturer.kompetensi }}"
   >
     <div class="app-card app-card-doc shadow-sm h-100">
       <div class="app-card-thumb-holder p-3 d-flex justify-content-center">
@@ -54,7 +54,7 @@
           "
         >
           <img
-            src="{{ lecture.foto }}"
+            src="{{ lecturer.foto }}"
             style="width: 100%; height: 100%; object-fit: cover"
           />
         </div>
@@ -62,13 +62,13 @@
 
       <div class="app-card-body p-3 has-card-actions">
         <h4 class="app-doc-title truncate mb-0">
-          <a href="#">{{ lecture.nama }}</a>
+          <a href="#">{{ lecturer.nama }}</a>
         </h4>
         <div class="app-doc-meta">
           <ul class="list-unstyled mb-0">
             <li>
               Kompetensi:
-              <span class="text-unmuted">{{ lecture.kompetensi }}</span>
+              <span class="text-unmuted">{{ lecturer.kompetensi }}</span>
             </li>
           </ul>
         </div>
@@ -115,7 +115,10 @@
               </li>
               <li><hr class="dropdown-divider" /></li>
               <li>
-                <a class="dropdown-item" href="#"
+                <a
+                  class="dropdown-item"
+                  href="#"
+                  onclick="deleteLecturer('{{ lecturer.id }}')"
                   ><svg
                     width="1em"
                     height="1em"
@@ -140,11 +143,7 @@
       </div>
     </div>
   </div>
-  {% endfor %} {% else %}
-  <p class="text-center mt-5">
-    <span class="text-unmuted">Tidak ada</span> data yang ditemukan
-  </p>
-  {% endif %}
+  {% endfor %}
 </div>
 
 {% endblock content %} {% block modal %}
@@ -252,7 +251,7 @@
               <option
                 value="Multimedia & Teknologi: Kecerdasan Artifisial Game"
               >
-                Multimedia & Teknologi: AI Game
+                Multimedia & Teknologi: Kecerdasan Artifisial Game
               </option>
             </select>
           </div>
@@ -360,5 +359,63 @@
       }
     });
   });
+
+  function deleteLecturer(lecturerId) {
+    Swal.fire({
+      title: "Konfirmasi Hapus",
+      text: "Apakah anda yakin untuk menghapus data ini?",
+      icon: "warning",
+      showCancelButton: true,
+      cancelButtonColor: "grey",
+      confirmButtonText: "Ya, hapus",
+      cancelButtonText: "Batal",
+      customClass: {
+        confirmButton: "swt-alert-btn",
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        $(".spinner").removeClass("d-none");
+        $(".overlay").removeClass("d-none");
+
+        var data = {
+          id: lecturerId,
+        };
+
+        $.post("{{ url_for('lecturer.delete') }}", data)
+          .done(function (response) {
+            $(".spinner").addClass("d-none");
+            $(".overlay").addClass("d-none");
+
+            Swal.fire({
+              title: "Hapus Data Berhasil",
+              text: "Data dosen berhasil dihapus",
+              icon: "success",
+              confirmButtonText: "Baik, saya mengerti",
+              customClass: {
+                confirmButton: "swt-alert-btn",
+              },
+            }).then((result) => {
+              if (result.isConfirmed) {
+                location.reload();
+              }
+            });
+          })
+          .fail(function (error) {
+            $(".spinner").addClass("d-none");
+            $(".overlay").addClass("d-none");
+
+            Swal.fire({
+              title: "Hapus Data Gagal",
+              text: "Terjadi kesalahan server saat menghapus",
+              icon: "error",
+              confirmButtonText: "Baik, saya mengerti",
+              customClass: {
+                confirmButton: "swt-alert-btn",
+              },
+            });
+          });
+      }
+    });
+  }
 </script>
 {% endblock script %}

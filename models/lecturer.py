@@ -8,6 +8,7 @@ class Lecturer:
         self.kompetensi = kompetensi
         self.foto = foto
 
+
     def save(self):
         _, doc = firebase_db.collection('lecturer').add({
             'nama': self.nama,
@@ -19,15 +20,22 @@ class Lecturer:
 
         return self
     
+
+    def delete(self):
+        firebase_db.collection('lecturer').document(self.id).delete()
+
+        return self
+    
+    
     @staticmethod
     def fetch():
         lectures = firebase_db.collection('lecturer').order_by('nama').stream()
 
         datas = []
-        for lecture in lectures:
-            data = lecture.to_dict()
+        for lecturer in lectures:
+            data = lecturer.to_dict()
             datas.append({
-                'id': lecture.id,
+                'id': lecturer.id,
                 'nama': data['nama'],
                 'kompetensi': data['kompetensi'],
                 'foto': data['foto']
@@ -35,16 +43,10 @@ class Lecturer:
 
         return datas
     
-    # def update(self):
-    #     firebase_db.collection('lecturer').document(self.id).update({
-    #         'nama': self.nama,
-    #         'kompetensi': self.kompetensi,
-    #         'foto': self.foto
-    #     })
-
-    #     return self
     
-    # def delete(self):
-    #     firebase_db.collection('lecturer').document(self.id).delete()
+    @staticmethod
+    def get_by_id(id):
+        lecturer = firebase_db.collection('lecturer').document(id).get()
+        data = lecturer.to_dict()
 
-    #     return self
+        return Lecturer(nama=data['nama'], kompetensi=data['kompetensi'], foto=data['foto'], id=lecturer.id)

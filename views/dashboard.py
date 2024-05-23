@@ -11,6 +11,7 @@ def lecturer():
     lecturers = Lecturer.fetch()
     return render_template('dashboard/lecturer.html', page="lecturer", lecturers=lecturers)
 
+
 @dashboard.route('/classifier', methods=['GET'])
 @role_required('user')
 def classifier():
