@@ -97,7 +97,12 @@
 
             <ul class="dropdown-menu">
               <li>
-                <a class="dropdown-item" href="#"
+                <a
+                  data-bs-toggle="modal"
+                  data-bs-target="#modal"
+                  class="dropdown-item"
+                  href="#"
+                  onclick="setModalData('{{ lecturer.id }}', '{{ lecturer.nama }}', '{{ lecturer.kompetensi }}', '{{ lecturer.foto }}')"
                   ><svg
                     width="1em"
                     height="1em"
@@ -118,7 +123,7 @@
                 <a
                   class="dropdown-item"
                   href="#"
-                  onclick="deleteLecturer('{{ lecturer.id }}')"
+                  onclick="deleteLecturer('{{ lecturer.id }}', '{{ lecturer.foto }}')"
                   ><svg
                     width="1em"
                     height="1em"
@@ -146,6 +151,11 @@
   {% endfor %}
 </div>
 
+<form id="deleteForm" method="post" action="{{ url_for('lecturer.delete') }}">
+  <input type="hidden" name="id" id="lecturerId" />
+  <input type="hidden" name="foto" id="lecturerFoto" />
+</form>
+
 {% endblock content %} {% block modal %}
 <div
   class="modal fade"
@@ -169,11 +179,15 @@
       </div>
       <div class="modal-body">
         <form
-          id="lecturerForm"
+          id="dataForm"
           method="post"
           action="{{ url_for('lecturer.create') }}"
           enctype="multipart/form-data"
         >
+          <input type="hidden" id="lecturer-id" name="id" />
+          <input type="hidden" id="modalType" value="create" />
+          <input type="hidden" id="prevFoto" name="prev_foto" />
+
           <div class="d-flex justify-content-center mt-2">
             <div
               style="
@@ -263,7 +277,10 @@
               >
             </div>
             <div class="col-auto">
-              <a class="btn app-btn-primary" href="#" onclick="submitForm()"
+              <a
+                class="btn app-btn-primary"
+                href="#"
+                onclick="submitForm('create')"
                 >Simpan</a
               >
             </div>
@@ -297,16 +314,19 @@
   }
 
   function submitForm() {
-    const form = $("#lecturerForm");
+    const form = $("#dataForm");
     const fileInput = $("#file-input");
     const nama = $("#nama");
     const kompetensi = $("#kompetensi");
+    const modalType = $("#modalType").val();
 
-    if (
-      fileInput[0].files.length > 0 &&
-      nama.val() !== "" &&
-      kompetensi.val() !== null
-    ) {
+    let fileExist = true;
+
+    if (modalType === "create" && fileInput[0].files.length === 0) {
+      fileExist = false;
+    }
+
+    if (fileExist && nama.val() !== "" && kompetensi.val() !== null) {
       $(".spinner").removeClass("d-none");
       $(".overlay").removeClass("d-none");
       form.submit();
@@ -338,11 +358,14 @@
     $("#kompetensi").val("");
 
     $("#file-input").val("");
+    $("#modalType").val("create");
 
     $("#image-display").attr(
       "src",
       "{{ url_for('static', filename='images/placeholder.jpg') }}"
     );
+
+    $("#dataForm").attr("action", "{{ url_for('lecturer.create') }}");
   });
 
   $("#filter").change(function () {
@@ -360,7 +383,7 @@
     });
   });
 
-  function deleteLecturer(lecturerId) {
+  function deleteLecturer(lecturerId, lecturerFoto) {
     Swal.fire({
       title: "Konfirmasi Hapus",
       text: "Apakah anda yakin untuk menghapus data ini?",
@@ -377,45 +400,28 @@
         $(".spinner").removeClass("d-none");
         $(".overlay").removeClass("d-none");
 
-        var data = {
-          id: lecturerId,
-        };
+        $("#lecturerId").val(lecturerId);
+        $("#lecturerFoto").val(lecturerFoto);
 
-        $.post("{{ url_for('lecturer.delete') }}", data)
-          .done(function (response) {
-            $(".spinner").addClass("d-none");
-            $(".overlay").addClass("d-none");
-
-            Swal.fire({
-              title: "Hapus Data Berhasil",
-              text: "Data dosen berhasil dihapus",
-              icon: "success",
-              confirmButtonText: "Baik, saya mengerti",
-              customClass: {
-                confirmButton: "swt-alert-btn",
-              },
-            }).then((result) => {
-              if (result.isConfirmed) {
-                location.reload();
-              }
-            });
-          })
-          .fail(function (error) {
-            $(".spinner").addClass("d-none");
-            $(".overlay").addClass("d-none");
-
-            Swal.fire({
-              title: "Hapus Data Gagal",
-              text: "Terjadi kesalahan server saat menghapus",
-              icon: "error",
-              confirmButtonText: "Baik, saya mengerti",
-              customClass: {
-                confirmButton: "swt-alert-btn",
-              },
-            });
-          });
+        $("#deleteForm").submit();
       }
     });
+  }
+
+  function setModalData(
+    lecturerId,
+    lecturerName,
+    lecturerKompetensi,
+    lecturerFoto
+  ) {
+    $("#lecturer-id").val(lecturerId);
+    $("#nama").val(lecturerName);
+    $("#kompetensi").val(lecturerKompetensi);
+    $("#modalType").val("update");
+    $("#prevFoto").val(lecturerFoto);
+
+    $("#image-display").attr("src", lecturerFoto);
+    $("#dataForm").attr("action", "{{ url_for('lecturer.update') }}");
   }
 </script>
 {% endblock script %}

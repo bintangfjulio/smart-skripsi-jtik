@@ -26,6 +26,16 @@ class Lecturer:
 
         return self
     
+
+    def update(self):
+        firebase_db.collection('lecturer').document(self.id).update({
+            'nama': self.nama,
+            'kompetensi': self.kompetensi,
+            'foto': self.foto
+        })
+
+        return self
+    
     
     @staticmethod
     def fetch():

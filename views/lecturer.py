@@ -11,11 +11,12 @@ lecturer = Blueprint('lecturer', __name__, template_folder='templates', url_pref
 def create():
     nama = request.form['nama']
     kompetensi = request.form['kompetensi']
-    foto = storage_upload_file(request.files['foto'], 'lecturer')
 
     try:
+        foto = storage_upload_file(request.files['foto'], 'lecturer')
         lecturer = Lecturer(nama=nama, kompetensi=kompetensi, foto=foto)
         lecturer.save()
+        
         flash(('Tambah Data Sukses', 'Data dosen berhasil ditambahkan'), 'success')
 
     except Exception as e:
@@ -24,17 +25,43 @@ def create():
     return redirect(url_for('dashboard.lecturer'))
 
 
+@lecturer.route('/update', methods=['POST'])
+@role_required('admin')
+def update():
+    id = request.form['id']
+    nama = request.form['nama']
+    kompetensi = request.form['kompetensi']
+    foto = request.form['prev_foto']
+    
+    if request.files['foto'].filename != '':
+        storage_delete_file(foto)
+        foto = storage_upload_file(request.files['foto'], 'lecturer')
+
+    try:
+        lecturer = Lecturer(id=id, nama=nama, kompetensi=kompetensi, foto=foto)
+        lecturer.update()
+
+        flash(('Perbarui Data Sukses', 'Data dosen berhasil diperbarui'), 'success')
+
+    except Exception as e:
+        flash(('Perbarui Data Gagal', 'Terjadi kesalahan server saat memperbarui'), 'error')
+        
+    return redirect(url_for('dashboard.lecturer'))
+
 @lecturer.route('/delete', methods=['POST'])
 @role_required('admin')
 def delete():
     id = request.form['id']
+    foto = request.form['foto']
 
     try:
-        lecturer = Lecturer(id=id)
+        lecturer = Lecturer(id=id, foto=foto)
         lecturer.delete()
         storage_delete_file(lecturer.foto)
 
+        flash(('Hapus Data Sukses', 'Data dosen berhasil dihapus'), 'success')
+
     except Exception as e:
-        print(e)
+        flash(('Hapus Data Gagal', 'Terjadi kesalahan server saat menghapus'), 'error')
         
     return redirect(url_for('dashboard.lecturer'))
