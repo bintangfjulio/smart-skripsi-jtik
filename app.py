@@ -32,6 +32,10 @@ def index():
 def page_not_found(e):
     return render_template('error.html', message="Page Not Found", code=404), 404
 
+@app.errorhandler(405)
+def method_not_allowed(e):
+    return render_template('error.html', message="Request Not Allowed", code=405), 405
+
 @app.route('/unauthorized')
 def unauthorized():
     return render_template('error.html', message="Forbidden Access", code=403), 403

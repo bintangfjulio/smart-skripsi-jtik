@@ -12658,7 +12658,7 @@ button.close:focus {
   width: 100%;
 }
 .app-auth-wrapper {
-  background: #f8f9fc;
+  background: white;
   height: 100vh;
 }
 .app-auth-wrapper .app-auth-body {

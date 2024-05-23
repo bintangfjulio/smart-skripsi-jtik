@@ -28,17 +28,20 @@
     <div class="container mb-5">
       <div class="row">
         <div class="col-12 col-md-11 col-lg-7 col-xl-6 mx-auto">
-          <div class="app-branding text-center mb-5">
-            <a class="app-logo" href=""
-              ><img
-                class="logo-icon me-2"
-                src="{{ url_for('static', filename='images/logotik.png') }}"
-                alt="logo"
-              />
-            </a>
-          </div>
           <!--//app-branding-->
-          <div class="app-card p-5 text-center shadow-sm">
+          <div class="app-card p-5 text-center shadow-sm mt-5">
+            <div
+              class="app-branding text-center mb-4"
+              style="margin-bottom: 0px; padding-top: 0px"
+            >
+              <a class="app-logo" href=""
+                ><img
+                  class="logo-icon"
+                  src="{{ url_for('static', filename='images/logotik.png') }}"
+                  alt="logo"
+                />
+              </a>
+            </div>
             <h1 class="page-title mb-4">
               {{ code }}<br /><span class="font-weight-light"
                 >{{ message }}</span
