@@ -2,7 +2,7 @@ from firebase_config import firebase_db
 
 
 class Lecturer:
-    def __init__(self, nama, kompetensi, foto, id=None):
+    def __init__(self, id=None, nama=None, kompetensi=None, foto=None):
         self.id = id
         self.nama = nama
         self.kompetensi = kompetensi
@@ -42,11 +42,3 @@ class Lecturer:
             })
 
         return datas
-    
-    
-    @staticmethod
-    def get_by_id(id):
-        lecturer = firebase_db.collection('lecturer').document(id).get()
-        data = lecturer.to_dict()
-
-        return Lecturer(nama=data['nama'], kompetensi=data['kompetensi'], foto=data['foto'], id=lecturer.id)

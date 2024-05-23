@@ -14,7 +14,7 @@ def create():
     foto = storage_upload_file(request.files['foto'], 'lecturer')
 
     try:
-        lecturer = Lecturer(nama, kompetensi, foto)
+        lecturer = Lecturer(nama=nama, kompetensi=kompetensi, foto=foto)
         lecturer.save()
         flash(('Tambah Data Sukses', 'Data dosen berhasil ditambahkan'), 'success')
 
@@ -30,7 +30,7 @@ def delete():
     id = request.form['id']
 
     try:
-        lecturer = Lecturer.get_by_id(id)
+        lecturer = Lecturer(id=id)
         lecturer.delete()
         storage_delete_file(lecturer.foto)
 
