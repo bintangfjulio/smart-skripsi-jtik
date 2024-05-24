@@ -1,5 +1,6 @@
 from flask_login import UserMixin
 from firebase_config import firebase_db
+from firebase_admin import firestore
 
 
 class User(UserMixin):
@@ -11,9 +12,18 @@ class User(UserMixin):
         self.registered_at = registered_at
         self.inactive = inactive
 
+
+    def update(self):
+        firebase_db.collection('users').document(self.id).update({
+            'inactive': self.inactive,
+        })
+
+        return self
+    
+
     @staticmethod
     def fetch():
-        users = firebase_db.collection('users').where('role', '==', 'pengguna').order_by('nama').stream()
+        users = firebase_db.collection('users').where('role', '==', 'pengguna').order_by("registered_at", direction=firestore.Query.DESCENDING).stream()
 
         datas = []
         for user in users:
@@ -24,7 +34,8 @@ class User(UserMixin):
                 'email': data['email'],
                 'role': data['role'],
                 'inactive': data['inactive'],
-                'registered_at': data['registered_at']
+                'status_badge': 'danger' if data['inactive'] == "1" else 'success',
+                'registered_at': data['registered_at'].strftime("%A, %d-%m-%Y %H:%M:%S")
             })
 
         return datas

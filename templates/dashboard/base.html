@@ -146,7 +146,11 @@
                 </a>
               </li>
               <li class="nav-item d-none" id="menu-user">
-                <a class="nav-link" id="user" href="">
+                <a
+                  class="nav-link"
+                  id="user"
+                  href="{{ url_for('dashboard.user')  }}"
+                >
                   <span class="nav-icon">
                     <svg
                       width="1em"
@@ -184,15 +188,6 @@
           {% block content %}{% endblock content %}
         </div>
       </div>
-
-      <footer class="app-auth-footer">
-        <div class="container text-center py-3">
-          <small class="copyright"
-            >Copyright <span style="color: #128c9b">JTIK PNJ</span>. Created by
-            Bintang Fajar Julio</small
-          >
-        </div>
-      </footer>
     </div>
 
     {% block modal %}{% endblock modal %}

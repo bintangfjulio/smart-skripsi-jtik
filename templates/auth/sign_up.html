@@ -1,6 +1,6 @@
 {% extends 'auth/base.html' %} {% block title %}Daftar{% endblock title %} {%
 block content %}
-<form action="{{ url_for('auth.sign_up') }}" class="auth-form">
+<form action="{{ url_for('auth.sign_up') }}" method="post" class="auth-form">
   <div class="nama mb-3">
     <label class="sr-only" for="nama">Nama</label>
     <input

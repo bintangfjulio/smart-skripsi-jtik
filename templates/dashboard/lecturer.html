@@ -153,6 +153,9 @@
     </div>
   </div>
   {% endfor %}
+  <p class="text-center mt-5 d-none" id="noData">
+    <span class="text-unmuted">Tidak ada</span> data yang ditemukan
+  </p>
 </div>
 
 <form id="deleteForm" method="post" action="{{ url_for('lecturer.delete') }}">
@@ -372,6 +375,16 @@
     $("#dataForm").attr("action", "{{ url_for('lecturer.create') }}");
   });
 
+  function toggleNoData() {
+    if ($(".lecturer:visible").length === 0) {
+      $("#noData").removeClass("d-none");
+    } else {
+      $("#noData").addClass("d-none");
+    }
+  }
+
+  toggleNoData();
+
   $("#filter").change(function () {
     var selectedKompetensi = $(this).val();
     $(".lecturer").each(function () {
@@ -385,6 +398,8 @@
         $(this).hide();
       }
     });
+
+    toggleNoData();
   });
 
   function deleteLecturer(lecturerId, lecturerFoto) {

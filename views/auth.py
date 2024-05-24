@@ -1,11 +1,11 @@
 import json
-import datetime
 
+from datetime import datetime
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from requests.exceptions import HTTPError
 from firebase_config import firebase_auth, firebase_db
 from flask_login import logout_user, login_user
-from middleware import load_user
+from middleware import load_user, role_required
 
 
 auth = Blueprint('auth', __name__, template_folder='templates')
@@ -34,7 +34,7 @@ def sign_up():
                 'email': email,
                 'role': 'pengguna',
                 'registered_at': datetime.now(),
-                'inactive': False
+                'inactive': '0'
             }
 
             firebase_db.collection('users').document(user['localId']).set(data)
@@ -89,6 +89,10 @@ def sign_in():
         
         user_id = user_info['localId']
         user = load_user(user_id)
+
+        if user.inactive == "1":
+            flash(('Masuk Gagal', 'Akun anda dinonaktifkan oleh admin'), 'error')
+            return render_template('auth/sign_in.html')
 
         if user:
             login_user(user)
