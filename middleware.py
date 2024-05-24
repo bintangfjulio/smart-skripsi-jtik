@@ -10,15 +10,17 @@ login_manager = LoginManager()
 def init_middleware(app):
     login_manager.init_app(app)
     
+
 @login_manager.user_loader
 def load_user(id):    
     user_doc = firebase_db.collection('users').document(id).get()
 
     if user_doc.exists:
         user_data = user_doc.to_dict()
-        return User(id=id, nama=user_data['nama'], email=user_data['email'], role=user_data['role'])
+        return User(id=id, nama=user_data['nama'], email=user_data['email'], role=user_data['role'], registered_at=user_data['registered_at'], inactive=user_data['inactive'])
     
     return None
+
 
 def role_required(required_role):
     def decorator(func):

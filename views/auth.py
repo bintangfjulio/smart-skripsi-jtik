@@ -1,9 +1,9 @@
 import json
+import datetime
 
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from requests.exceptions import HTTPError
 from firebase_config import firebase_auth, firebase_db
-
 from flask_login import logout_user, login_user
 from middleware import load_user
 
@@ -32,7 +32,9 @@ def sign_up():
             data = {
                 'nama': nama,
                 'email': email,
-                'role': 'user'
+                'role': 'pengguna',
+                'registered_at': datetime.now(),
+                'inactive': False
             }
 
             firebase_db.collection('users').document(user['localId']).set(data)
@@ -94,7 +96,7 @@ def sign_in():
             if user.role == 'admin':
                 return redirect(url_for('dashboard.lecturer'))
             
-            elif user.role == "user":
+            elif user.role == "pengguna":
                 return redirect(url_for('dashboard.classifier'))
 
     return render_template('auth/sign_in.html')

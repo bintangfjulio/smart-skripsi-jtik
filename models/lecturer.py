@@ -10,7 +10,7 @@ class Lecturer:
 
 
     def save(self):
-        _, doc = firebase_db.collection('lecturer').add({
+        _, doc = firebase_db.collection('lecturers').add({
             'nama': self.nama,
             'kompetensi': self.kompetensi,
             'foto': self.foto
@@ -22,13 +22,13 @@ class Lecturer:
     
 
     def delete(self):
-        firebase_db.collection('lecturer').document(self.id).delete()
+        firebase_db.collection('lecturers').document(self.id).delete()
 
         return self
     
 
     def update(self):
-        firebase_db.collection('lecturer').document(self.id).update({
+        firebase_db.collection('lecturers').document(self.id).update({
             'nama': self.nama,
             'kompetensi': self.kompetensi,
             'foto': self.foto
@@ -39,7 +39,7 @@ class Lecturer:
     
     @staticmethod
     def fetch():
-        lectures = firebase_db.collection('lecturer').order_by('nama').stream()
+        lectures = firebase_db.collection('lecturers').order_by('nama').stream()
 
         datas = []
         for lecturer in lectures:

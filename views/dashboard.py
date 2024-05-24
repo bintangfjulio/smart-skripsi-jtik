@@ -13,6 +13,6 @@ def lecturer():
 
 
 @dashboard.route('/classifier', methods=['GET'])
-@role_required('user')
+@role_required('pengguna')
 def classifier():
     return render_template('dashboard/classifier.html')

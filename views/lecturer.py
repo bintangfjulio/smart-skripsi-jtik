@@ -13,7 +13,7 @@ def create():
     kompetensi = request.form['kompetensi']
 
     try:
-        foto = storage_upload_file(request.files['foto'], 'lecturer')
+        foto = storage_upload_file(request.files['foto'], 'lecturers')
         lecturer = Lecturer(nama=nama, kompetensi=kompetensi, foto=foto)
         lecturer.save()
         
@@ -35,7 +35,7 @@ def update():
     
     if request.files['foto'].filename != '':
         storage_delete_file(foto)
-        foto = storage_upload_file(request.files['foto'], 'lecturer')
+        foto = storage_upload_file(request.files['foto'], 'lecturers')
 
     try:
         lecturer = Lecturer(id=id, nama=nama, kompetensi=kompetensi, foto=foto)
