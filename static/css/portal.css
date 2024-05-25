@@ -1464,7 +1464,7 @@ progress {
   }
   .col-xl-3 {
     flex: 0 0 auto;
-    width: 24%;
+    width: 25%;
   }
   .col-xl-4 {
     flex: 0 0 auto;
@@ -11712,7 +11712,6 @@ button.close:focus {
   padding-bottom: 0.6rem;
   height: 2.5rem;
   border-color: #e7e9ed;
-  color: #5d6778;
 }
 .form-control:focus {
   box-shadow: none;

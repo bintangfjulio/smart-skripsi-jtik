@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for
 from requests.exceptions import HTTPError
 from firebase_config import firebase_auth, firebase_db
 from flask_login import logout_user, login_user
-from middleware import load_user, role_required
+from middleware import load_user
 
 
 auth = Blueprint('auth', __name__, template_folder='templates')

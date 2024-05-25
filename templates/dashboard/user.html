@@ -34,20 +34,20 @@
                 <th class="cell">Email</th>
                 <th class="cell">Waktu Registrasi</th>
                 <th class="cell">Status</th>
-                <th class="cell">Aksi</th>
+                <th class="cell">Edit Status</th>
               </tr>
             </thead>
             <tbody>
-              {% for user in users %}
+              {% if users %} {% for user in users %}
               <tr>
                 <td class="cell">{{ loop.index }}</td>
                 <td class="cell">{{ user.nama }}</td>
                 <td class="cell">{{ user.email }}</td>
                 <td class="cell">{{ user.registered_at }}</td>
                 <td class="cell">
-                  <span class="badge bg-{{ user.status_badge }}"
-                    >{{ 'Nonaktif' if user.inactive == "1" else 'Aktif' }}</span
-                  >
+                  <span class="badge bg-{{ user.status_badge }}">
+                    {{ 'Nonaktif' if user.inactive == "1" else 'Aktif' }}
+                  </span>
                 </td>
                 <td class="cell">
                   <a
@@ -56,11 +56,15 @@
                     data-bs-toggle="modal"
                     data-bs-target="#modal"
                     onclick="setModalData('{{ user.id }}', '{{ user.inactive }}')"
-                    >Ubah Status</a
+                    >Edit</a
                   >
                 </td>
               </tr>
-              {% endfor %}
+              {% endfor %} {% else %}
+              <tr>
+                <td colspan="6" class="cell text-center">Tidak ada data</td>
+              </tr>
+              {% endif %}
             </tbody>
           </table>
         </div>
@@ -68,7 +72,7 @@
       </div>
       <!--//app-card-body-->
     </div>
-    <!-- <nav class="app-pagination">
+    <nav class="app-pagination">
       <ul class="pagination justify-content-center">
         <li class="page-item disabled">
           <a class="page-link" href="#" tabindex="-1" aria-disabled="true"
@@ -82,8 +86,7 @@
           <a class="page-link" href="#">Next</a>
         </li>
       </ul>
-    </nav> -->
-    <!--//app-pagination-->
+    </nav>
   </div>
   <!--//tab-pane-->
 </div>
