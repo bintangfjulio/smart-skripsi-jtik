@@ -7,8 +7,7 @@
   <div class="col-auto">
     <input
       type="text"
-      id="search-orders"
-      name="searchorders"
+      id="search"
       class="form-control search-orders"
       placeholder="Cari nama"
     />
@@ -37,35 +36,7 @@
                 <th class="cell">Edit Status</th>
               </tr>
             </thead>
-            <tbody>
-              {% if users %} {% for user in users %}
-              <tr>
-                <td class="cell">{{ loop.index }}</td>
-                <td class="cell">{{ user.nama }}</td>
-                <td class="cell">{{ user.email }}</td>
-                <td class="cell">{{ user.registered_at }}</td>
-                <td class="cell">
-                  <span class="badge bg-{{ user.status_badge }}">
-                    {{ 'Nonaktif' if user.inactive == "1" else 'Aktif' }}
-                  </span>
-                </td>
-                <td class="cell">
-                  <a
-                    class="btn-sm app-btn-secondary"
-                    href="#"
-                    data-bs-toggle="modal"
-                    data-bs-target="#modal"
-                    onclick="setModalData('{{ user.id }}', '{{ user.inactive }}')"
-                    >Edit</a
-                  >
-                </td>
-              </tr>
-              {% endfor %} {% else %}
-              <tr>
-                <td colspan="6" class="cell text-center">Tidak ada data</td>
-              </tr>
-              {% endif %}
-            </tbody>
+            <tbody id="userTableBody"></tbody>
           </table>
         </div>
         <!--//table-responsive-->
@@ -73,19 +44,7 @@
       <!--//app-card-body-->
     </div>
     <nav class="app-pagination">
-      <ul class="pagination justify-content-center">
-        <li class="page-item disabled">
-          <a class="page-link" href="#" tabindex="-1" aria-disabled="true"
-            >Previous</a
-          >
-        </li>
-        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-        <li class="page-item">
-          <a class="page-link" href="#">Next</a>
-        </li>
-      </ul>
+      <ul class="pagination justify-content-center" id="pagination"></ul>
     </nav>
   </div>
   <!--//tab-pane-->
@@ -140,9 +99,103 @@
 </div>
 {% endblock modal %} {% block script %}
 <script>
-  function setModalData(id, status) {
-    $("#id").val(id);
-    $("#status").val(status);
+  const users = {{ users|tojson|safe }};
+  const rowsPerPage = 10;
+  let currentPage = 1;
+
+  function displayUsers(page, filter) {
+    const $tableBody = $('#userTableBody');
+    $tableBody.empty();
+
+    const filteredUsers = filterUsers(users, filter);
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const paginatedUsers = filteredUsers.slice(start, end);
+
+    if (paginatedUsers.length === 0) {
+      const $row = $('<tr>');
+      $row.html('<td colspan="6" class="cell text-center">Tidak ada data</td>');
+      $tableBody.append($row);
+      $('#pagination').addClass('d-none');
+    } else {
+      $('#pagination').removeClass('d-none');
+      $.each(paginatedUsers, (index, user) => {
+        const $row = $('<tr>');
+        $row.html(`
+          <td class="cell">${start + index + 1}</td>
+          <td class="cell">${user.nama}</td>
+          <td class="cell">${user.email}</td>
+          <td class="cell">${user.registered_at}</td>
+          <td class="cell"><span class="badge bg-${user.status_badge}">${user.inactive === "1" ? 'Nonaktif' : 'Aktif'}</span></td>
+          <td class="cell"><a class="btn-sm app-btn-secondary" href="#" data-bs-toggle="modal" data-bs-target="#modal" onclick="setModalData('${user.id}', '${user.inactive}')">Edit</a></td>
+        `);
+        $tableBody.append($row);
+      });
+    }
   }
+
+  function filterUsers(users, filter) {
+    if (!filter) {
+      return users;
+    }
+    const regex = new RegExp(filter, 'i');
+    return users.filter(user => regex.test(user.nama));
+  }
+
+  function setupPagination(filter) {
+    const $pagination = $('#pagination');
+    $pagination.empty();
+
+    const filteredUsers = filterUsers(users, filter);
+    const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
+
+    const $prevPageItem = $('<li>').addClass('page-item ' + (currentPage === 1 ? 'disabled' : ''));
+    $prevPageItem.html('<a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>');
+    $prevPageItem.on('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        displayUsers(currentPage);
+        setupPagination();
+      }
+    });
+    $pagination.append($prevPageItem);
+
+    for (let page = 1; page <= totalPages; page++) {
+      const $pageItem = $('<li>').addClass('page-item ' + (page === currentPage ? 'active' : ''));
+      $pageItem.html(`<a class="page-link" href="#">${page}</a>`);
+      $pageItem.on('click', () => {
+        currentPage = page;
+        displayUsers(currentPage);
+        setupPagination();
+      });
+      $pagination.append($pageItem);
+    }
+
+    const $nextPageItem = $('<li>').addClass('page-item ' + (currentPage === totalPages ? 'disabled' : ''));
+    $nextPageItem.html('<a class="page-link" href="#">Next</a>');
+    $nextPageItem.on('click', () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        displayUsers(currentPage);
+        setupPagination();
+      }
+    });
+    $pagination.append($nextPageItem);
+  }
+
+  function setModalData(id, status) {
+    $('#id').val(id);
+    $('#status').val(status);
+  }
+
+  $('#search').on('input', function() {
+    const filter = $(this).val().trim();
+    currentPage = 1;
+    displayUsers(currentPage, filter);
+    setupPagination(filter);
+  });
+
+  displayUsers(currentPage);
+  setupPagination();
 </script>
 {% endblock script %}
