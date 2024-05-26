@@ -15,7 +15,7 @@ def update():
         user = User(id=id, inactive=status)
         user.update()
 
-        flash(('Perbarui Status Sukses', 'Status Pengguna berhasil diperbarui'), 'success')
+        flash(('Perbarui Status Sukses', 'Status pengguna berhasil diperbarui'), 'success')
 
     except Exception as e:
         flash(('Perbarui Status Gagal', 'Terjadi kesalahan server saat memperbarui'), 'error')

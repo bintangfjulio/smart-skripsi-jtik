@@ -315,10 +315,6 @@ dd {
 blockquote {
   margin: 0 0 1rem;
 }
-b,
-strong {
-  font-weight: bolder;
-}
 small,
 .small {
   font-size: 0.875em;

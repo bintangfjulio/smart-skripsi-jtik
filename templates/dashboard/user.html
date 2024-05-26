@@ -9,7 +9,7 @@
       type="text"
       id="search"
       class="form-control search-orders"
-      placeholder="Cari nama"
+      placeholder="Cari nama..."
     />
   </div>
 </div>
@@ -62,7 +62,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="modal-title fs-5" id="modalLabel">Status Pengguna</h1>
+        <h1 class="modal-title fs-5" id="modalLabel">Edit Status</h1>
         <button
           type="button"
           class="btn-close"
@@ -100,7 +100,7 @@
 {% endblock modal %} {% block script %}
 <script>
   const users = {{ users|tojson|safe }};
-  const rowsPerPage = 10;
+  const rowsPerPage = 5;
   let currentPage = 1;
 
   function displayUsers(page, filter) {

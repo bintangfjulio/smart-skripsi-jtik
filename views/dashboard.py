@@ -23,4 +23,4 @@ def user():
 @dashboard.route('/classifier', methods=['GET'])
 @role_required('pengguna')
 def classifier():
-    return render_template('dashboard/classifier.html')
+    return render_template('dashboard/classifier.html', page="classifier")
