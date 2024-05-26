@@ -12209,7 +12209,7 @@ button.close:focus {
   border-bottom: 1px solid #e7e9ed;
 }
 .app-card .app-card-title {
-  font-size: 1.125rem;
+  font-size: 1rem;
   margin-bottom: 0;
 }
 .app-card .card-header-action {
@@ -12530,9 +12530,6 @@ button.close:focus {
 }
 .app-card-settings {
   font-size: 1rem;
-}
-.app-card-settings .form-label {
-  font-weight: bold;
 }
 .app-card-settings .form-control {
   font-size: 1rem;

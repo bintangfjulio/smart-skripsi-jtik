@@ -33,7 +33,7 @@
                 <th class="cell">Email</th>
                 <th class="cell">Waktu Registrasi</th>
                 <th class="cell">Status</th>
-                <th class="cell">Edit Status</th>
+                <th class="cell">Aksi</th>
               </tr>
             </thead>
             <tbody id="userTableBody"></tbody>
@@ -62,7 +62,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="modal-title fs-5" id="modalLabel">Edit Status</h1>
+        <h1 class="modal-title fs-5" id="modalLabel">Ubah Status</h1>
         <button
           type="button"
           class="btn-close"
@@ -122,12 +122,13 @@
       $.each(paginatedUsers, (index, user) => {
         const $row = $('<tr>');
         $row.html(`
-          <td class="cell">${start + index + 1}</td>
+          <td class="cell">${start + index + 1}.</td>
           <td class="cell">${user.nama}</td>
           <td class="cell">${user.email}</td>
           <td class="cell">${user.registered_at}</td>
           <td class="cell"><span class="badge bg-${user.status_badge}">${user.inactive === "1" ? 'Nonaktif' : 'Aktif'}</span></td>
-          <td class="cell"><a class="btn-sm app-btn-secondary" href="#" data-bs-toggle="modal" data-bs-target="#modal" onclick="setModalData('${user.id}', '${user.inactive}')">Edit</a></td>
+          <td class="cell"><a class="btn-sm app-btn-secondary me-1" href="#" data-bs-toggle="modal" data-bs-target="#modal" onclick="setModalData('${user.id}', '${user.inactive}')">Ubah Status</a>
+  <a class="btn-sm app-btn-secondary" href="#">Cek Riwayat</a></td>
         `);
         $tableBody.append($row);
       });
@@ -197,5 +198,10 @@
 
   displayUsers(currentPage);
   setupPagination();
+
+  $('#dataForm').on('submit', function(event) {
+      $(".spinner").removeClass("d-none");
+      $(".overlay").removeClass("d-none");
+  });
 </script>
 {% endblock script %}
