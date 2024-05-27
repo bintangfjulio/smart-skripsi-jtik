@@ -34,8 +34,8 @@ class User(UserMixin):
                 'email': data['email'],
                 'role': data['role'],
                 'inactive': data['inactive'],
-                'status_badge': 'danger' if data['inactive'] == "1" else 'success',
-                'registered_at': data['registered_at'].strftime("%A, %d-%m-%Y %H:%M:%S")
+                'registered_at': data['registered_at'].strftime("%A, %d-%m-%Y %H:%M:%S"),
+                'status_badge': 'danger' if data['inactive'] == "1" else 'success'
             })
 
         return datas

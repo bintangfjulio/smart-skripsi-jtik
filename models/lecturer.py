@@ -38,8 +38,13 @@ class Lecturer:
     
     
     @staticmethod
-    def fetch():
-        lectures = firebase_db.collection('lecturers').order_by('nama').stream()
+    def fetch(kompetensi=None):
+        query = firebase_db.collection('lecturers').order_by('nama')
+
+        if kompetensi is not None:
+            query = query.where('kompetensi', '==', kompetensi)
+
+        lectures = query.stream()
 
         datas = []
         for lecturer in lectures:

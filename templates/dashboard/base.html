@@ -245,7 +245,7 @@
             Swal.fire({
               title: '{{ title }}',
               text: '{{ message }}',
-              icon: '{{ category }}' === 'error' ? 'error' : 'success',
+              icon: '{{ category }}',
               confirmButtonText: 'Baik, saya mengerti',
               customClass: {
                 confirmButton: 'swt-alert-btn'
@@ -254,6 +254,18 @@
           {% endfor %}
         {% endif %}
       {% endwith %}
+
+      function alertMessage(title, message, category){
+        Swal.fire({
+          title: title,
+          text: message,
+          icon: category,
+          confirmButtonText: 'Baik, saya mengerti',
+          customClass: {
+            confirmButton: 'swt-alert-btn'
+          }
+        })
+      }
     </script>
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>

@@ -308,15 +308,11 @@
       };
       reader.readAsDataURL(file);
     } else {
-      Swal.fire({
-        title: "Upload File Gagal",
-        text: "Hanya menerima format file gambar",
-        icon: "error",
-        confirmButtonText: "Baik, saya mengerti",
-        customClass: {
-          confirmButton: "swt-alert-btn",
-        },
-      });
+      alertMessage(
+        "Upload File Gagal",
+        "Hanya menerima format file gambar",
+        "error"
+      );
     }
   }
 
@@ -338,15 +334,7 @@
       $(".overlay").removeClass("d-none");
       form.submit();
     } else {
-      Swal.fire({
-        title: "Simpan Data Gagal",
-        text: "Seluruh isian harus lengkap",
-        icon: "error",
-        confirmButtonText: "Baik, saya mengerti",
-        customClass: {
-          confirmButton: "swt-alert-btn",
-        },
-      });
+      alertMessage("Simpan Data Gagal", "Seluruh isian harus lengkap", "error");
     }
   }
 

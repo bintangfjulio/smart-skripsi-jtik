@@ -297,14 +297,11 @@ title %} {% block content %}
 
   $("#addKeywordBtn").on("click", function (event) {
     if (keywords.length == 5) {
-      Swal.fire({
-        title: "Maksimal 5 kata kunci",
-        icon: "info",
-        confirmButtonText: "Baik, saya mengerti",
-        customClass: {
-          confirmButton: "swt-alert-btn",
-        },
-      });
+      alertMessage(
+        "Maksimal 5 kata kunci",
+        "Tidak dapat menambahkan kata kunci",
+        "info"
+      );
       return;
     }
 
