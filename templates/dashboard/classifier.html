@@ -184,13 +184,8 @@ title %} {% block content %}
   <div class="col-12">
     <div class="app-card app-card-settings shadow-sm p-4">
       <div class="app-card-body">
-        <form
-          method="post"
-          action="{{ url_for('classifier.inference') }}"
-          id="inference"
-        >
-          <input type="hidden" id="keywords" name="keywords" />
-          <input type="hidden" name="id" value="{{ current_user.id }}" />
+        <form method="post" id="inference">
+          <input type="hidden" value="{{ current_user.id }}" />
 
           <div class="mb-3">
             <div class="d-flex justify-content-between">
@@ -199,7 +194,6 @@ title %} {% block content %}
             </div>
             <textarea
               id="abstrak"
-              name="abstrak"
               class="form-control"
               placeholder="Masukkan abstrak"
               style="height: 160px"
@@ -341,11 +335,13 @@ title %} {% block content %}
     keywords = [];
   });
 
-  $("#inference").on("submit", function () {
+  $("#inference").on("submit", function (e) {
+    e.preventDefault();
+
     $(".spinner").removeClass("d-none");
     $(".overlay").removeClass("d-none");
 
-    $("#keywords").val(keywords.join(", "));
+    var inputtedKeywords = $("#keywords").val(keywords.join(", "));
   });
 </script>
 {% endblock script %}
