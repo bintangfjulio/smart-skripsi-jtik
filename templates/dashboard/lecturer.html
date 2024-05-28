@@ -378,10 +378,10 @@
   toggleNoData();
 
   $("#filter").change(function () {
-    var selectedkbk = $(this).val();
+    var selectedKbk = $(this).val();
     $(".lecturer").each(function () {
-      var lecturerkbk = $(this).data("kbk");
-      if (selectedkbk === "" || lecturerkbk === selectedkbk) {
+      var lecturerKbk = $(this).data("kbk");
+      if (selectedKbk === "" || lecturerKbk === selectedKbk) {
         $(this).show();
       } else {
         $(this).hide();
