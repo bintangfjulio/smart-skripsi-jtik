@@ -23,7 +23,6 @@
         0% {
           transform: rotate(0deg);
         }
-
         100% {
           transform: rotate(360deg);
         }
@@ -40,11 +39,9 @@
       }
     </style>
   </head>
-
   <body>
     <div class="overlay d-none"></div>
     <div class="spinner d-none"></div>
-
     <div class="container-fluid mt-4 px-4">
       <div class="row">
         <div class="col-4 mb-3">
@@ -60,13 +57,11 @@
             </option>
           </select>
         </div>
-
         <div class="col-8 mb-3 text-end">
           <button type="button" class="btn btn-outline-primary">
             Export Dataset
           </button>
         </div>
-
         <div class="col-12 mb-2">
           <table class="table table-striped table-bordered border-dark">
             <thead>
@@ -74,14 +69,13 @@
                 <th scope="col">No</th>
                 <th scope="col">Judul</th>
                 <th scope="col">Prodi</th>
-                <th scope="col">Kompetensi</th>
+                <th scope="col">Kelompok Bidang Keahlian</th>
                 <th scope="col">Aksi</th>
               </tr>
             </thead>
             <tbody id="tableBody"></tbody>
           </table>
         </div>
-
         <div class="col-12 justify-content-center d-flex">
           <nav aria-label="Page navigation example">
             <ul class="pagination"></ul>
@@ -89,7 +83,6 @@
         </div>
       </div>
     </div>
-
     <div
       class="modal fade"
       id="editModal"
@@ -166,19 +159,17 @@
               </div>
               <div class="mb-3">
                 <label for="kompetensiSelect" class="form-label"
-                  >Kompetensi</label
+                  >Kelompok Bidang Keahlian</label
                 >
                 <select class="form-select" id="kompetensiSelect">
-                  <option value="" selected disabled>Pilih Kompetensi</option>
+                  <option value="" selected disabled>Pilih</option>
                   <option value="Sistem Cerdas">Sistem Cerdas</option>
                   <option value="Rekayasa Perangkat Lunak">
                     Rekayasa Perangkat Lunak
                   </option>
                   <option value="Jaringan & IoT">Jaringan & IoT</option>
-                  <option
-                    value="Multimedia & Teknologi: Kecerdasan Artifisial Game"
-                  >
-                    Multimedia & Teknologi: Kecerdasan Artifisial Game
+                  <option value="Multimedia & Teknologi: AI Game">
+                    Multimedia & Teknologi: AI Game
                   </option>
                 </select>
                 <input type="hidden" id="docIdInput" />
@@ -200,7 +191,6 @@
         </div>
       </div>
     </div>
-
     <script src="js/bootstrap.min.js"></script>
     <script>
       const editModal = new bootstrap.Modal(
@@ -221,7 +211,7 @@
 
       function showModal(
         id,
-        kompetensi,
+        kelompok_bidang_keahlian,
         judul,
         abstrak,
         kata_kunci,
@@ -230,7 +220,8 @@
         url
       ) {
         document.getElementById("docIdInput").value = id;
-        document.getElementById("kompetensiSelect").value = kompetensi;
+        document.getElementById("kompetensiSelect").value =
+          kelompok_bidang_keahlian;
         document.getElementById("judulInput").value = judul;
         document.getElementById("abstrakTextarea").value = abstrak;
         document.getElementById("keywordInput").value = kata_kunci;
@@ -243,7 +234,7 @@
       function renderPagination() {
         const pagination = document.querySelector(".pagination");
 
-        btnHtml = "";
+        let btnHtml = "";
 
         btnHtml += `<li class="page-item ${
           maxPage == 5 ? "disabled" : ""
@@ -273,7 +264,7 @@
       }
     </script>
     <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
       import {
         getFirestore,
         collection,
@@ -285,7 +276,7 @@
         orderBy,
         updateDoc,
         addDoc,
-      } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+      } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
       const firebaseConfig = {
         apiKey: "AIzaSyByjJsv_lcR--zXqKsOkPDRGgKON8JvcH4",
@@ -323,7 +314,7 @@
 
           querySnapshot.forEach((doc) => {
             const data = doc.data();
-            const kompetensiClass = data.kompetensi
+            const kompetensiClass = data.kelompok_bidang_keahlian
               ? "text-success"
               : "text-danger";
             tableHtml += `
@@ -334,11 +325,11 @@
                     <td>${data.judul}</td>
                     <td>${data.prodi}</td>
                     <td class="${kompetensiClass}">${
-              data.kompetensi || "Belum Ada"
+              data.kelompok_bidang_keahlian || "Belum Ada"
             }</td>
                     <td class="text-center">
                         <button type="button" class="btn btn-primary btn-sm" onclick="showModal(
-                            '${doc.id}', '${data.kompetensi}', '${
+                            '${doc.id}', '${data.kelompok_bidang_keahlian}', '${
               data.judul
             }', '${data.abstrak.replace(/'/g, "")}',
                             '${data.kata_kunci}', '${data.nama_pembimbing}', '${
@@ -395,7 +386,7 @@
           const kompetensi = document.getElementById("kompetensiSelect").value;
 
           if (kompetensi == "") {
-            alert("Pilih kompetensi terlebih dahulu");
+            alert("Pilih kelompok bidang keahlian terlebih dahulu");
             return;
           }
 
@@ -456,8 +447,8 @@
           spinner.classList.add("d-none");
         });
 
-      const init = false;
-      if (init) {
+      const migration = false;
+      if (migration) {
         fetch("init_data_repo_jtik.json")
           .then((response) => response.json())
           .then((data) => {
