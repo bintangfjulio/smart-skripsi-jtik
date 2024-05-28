@@ -2,17 +2,17 @@ from firebase_config import firebase_db
 
 
 class Lecturer:
-    def __init__(self, id=None, nama=None, kompetensi=None, foto=None):
+    def __init__(self, id=None, nama=None, kelompok_bidang_keahlian=None, foto=None):
         self.id = id
         self.nama = nama
-        self.kompetensi = kompetensi
+        self.kelompok_bidang_keahlian = kelompok_bidang_keahlian
         self.foto = foto
 
 
     def save(self):
         _, doc = firebase_db.collection('lecturers').add({
             'nama': self.nama,
-            'kompetensi': self.kompetensi,
+            'kelompok_bidang_keahlian': self.kelompok_bidang_keahlian,
             'foto': self.foto
         })
 
@@ -30,7 +30,7 @@ class Lecturer:
     def update(self):
         firebase_db.collection('lecturers').document(self.id).update({
             'nama': self.nama,
-            'kompetensi': self.kompetensi,
+            'kelompok_bidang_keahlian': self.kelompok_bidang_keahlian,
             'foto': self.foto
         })
 
@@ -38,11 +38,11 @@ class Lecturer:
     
     
     @staticmethod
-    def fetch(kompetensi=None):
+    def fetch(kelompok_bidang_keahlian=None):
         query = firebase_db.collection('lecturers').order_by('nama')
 
-        if kompetensi is not None:
-            query = query.where('kompetensi', '==', kompetensi)
+        if kelompok_bidang_keahlian is not None:
+            query = query.where('kelompok_bidang_keahlian', '==', kelompok_bidang_keahlian)
 
         lectures = query.stream()
 
@@ -52,7 +52,7 @@ class Lecturer:
             datas.append({
                 'id': lecturer.id,
                 'nama': data['nama'],
-                'kompetensi': data['kompetensi'],
+                'kelompok_bidang_keahlian': data['kelompok_bidang_keahlian'],
                 'foto': data['foto']
             })
 

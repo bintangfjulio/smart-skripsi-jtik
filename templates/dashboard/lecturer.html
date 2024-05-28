@@ -15,14 +15,14 @@
             id="filter"
             style="font-size: 0.95rem"
           >
-            <option selected value="">Semua Kompetensi</option>
+            <option selected value="">Semua Kelompok Bidang Keahlian</option>
             <option value="Sistem Cerdas">Sistem Cerdas</option>
             <option value="Rekayasa Perangkat Lunak">
               Rekayasa Perangkat Lunak
             </option>
             <option value="Jaringan & IoT">Jaringan & IoT</option>
-            <option value="Multimedia & Teknologi: Kecerdasan Artifisial Game">
-              Multimedia & Teknologi: Kecerdasan Artifisial Game
+            <option value="Multimedia & Teknologi: AI Game">
+              Multimedia & Teknologi: AI Game
             </option>
           </select>
         </div>
@@ -44,7 +44,7 @@
   {% for lecturer in lecturers %}
   <div
     class="col-6 col-md-4 col-xl-3 col-xxl-2 lecturer"
-    data-kompetensi="{{ lecturer.kompetensi }}"
+    data-kbk="{{ lecturer.kelompok_bidang_keahlian }}"
   >
     <div class="app-card app-card-doc shadow-sm h-100">
       <div class="app-card-thumb-holder p-3 d-flex justify-content-center">
@@ -71,8 +71,10 @@
         <div class="app-doc-meta">
           <ul class="list-unstyled mb-0">
             <li>
-              Kompetensi:
-              <span class="text-unmuted">{{ lecturer.kompetensi }}</span>
+              Kelompok Bidang Keahlian:
+              <span class="text-unmuted"
+                >{{ lecturer.kelompok_bidang_keahlian }}</span
+              >
             </li>
           </ul>
         </div>
@@ -106,7 +108,7 @@
                   data-bs-target="#modal"
                   class="dropdown-item"
                   href="#"
-                  onclick="setModalData('{{ lecturer.id }}', '{{ lecturer.nama }}', '{{ lecturer.kompetensi }}', '{{ lecturer.foto }}')"
+                  onclick="setModalData('{{ lecturer.id }}', '{{ lecturer.nama }}', '{{ lecturer.kelompok_bidang_keahlian }}', '{{ lecturer.foto }}')"
                   ><svg
                     width="1em"
                     height="1em"
@@ -261,18 +263,20 @@
             />
           </div>
           <div class="mb-5">
-            <label for="kompetensi" class="form-label">Kompetensi Dosen</label>
-            <select class="form-select" id="kompetensi" name="kompetensi">
-              <option selected value="" disabled>Pilih Kompetensi</option>
+            <label for="kbk" class="form-label"
+              >Kelompok Bidang Keahlian Dosen</label
+            >
+            <select class="form-select" id="kbk" name="kbk">
+              <option selected value="" disabled>
+                Pilih Kelompok Bidang Keahlian
+              </option>
               <option value="Sistem Cerdas">Sistem Cerdas</option>
               <option value="Rekayasa Perangkat Lunak">
                 Rekayasa Perangkat Lunak
               </option>
               <option value="Jaringan & IoT">Jaringan & IoT</option>
-              <option
-                value="Multimedia & Teknologi: Kecerdasan Artifisial Game"
-              >
-                Multimedia & Teknologi: Kecerdasan Artifisial Game
+              <option value="Multimedia & Teknologi: AI Game">
+                Multimedia & Teknologi: AI Game
               </option>
             </select>
           </div>
@@ -320,7 +324,7 @@
     const form = $("#dataForm");
     const fileInput = $("#file-input");
     const nama = $("#nama");
-    const kompetensi = $("#kompetensi");
+    const kbk = $("#kbk");
     const modalType = $("#modalType").val();
 
     let fileExist = true;
@@ -329,7 +333,7 @@
       fileExist = false;
     }
 
-    if (fileExist && nama.val() !== "" && kompetensi.val() !== null) {
+    if (fileExist && nama.val() !== "" && kbk.val() !== null) {
       $(".spinner").removeClass("d-none");
       $(".overlay").removeClass("d-none");
       form.submit();
@@ -350,7 +354,7 @@
 
   $("#modal").on("hidden.bs.modal", function () {
     $("#nama").val("");
-    $("#kompetensi").val("");
+    $("#kbk").val("");
 
     $("#file-input").val("");
     $("#modalType").val("create");
@@ -374,13 +378,10 @@
   toggleNoData();
 
   $("#filter").change(function () {
-    var selectedKompetensi = $(this).val();
+    var selectedkbk = $(this).val();
     $(".lecturer").each(function () {
-      var lecturerKompetensi = $(this).data("kompetensi");
-      if (
-        selectedKompetensi === "" ||
-        lecturerKompetensi === selectedKompetensi
-      ) {
+      var lecturerkbk = $(this).data("kbk");
+      if (selectedkbk === "" || lecturerkbk === selectedkbk) {
         $(this).show();
       } else {
         $(this).hide();
@@ -415,15 +416,10 @@
     });
   }
 
-  function setModalData(
-    lecturerId,
-    lecturerName,
-    lecturerKompetensi,
-    lecturerFoto
-  ) {
+  function setModalData(lecturerId, lecturerName, lecturerKbk, lecturerFoto) {
     $("#lecturer-id").val(lecturerId);
     $("#nama").val(lecturerName);
-    $("#kompetensi").val(lecturerKompetensi);
+    $("#kbk").val(lecturerKbk);
     $("#modalType").val("update");
     $("#prevFoto").val(lecturerFoto);
 

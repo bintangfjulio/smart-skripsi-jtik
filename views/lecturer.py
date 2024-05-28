@@ -10,11 +10,11 @@ lecturer = Blueprint('lecturer', __name__, template_folder='templates', url_pref
 @role_required('admin')
 def create():
     nama = request.form['nama']
-    kompetensi = request.form['kompetensi']
+    kbk = request.form['kbk']
 
     try:
         foto = storage_upload_file(request.files['foto'], 'lecturers')
-        lecturer = Lecturer(nama=nama, kompetensi=kompetensi, foto=foto)
+        lecturer = Lecturer(nama=nama, kelompok_bidang_keahlian=kbk, foto=foto)
         lecturer.save()
         
         flash(('Tambah Data Sukses', 'Data dosen berhasil ditambahkan'), 'success')
@@ -30,7 +30,7 @@ def create():
 def update():
     id = request.form['id']
     nama = request.form['nama']
-    kompetensi = request.form['kompetensi']
+    kbk = request.form['kbk']
     foto = request.form['prev_foto']
     
     if request.files['foto'].filename != '':
@@ -38,7 +38,7 @@ def update():
         foto = storage_upload_file(request.files['foto'], 'lecturers')
 
     try:
-        lecturer = Lecturer(id=id, nama=nama, kompetensi=kompetensi, foto=foto)
+        lecturer = Lecturer(id=id, nama=nama, kelompok_bidang_keahlian=kbk, foto=foto)
         lecturer.update()
 
         flash(('Perbarui Data Sukses', 'Data dosen berhasil diperbarui'), 'success')
