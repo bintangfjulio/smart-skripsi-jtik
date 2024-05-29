@@ -3,6 +3,7 @@ import emoji
 import re
 import torch
 import pandas as pd
+import torch.nn as nn
 
 from torch import clamp
 from transformers import BertTokenizer, BertModel
@@ -36,13 +37,29 @@ def classification(text):
     
     pretrained_bert = BertModel.from_pretrained(config["bert_model"], output_attentions=False, output_hidden_states=True)
     model = BERT_CNN(pretrained_bert=pretrained_bert, dropout=config["dropout"], window_sizes=config["window_sizes"], in_channels=config["in_channels"], out_channels=config["out_channels"], num_bert_states=config["num_bert_states"])
-    model.load_state_dict(torch.load('checkpoints/flat_model.pt', map_location=device))
+    output_layer = nn.Linear(len(config["window_sizes"]) * config["out_channels"], len(labels))
+
+    checkpoint = torch.load('checkpoint/flat_prodi_model.pt', map_location=device)
+
+    model.load_state_dict(checkpoint["hidden_states"])
+    output_layer.load_state_dict(checkpoint["last_hidden_state"])
+
     model.to(device)
+    output_layer.to(device)
 
     model.eval()
     with torch.no_grad():
         preds = model(input_ids=token["input_ids"].to(device), attention_mask=token["attention_mask"].to(device))
+        preds = output_layer(preds)
         result = torch.argmax(preds, dim=1)
+        probs = torch.softmax(preds, dim=1)
+        print(probs)
+
+        stats = {}
+        for index, prob in enumerate(probs[0]):
+            stats[labels[index]] = round(prob.item() * 100, 1)
+
+        print(stats)
 
     return labels[result[0]]
 
@@ -70,7 +87,6 @@ if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, default='data_repo_jtik.csv')
     parser.add_argument("--bert_model", type=str, default="indolem/indobert-base-uncased")
     parser.add_argument("--dropout", type=float, default=0.1)
     parser.add_argument("--max_length", type=int, default=360)
@@ -80,13 +96,13 @@ if __name__ == "__main__":
     parser.add_argument("--num_bert_states", type=int, default=4)
     config = vars(parser.parse_args())
 
-    dataset = pd.read_csv(f'dataset/{config["dataset"]}')
+    dataset = pd.read_json(f'dataset/init_data_repo_jtik.json')
     stop_words = StopWordRemoverFactory().get_stop_words()
     tokenizer = BertTokenizer.from_pretrained(config["bert_model"], use_fast=False)
     stemmer = StemmerFactory().create_stemmer()
-    labels = sorted(dataset['prodi'].unique().tolist())
 
-    responses = []
+    labels = dataset["prodi"].unique().tolist()
+    labels = sorted(labels)
     
     abstract = input("Please input abstract: ")
     abstract = preprocessor(abstract)
@@ -95,18 +111,21 @@ if __name__ == "__main__":
     classified = classification(abstract)
     print(f"\nClassification Result: {classified}")
 
-    print("Similarity Check...")
-    highest_dosen_similarity = {}
-    for item in responses:
-        abstrak_response = preprocessor(item["abstrak"])
-        similiraty_score = similarity_checker(abstract, abstrak_response)
+    
+    # responses = []
 
-        if item["dosen"] in highest_dosen_similarity:
-            if similiraty_score > highest_dosen_similarity[item["dosen"]]:
-                highest_dosen_similarity[item["dosen"]] = similiraty_score
-        else:
-            highest_dosen_similarity[item["dosen"]] = similiraty_score
+    # print("Similarity Check...")
+    # highest_dosen_similarity = {}
+    # for item in responses:
+    #     abstrak_response = preprocessor(item["abstrak"])
+    #     similiraty_score = similarity_checker(abstract, abstrak_response)
 
-    sorted_scores = sorted(highest_dosen_similarity.items(), key=lambda x: x[1], reverse=True)
-    for i, (dosen, score) in enumerate(sorted_scores):
-        print(f"{i+1}. Dosen: {dosen}, Similarity Score: {score}")
+    #     if item["dosen"] in highest_dosen_similarity:
+    #         if similiraty_score > highest_dosen_similarity[item["dosen"]]:
+    #             highest_dosen_similarity[item["dosen"]] = similiraty_score
+    #     else:
+    #         highest_dosen_similarity[item["dosen"]] = similiraty_score
+
+    # sorted_scores = sorted(highest_dosen_similarity.items(), key=lambda x: x[1], reverse=True)
+    # for i, (dosen, score) in enumerate(sorted_scores):
+    #     print(f"{i+1}. Dosen: {dosen}, Similarity Score: {score}")
