@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, url_for
 from views import views
 from flask_login import current_user
+from inference_config import Inference
 
 
 locale.setlocale(locale.LC_TIME, 'id_ID')
@@ -15,6 +16,7 @@ app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = os.getenv('SECRET_KEY')
 
 middleware.init_middleware(app)
+app.inference = Inference()
 
 for view in views:
     app.register_blueprint(view)

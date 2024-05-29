@@ -196,6 +196,7 @@ title %} {% block content %}
               class="form-control"
               placeholder="Masukkan abstrak"
               style="height: 160px"
+              required
             ></textarea>
           </div>
 
@@ -254,7 +255,7 @@ title %} {% block content %}
                 id="bersihkanBtn"
                 data-bs-dismiss="modal"
               >
-                Bersihkan
+                Reset
               </button>
             </div>
             <div class="col-auto">
@@ -270,10 +271,69 @@ title %} {% block content %}
     <!--//app-card-->
   </div>
 </div>
-<!--//row-->
+
 <hr class="my-4" />
 
+<div class="row g-4 settings-section d-none" id="hasil">
+  <div class="col-12">
+    <h3 class="section-title">Hasil</h3>
+  </div>
+  <div class="col-12 col-lg-6">
+    <div class="app-card app-card-stats-table h-100 shadow-sm">
+      <div class="app-card-header p-3">
+        <div class="row justify-content-between align-items-center">
+          <div class="col-auto">
+            <h4 class="app-card-title">Probabilitas</h4>
+          </div>
+        </div>
+        <!--//row-->
+      </div>
+      <!--//app-card-header-->
+      <div class="app-card-body p-3 p-lg-4">
+        <div class="table-responsive">
+          <table class="table table-borderless mb-0">
+            <thead>
+              <tr>
+                <th class="meta">Kelas</th>
+                <th class="meta stat-cell">Skor</th>
+              </tr>
+            </thead>
+            <tbody id="statsResult"></tbody>
+          </table>
+        </div>
+        <!--//table-responsive-->
+      </div>
+      <!--//app-card-body-->
+    </div>
+    <!--//app-card-->
+  </div>
+  <div class="col-12 col-lg-6">
+    <div class="app-card app-card-chart h-100 shadow-sm">
+      <div class="app-card-header p-3 border-0">
+        <h4 class="app-card-title">Grafik</h4>
+      </div>
+      <div class="app-card-body pb-2">
+        <div class="chart-container">
+          <div class="chartjs-size-monitor">
+            <div class="chartjs-size-monitor-expand"><div class=""></div></div>
+            <div class="chartjs-size-monitor-shrink"><div class=""></div></div>
+          </div>
+          <canvas
+            id="chart-doughnut"
+            style="display: block; width: 454px; height: 227px"
+            width="384"
+            height="157"
+            class="chartjs-render-monitor"
+          ></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock content %} {% block modal %} {% endblock modal %} {% block script %}
+<script src="{{ url_for('static', filename='plugins/chart.js/chart.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/circle-chart.js') }}"></script>
 <script>
   let keywords = [];
 
@@ -328,16 +388,79 @@ title %} {% block content %}
     $("#keywordInput").val("");
     $("#wordCounter").text("0/350").css("color", "inherit");
     $("#keywordContainer").empty();
+    $("#hasil").addClass("d-none");
     keywords = [];
   });
 
   $("#inference").on("submit", function (e) {
     e.preventDefault();
 
+    if ($("#abstrak").val().trim() == "") {
+      alertMessage(
+        "Abstrak Harus Diisi",
+        "Tidak dapat melakukan klasifikasi",
+        "error"
+      );
+      return;
+    }
+
+    if (keywords.length == 0) {
+      alertMessage(
+        "Minimal 1 Kata Kunci",
+        "Tidak dapat melakukan klasifikasi",
+        "error"
+      );
+      return;
+    }
+
     $(".spinner").removeClass("d-none");
     $(".overlay").removeClass("d-none");
 
     var inputtedKeywords = $("#keywords").val(keywords.join(", "));
+
+    $.ajax({
+      type: "POST",
+      url: '{{ url_for("classifier.inference") }}',
+      contentType: "application/json",
+      data: JSON.stringify({
+        abstrak: $("#abstrak").val(),
+        kata_kunci: inputtedKeywords,
+      }),
+      xhrFields: {
+        withCredentials: true,
+      },
+      success: function (response) {
+        $("#statsResult").empty();
+
+        probs = response["message"]["probs"];
+
+        for (const [key, value] of Object.entries(probs)) {
+          $("#statsResult").append(
+            `<tr>
+              <td style="color: #128c9b">${key}</td>
+              <td class="stat-cell">${value}%</td>
+            </tr>`
+          );
+        }
+
+        var doughnutChart = document
+          .getElementById("chart-doughnut")
+          .getContext("2d");
+        window.myDoughnut = new Chart(
+          doughnutChart,
+          initChart(Object.keys(probs), Object.values(probs))
+        );
+
+        $("#hasil").removeClass("d-none");
+        $(".spinner").addClass("d-none");
+        $(".overlay").addClass("d-none");
+      },
+      error: function (response) {
+        $(".spinner").addClass("d-none");
+        $(".overlay").addClass("d-none");
+        alertMessage("Klasifikasi Gagal", "Terjadi kesalahan server", "error");
+      },
+    });
   });
 </script>
 {% endblock script %}
