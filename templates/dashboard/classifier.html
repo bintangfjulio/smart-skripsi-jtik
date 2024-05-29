@@ -312,7 +312,7 @@ title %} {% block content %}
       <div class="app-card-header p-3 border-0">
         <h4 class="app-card-title">Grafik</h4>
       </div>
-      <div class="app-card-body pb-2">
+      <div class="app-card-body p-2">
         <div class="chart-container">
           <div class="chartjs-size-monitor">
             <div class="chartjs-size-monitor-expand"><div class=""></div></div>
@@ -443,9 +443,8 @@ title %} {% block content %}
           );
         }
 
-        var doughnutChart = document
-          .getElementById("chart-doughnut")
-          .getContext("2d");
+        var doughnutChart = $("#chart-doughnut")[0].getContext("2d");
+
         window.myDoughnut = new Chart(
           doughnutChart,
           initChart(Object.keys(probs), Object.values(probs))
