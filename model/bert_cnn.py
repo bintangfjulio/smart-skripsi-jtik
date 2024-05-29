@@ -17,7 +17,6 @@ class BERT_CNN(nn.Module):
 
         self.dropout = nn.Dropout(dropout) 
         self.window_length = len(window_sizes)
-        self.out_channels_length = out_channels
         self.num_bert_states = num_bert_states
 
     def forward(self, input_ids, attention_mask):
