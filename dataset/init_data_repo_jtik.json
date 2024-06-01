@@ -2274,7 +2274,7 @@
     "url": "http://jurusan.tik.pnj.ac.id/newrepositori/v2/dok/463",
     "prodi": "Teknik Informatika",
     "kata_kunci": "anak, certainty factor, sistem pakar, kesehatan",
-    "judul": "LAPORAN SKRIPSI",
+    "judul": "RANCANG BANGUN SISTEM PAKAR IDENTIFIKASI DINI PENYAKIT ANAK DENGAN METODE CERTAINTY FACTOR BERBASIS WEBSITE",
     "abstrak": "masa anak \u2013 anak / balita merupakan suatu masa yang paling rentan terhadap kondisi apapun, terutama kesehatan. dengan imunitas yang masih rendah, maka tak heran jika anak paling sering terkena penyakit. orang tua harus memiliki kesadaran akan hal ini, karena ini merupakan situasi krusial dimana menjadi tolak awal dari perkembangan anak. tentunya ini bisa diatasi dengan pembelajaran dan edukasi yang diberikan kepada para orang tua tentang bahaya penyakit anak. penggunaan teknologi dapat berguna dalam hal ini. para petugas kesehatan bisa memberikan informasi melalui sebuah perangkat yang nantinya dapat diakses oleh para orang tua. sistem pakar merupakan sistem yang paling tepat untuk kasus ini, dengan metode certainty factor (ukuran kepastian terhadap fakta atau aturan untuk menggambarkan keyakinan seorang pakar terhadap masalah yang sedang dihadapi), memungkinkan sistem untuk merekam \u2018kecerdasan\u2019 dari para pakar kesehatan dan nantinya para orang tua dapat mengetahui berbagai macam penyakit anak dengan memasukkan kriteria kriteria yang diderita oleh anak dengan merujuk kepada pemahaman dan keyakinan para pakar yang telah direkam oleh sistem.",
     "kelompok_bidang_keahlian": "",
     "id_sequence_prodi": 228
