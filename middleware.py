@@ -22,11 +22,11 @@ def load_user(id):
     return None
 
 
-def role_required(required_role):
+def role_required(*required_roles):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            if not current_user.is_authenticated or current_user.role != required_role:
+            if not current_user.is_authenticated or current_user.role not in required_roles:
                 return redirect(url_for('unauthorized'))
             return func(*args, **kwargs)
         return wrapper

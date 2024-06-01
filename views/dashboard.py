@@ -2,6 +2,7 @@ from flask import Blueprint, render_template
 from middleware import role_required
 from models.lecturer import Lecturer
 from models.user import User
+from models.history import History
 
 
 dashboard = Blueprint('dashboard', __name__, template_folder='templates', url_prefix='/dashboard')
@@ -24,3 +25,10 @@ def user():
 @role_required('pengguna')
 def classifier():
     return render_template('dashboard/classifier.html', page="classifier")
+
+
+@dashboard.route('/history/<string:id>', methods=['GET'])
+@role_required('admin', 'pengguna')
+def history(id):
+    histories = History.fetch(id)
+    return render_template('dashboard/history.html', page="history", histories=histories)

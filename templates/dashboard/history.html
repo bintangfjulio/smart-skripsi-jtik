@@ -1,0 +1,235 @@
+{% extends 'dashboard/base.html' %} {% block title %}Riwayat{% endblock title %}
+{% block content %}
+
+<div class="row g-3 justify-content-between mb-4">
+  {% if current_user.role == "admin" %}
+  <div class="col-12 mb-3">
+    <a class="btn app-btn-primary" href="{{ url_for('dashboard.user') }}"
+      >Kembali</a
+    >
+  </div>
+  {% endif %}
+  <div class="col-auto">
+    <h1 class="app-page-title mb-0">Riwayat</h1>
+  </div>
+  <div class="col-auto">
+    <div class="page-utilities">
+      <select id="sort-select" class="form-select form-select-sm w-auto">
+        <option selected value="Terbaru">Terbaru</option>
+        <option value="Terlama">Terlama</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div id="histories-container">
+  {% if histories %} {% for history in histories %}
+  <div class="app-card app-card-accordion shadow-sm mb-4">
+    <div class="app-card-header p-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <h4 class="app-card-title" style="font-size: 1rem">
+          {{ history.tanggal_inferensi }}
+        </h4>
+        {% if current_user.role == "pengguna" %}
+        <svg
+          onclick="deleteHistory('{{ history.id }}')"
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          fill="currentColor"
+          class="bi bi-trash"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"
+          />
+          <path
+            d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"
+          />
+        </svg>
+        {% endif %}
+      </div>
+    </div>
+    <div class="app-card-body p-4 pt-0">
+      <div id="faq1-accordion" class="faq1-accordion faq-accordion accordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="faq1-heading-1">
+            <button
+              class="accordion-button btn btn-link"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#faq1-1-{{ history.id }}"
+              aria-expanded="false"
+              aria-controls="faq1-1"
+            >
+              Abstrak
+            </button>
+          </h2>
+          <div
+            id="faq1-1-{{ history.id }}"
+            class="accordion-collapse collapse border-0"
+            aria-labelledby="faq1-heading-1"
+          >
+            <div class="accordion-body text-start p4">
+              {{ history.abstrak }}
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="faq1-heading-2">
+            <button
+              class="accordion-button btn btn-link"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#faq1-2-{{ history.id }}"
+              aria-expanded="false"
+              aria-controls="faq1-2"
+            >
+              Kata Kunci
+            </button>
+          </h2>
+          <div
+            id="faq1-2-{{ history.id }}"
+            class="accordion-collapse collapse border-0"
+            aria-labelledby="faq1-heading-2"
+          >
+            <div class="accordion-body text-start p4">
+              {{ history.kata_kunci }}
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="faq1-heading-3">
+            <button
+              class="accordion-button btn btn-link"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#faq1-3-{{ history.id }}"
+              aria-expanded="false"
+              aria-controls="faq1-3"
+            >
+              Skor
+            </button>
+          </h2>
+          <div
+            id="faq1-3-{{ history.id }}"
+            class="accordion-collapse collapse border-0"
+            aria-labelledby="faq1-heading-3"
+          >
+            <div class="accordion-body text-start p4">
+              <ol>
+                {% for key, value in history.probabilitas.items() %}
+                <li>
+                  {{ key }}: <span class="text-unmuted">{{ value }}%</span>
+                </li>
+                {% endfor %}
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="faq1-heading-4">
+            <button
+              class="accordion-button btn btn-link"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#faq1-4-{{ history.id }}"
+              aria-expanded="false"
+              aria-controls="faq1-4"
+            >
+              Kelompok Bidang Keahlian
+            </button>
+          </h2>
+          <div
+            id="faq1-4-{{ history.id }}"
+            class="accordion-collapse collapse border-0"
+            aria-labelledby="faq1-heading-4"
+          >
+            <div class="accordion-body text-start p4">
+              {{ history.kelompok_bidang_keahlian }}
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="faq1-heading-5">
+            <button
+              class="accordion-button btn btn-link"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#faq1-5-{{ history.id }}"
+              aria-expanded="false"
+              aria-controls="faq1-5"
+            >
+              Dosen dengan Riwayat Bimbingan Termirip
+            </button>
+          </h2>
+          <div
+            id="faq1-5-{{ history.id }}"
+            class="accordion-collapse collapse border-0"
+            aria-labelledby="faq1-heading-5"
+          >
+            <div class="accordion-body text-start p4">Coming Soon</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %} {% else %}
+  <p class="text-center mt-5">
+    <span class="text-unmuted">Tidak ada</span> data yang ditemukan
+  </p>
+  {% endif %}
+</div>
+
+<form id="deleteForm" method="post" action="{{ url_for('history.delete') }}">
+  <input type="hidden" name="id" id="historyId" />
+</form>
+
+{% endblock content %} {% block script %}
+<script>
+  $("#sort-select").change(function () {
+    var sortOrder = $(this).val();
+    var $container = $("#histories-container");
+
+    var $cards = $container.children(".app-card").sort(function (a, b) {
+      var dateA = new Date($(a).find(".app-card-title").text().trim());
+      var dateB = new Date($(b).find(".app-card-title").text().trim());
+
+      if (sortOrder === "Terbaru") {
+        return dateB - dateA;
+      } else {
+        return dateA - dateB;
+      }
+    });
+
+    $container.html($cards);
+  });
+
+  function deleteHistory(historyId) {
+    Swal.fire({
+      title: "Konfirmasi Hapus",
+      text: "Apakah anda yakin untuk menghapus riwayat ini?",
+      icon: "warning",
+      showCancelButton: true,
+      cancelButtonColor: "grey",
+      confirmButtonText: "Ya, hapus",
+      cancelButtonText: "Batal",
+      customClass: {
+        confirmButton: "swt-alert-btn",
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        $(".spinner").removeClass("d-none");
+        $(".overlay").removeClass("d-none");
+
+        $("#historyId").val(historyId);
+        $("#deleteForm").submit();
+      }
+    });
+  }
+</script>
+{% endblock script %}

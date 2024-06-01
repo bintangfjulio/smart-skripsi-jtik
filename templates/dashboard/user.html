@@ -128,7 +128,7 @@
           <td class="cell">${user.registered_at}</td>
           <td class="cell"><span class="badge bg-${user.status_badge}">${user.inactive === "1" ? 'Nonaktif' : 'Aktif'}</span></td>
           <td class="cell"><a class="btn-sm app-btn-secondary me-1" href="#" data-bs-toggle="modal" data-bs-target="#modal" onclick="setModalData('${user.id}', '${user.inactive}')">Ubah Status</a>
-  <a class="btn-sm app-btn-secondary" href="#">Cek Riwayat</a></td>
+          <a class="btn-sm app-btn-secondary" href="/dashboard/history/${user.id}">Cek Riwayat</a></td>
         `);
         $tableBody.append($row);
       });
