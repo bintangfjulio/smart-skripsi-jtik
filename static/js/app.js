@@ -1,16 +1,5 @@
 "use strict";
 
-/* ===== Enable Bootstrap Popover (on element  ====== */
-const popoverTriggerList = document.querySelectorAll(
-  '[data-bs-toggle="popover"]'
-);
-const popoverList = [...popoverTriggerList].map(
-  (popoverTriggerEl) => new bootstrap.Popover(popoverTriggerEl)
-);
-
-const alertList = document.querySelectorAll(".alert");
-const alerts = [...alertList].map((element) => new bootstrap.Alert(element));
-
 /* ===== Responsive Sidepanel ====== */
 const sidePanelToggler = document.getElementById("sidepanel-toggler");
 const sidePanel = document.getElementById("app-sidepanel");
