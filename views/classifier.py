@@ -15,7 +15,9 @@ def inference():
     kata_kunci = request.get_json().get('kata_kunci')
 
     try:
-        probs, kbk = current_app.inference.classification(abstrak, kata_kunci)
+        text = current_app.inference.text_processing(abstrak, kata_kunci)
+
+        probs, kbk = current_app.inference.classification(text)
         lecturers = Lecturer.fetch(kelompok_bidang_keahlian=kbk)
 
         history = History(abstrak=abstrak, kata_kunci=kata_kunci, probabilitas=probs, kelompok_bidang_keahlian=kbk, tanggal_inferensi=datetime.now())

@@ -199,31 +199,7 @@ title %} {% block content %}
           </div>
 
           <div class="mb-5">
-            <label for="nama" class="form-label"
-              >Kata Kunci<span
-                class="ms-2"
-                data-bs-container="body"
-                data-bs-toggle="popover"
-                data-bs-trigger="hover focus"
-                data-bs-placement="top"
-                data-bs-content="Maksimal 5 kata kunci."
-                ><svg
-                  width="1em"
-                  height="1em"
-                  viewBox="0 0 16 16"
-                  class="bi bi-info-circle"
-                  fill="currentColor"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"
-                  ></path>
-                  <path
-                    d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588z"
-                  ></path>
-                  <circle cx="8" cy="4.5" r="1"></circle></svg></span
-            ></label>
+            <label for="nama" class="form-label">Kata Kunci</label>
             <div class="d-flex">
               <input
                 type="text"
@@ -446,14 +422,22 @@ title %} {% block content %}
 
         probs = response["message"]["probs"];
 
-        for (const [key, value] of Object.entries(probs)) {
+        const classificationResult = Object.entries(probs)
+          .sort((x, y) => x[1] - y[1])
+          .reverse();
+
+        let isFirstRow = true;
+        classificationResult.forEach(([key, value]) => {
           $("#statsResult").append(
             `<tr>
               <td>${key}</td>
-              <td class="stat-cell fw-bold" style="color: #128c9b">${value}%</td>
+              <td class="stat-cell${
+                isFirstRow ? " fw-bold" : ""
+              }" style="color: #128c9b">${value}%</td>
             </tr>`
           );
-        }
+          isFirstRow = false;
+        });
 
         var doughnutChart = $("#chart-doughnut")[0].getContext("2d");
 

@@ -131,7 +131,12 @@
               <ol>
                 {% for key, value in history.probabilitas.items() %}
                 <li>
-                  {{ key }}: <span class="text-unmuted">{{ value }}%</span>
+                  {{ key }}:
+                  <span
+                    class="text-unmuted{% if loop.first %} fw-bold{% endif %}"
+                  >
+                    {{ value }}%
+                  </span>
                 </li>
                 {% endfor %}
               </ol>
