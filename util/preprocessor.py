@@ -35,11 +35,11 @@ class Preprocessor:
         
         return labels
     
-    def get_grouped_labels(self, dataset, root, node):
-        node_labels = dataset.groupby(root)[node].unique().apply(sorted).to_dict()
-        root_labels = list(node_labels.keys())
+    # def get_grouped_labels(self, dataset, root, node):
+    #     node_labels = dataset.groupby(root)[node].unique().apply(sorted).to_dict()
+    #     root_labels = list(node_labels.keys())
         
-        return root_labels, node_labels
+    #     return root_labels, node_labels
     
     def train_test_split(self, dataset, test_size):
         dataset = dataset.sample(frac=1)

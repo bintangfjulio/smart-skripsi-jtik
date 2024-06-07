@@ -4,8 +4,8 @@ import argparse
 def get_hyperparameters():
     parser = argparse.ArgumentParser()
     parser.add_argument("--target", type=str, default='nama_pembimbing', help='Target Column')
-    parser.add_argument("--root", type=str, default='prodi', help='Target Root Column')
-    parser.add_argument("--node", type=str, default='nama_pembimbing', help='Target Node Column')
+    # parser.add_argument("--root", type=str, default='prodi', help='Target Root Column')
+    # parser.add_argument("--node", type=str, default='nama_pembimbing', help='Target Node Column')
     parser.add_argument("--dataset", type=str, default='init_data_repo_jtik.json', help='Dataset Path')
     parser.add_argument("--batch_size", type=int, default=32, help='Batch Size')
     parser.add_argument("--bert_model", type=str, default="indolem/indobert-base-uncased", help='BERT Model')

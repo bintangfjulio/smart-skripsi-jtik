@@ -11,6 +11,7 @@ from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFacto
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from sklearn.metrics.pairwise import cosine_similarity
 from model.bert_cnn import BERT_CNN
+from sentence_transformers import SentenceTransformer
 
 
 def preprocessor(text):
@@ -96,35 +97,49 @@ if __name__ == "__main__":
     parser.add_argument("--num_bert_states", type=int, default=4)
     config = vars(parser.parse_args())
 
-    dataset = pd.read_json(f'dataset/init_data_repo_jtik.json')
+    # dataset = pd.read_json(f'dataset/init_data_repo_jtik.json')
     stop_words = StopWordRemoverFactory().get_stop_words()
     tokenizer = BertTokenizer.from_pretrained(config["bert_model"], use_fast=False)
     stemmer = StemmerFactory().create_stemmer()
 
-    labels = dataset["prodi"].unique().tolist()
-    labels = sorted(labels)
+    # labels = dataset["prodi"].unique().tolist()
+    # labels = sorted(labels)
     
-    abstract = input("Please input abstract: ")
+    # abstract = input("Please input abstract: ")
+    abstract = "pemberian apresiasi terhadap kinerja karyawan dapat menjadi dorongan bagi karyawan lain agar termotivasi untuk meningkatkan kualitas kinerjanya. seperti yang dilakukan oleh pt united tractors tbk yang memberikan apresiasi terhadap internal facilitator terbaiknya. namun, penentuan internal facilitator terbaik ini masih dilakukan secara manual. oleh karena itu, dibuatlah sistem pendukung keputusan yang dapat membantu dalam mengambil keputusan internal facilitator terbaik dengan menggunakan metode simple multi attribute rating technique. metode smart dipilih karena berdasarkan fleksibilitas dan kesederhanaan yang dimiliki dalam memberikan keputusan. metode ini merupakan metode yang dapat menangani permasalahan dengan multi kriteria berdasarkan bobot kriteria dari setiap alternatif. berdasarkan hasil pengujian aplikasi, sistem ini dapat berjalan dengan sangat baik dan semestinya. sistem ini dapat memberikan hasil akhir pada perankingan internal facilitator terbaik dan membantu pihak terkait dalam memberikan keputusan dengan lebih efektif dan efisien."
     abstract = preprocessor(abstract)
     
-    print("Classification...")
-    classified = classification(abstract)
-    print(f"\nClassification Result: {classified}")
+    # print("Classification...")
+    # classified = classification(abstract)
+    # print(f"\nClassification Result: {classified}")
 
     
-    # responses = []
+    responses = ["profil lulusan memiliki peran penting dalam menilai kompetensi sebuah perguruan tinggi, yang juga mempengaruhi akreditasi perguruan tinggi tersebut. tracer study adalah program yang dibuat oleh sekretariat direktorat jendral pendidikan tinggi pada tahun 2011 untuk memantau profil lulusan dari setiap perguruan tinggi di indonesia. tracer study bertujuan untuk melacak keberhasilan lulusan dalam mencapai kesuksesan di dunia kerja atau pengembangan karir setelah menyelesaikan pendidikan mereka. namun, di kampus politeknik negeri jakarta, terjadi tantangan dalam meningkatkan minat alumni untuk mengisi kuesioner tracer study dan dalam melacak alumni yang belum mengisi kuesioner. untuk mengatasi tantangan ini, pendekatan gamifikasi digunakan dengan menghadirkan elemen-elemen permainan dalam kuesioner untuk meningkatkan motivasi dan keterlibatan alumni dalam pengisian tracer study. fitur validasi data juga diperlukan untuk memastikan data yang diperoleh dari alumni adalah akurat dan dapat diandalkan. selain itu, dalam merancang aplikasi tracer study yang efektif, bahasa pemrograman php dan framework laravel dipilih untuk membangun aplikasi web yang dinamis dan interaktif."]
 
-    # print("Similarity Check...")
-    # highest_dosen_similarity = {}
-    # for item in responses:
-    #     abstrak_response = preprocessor(item["abstrak"])
-    #     similiraty_score = similarity_checker(abstract, abstrak_response)
+    print("Similarity Check...")
+    highest_dosen_similarity = {}
+    for item in responses:
+        # abstrak_response = preprocessor(item)
+        # similiraty_score = similarity_checker("aku suka kamu", "mesin mobil")
+        # print(similiraty_score)
+        model = SentenceTransformer("all-MiniLM-L6-v2")
 
-    #     if item["dosen"] in highest_dosen_similarity:
-    #         if similiraty_score > highest_dosen_similarity[item["dosen"]]:
-    #             highest_dosen_similarity[item["dosen"]] = similiraty_score
-    #     else:
-    #         highest_dosen_similarity[item["dosen"]] = similiraty_score
+        sentences = [
+            "aku suka kamu",
+            "mesin mobil"
+        ]
+
+        embeddings = model.encode(sentences)
+        print(embeddings.shape)
+
+        similarities = model.similarity(embeddings, embeddings)
+        print(similarities)
+
+        # if item["dosen"] in highest_dosen_similarity:
+        #     if similiraty_score > highest_dosen_similarity[item["dosen"]]:
+        #         highest_dosen_similarity[item["dosen"]] = similiraty_score
+        # else:
+        #     highest_dosen_similarity[item["dosen"]] = similiraty_score
 
     # sorted_scores = sorted(highest_dosen_similarity.items(), key=lambda x: x[1], reverse=True)
     # for i, (dosen, score) in enumerate(sorted_scores):
