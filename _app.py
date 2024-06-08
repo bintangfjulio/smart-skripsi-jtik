@@ -125,8 +125,8 @@ if __name__ == "__main__":
         model = SentenceTransformer("all-MiniLM-L6-v2")
 
         sentences = [
-            "aku suka kamu",
-            "mesin mobil"
+            "Deep learning methods are applied in data analysis.",
+            "Machine learning algorithms are used for data analysis."
         ]
 
         embeddings = model.encode(sentences)
