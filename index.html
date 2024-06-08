@@ -158,10 +158,10 @@
                 />
               </div>
               <div class="mb-3">
-                <label for="kompetensiSelect" class="form-label"
+                <label for="kbkSelect" class="form-label"
                   >Kelompok Bidang Keahlian</label
                 >
-                <select class="form-select" id="kompetensiSelect">
+                <select class="form-select" id="kbkSelect">
                   <option value="" selected disabled>Pilih</option>
                   <option value="Sistem Cerdas">Sistem Cerdas</option>
                   <option value="Rekayasa Perangkat Lunak">
@@ -220,8 +220,7 @@
         url
       ) {
         document.getElementById("docIdInput").value = id;
-        document.getElementById("kompetensiSelect").value =
-          kelompok_bidang_keahlian;
+        document.getElementById("kbkSelect").value = kelompok_bidang_keahlian;
         document.getElementById("judulInput").value = judul;
         document.getElementById("abstrakTextarea").value = abstrak;
         document.getElementById("keywordInput").value = kata_kunci;
@@ -314,7 +313,7 @@
 
           querySnapshot.forEach((doc) => {
             const data = doc.data();
-            const kompetensiClass = data.kelompok_bidang_keahlian
+            const kbkClass = data.kelompok_bidang_keahlian
               ? "text-success"
               : "text-danger";
             tableHtml += `
@@ -324,7 +323,7 @@
                     }</th>
                     <td>${data.judul}</td>
                     <td>${data.prodi}</td>
-                    <td class="${kompetensiClass}">${
+                    <td class="${kbkClass}">${
               data.kelompok_bidang_keahlian || "Belum Ada"
             }</td>
                     <td class="text-center">
@@ -383,9 +382,9 @@
       document
         .getElementById("saveChangesBtn")
         .addEventListener("click", async () => {
-          const kompetensi = document.getElementById("kompetensiSelect").value;
+          const kbk = document.getElementById("kbkSelect").value;
 
-          if (kompetensi == "") {
+          if (kbk == "") {
             alert("Pilih kelompok bidang keahlian terlebih dahulu");
             return;
           }
@@ -397,7 +396,7 @@
 
           try {
             const docRef = doc(db, "skripsi", docId);
-            await updateDoc(docRef, { kompetensi });
+            await updateDoc(docRef, { kbk });
             fetchData(currentPage);
             editModal.hide();
           } catch (error) {
