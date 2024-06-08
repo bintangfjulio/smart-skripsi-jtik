@@ -13,7 +13,7 @@ class Preprocessor:
         self.tokenizer = BertTokenizer.from_pretrained(bert_model, use_fast=False)
         self.stemmer = StemmerFactory().create_stemmer()
         self.max_length = max_length
-
+    
     def text_processing(self, data):
         text = str(data["kata_kunci"]) + " - " + str(data["abstrak"])
         text = text.lower()
@@ -25,7 +25,14 @@ class Preprocessor:
         text = ' '.join([word for word in text.split() if word not in self.stop_words])  
         text = self.stemmer.stem(text)
         text = text.strip()      
-        token = self.tokenizer(text=text, max_length=self.max_length, padding="max_length", truncation=True) 
+
+        return text
+
+    def bert_tokenizer(self, text):
+        token = self.tokenizer(text=text, 
+                            max_length=self.max_length, 
+                            padding="max_length", 
+                            truncation=True) 
 
         return token['input_ids'], token['attention_mask']
     
@@ -35,12 +42,6 @@ class Preprocessor:
         
         return labels
     
-    # def get_grouped_labels(self, dataset, root, node):
-    #     node_labels = dataset.groupby(root)[node].unique().apply(sorted).to_dict()
-    #     root_labels = list(node_labels.keys())
-        
-    #     return root_labels, node_labels
-    
     def train_test_split(self, dataset, test_size):
         dataset = dataset.sample(frac=1)
         train_valid_size = round(dataset.shape[0] * (1.0 - test_size))
@@ -49,3 +50,9 @@ class Preprocessor:
         test_set = pd.DataFrame(dataset.iloc[train_valid_size:, :])
 
         return train_valid_set, test_set
+    
+    # def get_grouped_labels(self, dataset, root, node):
+    #     node_labels = dataset.groupby(root)[node].unique().apply(sorted).to_dict()
+    #     root_labels = list(node_labels.keys())
+        
+    #     return root_labels, node_labels

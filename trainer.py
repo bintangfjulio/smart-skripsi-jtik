@@ -41,7 +41,7 @@ preprocessor = Preprocessor(bert_model=config["bert_model"], max_length=config["
 # preprocessor
 if not os.path.exists("dataset/preprocessed_set.pkl"):
     tqdm.pandas(desc="Preprocessing Stage")
-    dataset[['input_ids', 'attention_mask']] = dataset.progress_apply(lambda data: preprocessor.text_processing(data), axis=1, result_type='expand')
+    dataset[['input_ids', 'attention_mask']] = dataset.progress_apply(lambda data: preprocessor.bert_tokenizer(preprocessor.text_processing(data)), axis=1, result_type='expand')
     dataset.to_pickle("dataset/preprocessed_set.pkl")
 
 dataset = pd.read_pickle("dataset/preprocessed_set.pkl")
