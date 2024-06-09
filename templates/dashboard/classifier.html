@@ -315,12 +315,14 @@ title %} {% block content %}
 
   <div class="row justify-content-center gy-2" id="lecturers"></div>
 
-  <div class="col-12 mt-5 text-center">
+  <div class="col-12 mt-5 text-center mb-3">
     <h3 class="section-title">
       Dosen dengan
       <span style="color: #128c9b">Riwayat Bimbingan Termirip</span>
     </h3>
   </div>
+
+  <div class="container-xl" id="similarity-results"></div>
 </div>
 
 {% endblock content %} {% block script %}
@@ -484,6 +486,50 @@ title %} {% block content %}
               </div>`
           );
         });
+
+        $("#similarity-results").empty();
+        var topSimilarity = response["message"]["top_similarity"];
+
+        for (var index = 0; index < topSimilarity.length; index++) {
+          $("#similarity-results").append(
+            `<div class="app-card app-card-notification shadow-sm mb-4">
+              <div class="app-card-header px-4 py-3">
+                <div class="row g-3 align-items-center">
+                  <div class="col-12 col-lg-auto text-center text-lg-start">
+                    <div class="notification-type mb-3">
+                      <span class="badge" style="background-color: #128c9b"
+                        >Rank #${topSimilarity[index]["rank"]}</span
+                      >
+                    </div>
+
+                    <h4 class="notification-title mb-1">${topSimilarity[index]["supervisor"]}</h4>
+
+                    <ul class="notification-meta list-inline mb-0">
+                      <li class="list-inline-item fw-bold">
+                        Skor Kemiripan: <span style="color: #128c9b">${topSimilarity[index]["similarity_score"]}%</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="app-card-body p-4">
+                <div class="notification-content mb-4">
+                  <b>Judul</b><br />${topSimilarity[index]["title"]}
+                </div>
+                <div class="notification-content mb-4">
+                  <b>Abstrak</b><br />${topSimilarity[index]["abstract"]}
+                </div>
+                <div class="notification-content">
+                  <b>Kata Kunci</b><br />${topSimilarity[index]["keywords"]}
+                </div>
+              </div>
+              <div class="app-card-footer px-4 py-3">
+                <a class="action-link" href="${topSimilarity[index]["url"]}"
+                  >${topSimilarity[index]["url"]}</a>
+              </div>
+            </div>`
+          );
+        }
 
         $("#hasil").removeClass("d-none");
         window.location.hash = "hasil";
