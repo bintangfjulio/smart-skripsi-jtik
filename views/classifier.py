@@ -20,10 +20,12 @@ def inference():
         probs, kbk = current_app.inference.classification(text)
         lecturers = Lecturer.fetch(kelompok_bidang_keahlian=kbk)
 
-        history = History(abstrak=abstrak, kata_kunci=kata_kunci, probabilitas=probs, kelompok_bidang_keahlian=kbk, tanggal_inferensi=datetime.now())
+        recommended = current_app.inference.content_based_filtering(text)
+
+        history = History(abstrak=abstrak, kata_kunci=kata_kunci, probabilitas=probs, kelompok_bidang_keahlian=kbk, tanggal_inferensi=datetime.now(), top_similarity=recommended)
         history.save(current_user.id)
 
-        return jsonify(message={'probs': probs, 'lecturers': lecturers, 'kbk': kbk}, status="success"), 200
+        return jsonify(message={'probs': probs, 'lecturers': lecturers, 'kbk': kbk, 'top_similarity': recommended}, status="success"), 200
     
     except Exception as e:
         return jsonify(message={'error': 'Server error'}, status="error"), 500

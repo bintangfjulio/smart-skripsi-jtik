@@ -186,7 +186,23 @@
             class="accordion-collapse collapse border-0"
             aria-labelledby="faq1-heading-5"
           >
-            <div class="accordion-body text-start p4">Coming Soon</div>
+            <div class="accordion-body text-start p4">
+              <ol>
+                {% for value in history.top_similarity %}
+                <li>
+                  <a
+                    data-bs-toggle="modal"
+                    data-bs-target="#modal"
+                    href="#"
+                    style="text-decoration: underline"
+                    onclick="openModal('{{ value.abstract }}', '{{ value.keywords }}', '{{ value.similarity_score }}', '{{ value.supervisor }}', '{{ value.title }}', '{{ value.url }}')"
+                  >
+                    {{ value.supervisor }}
+                  </a>
+                </li>
+                {% endfor %}
+              </ol>
+            </div>
           </div>
         </div>
       </div>
@@ -203,47 +219,123 @@
   <input type="hidden" name="id" id="historyId" />
 </form>
 
-{% endblock content %} {% block script %}
-<script>
-  $("#sort-select").change(function () {
-    var sortOrder = $(this).val();
-    var $container = $("#histories-container");
+{% endblock content %} {% block modal %}
+<div
+  class="modal fade"
+  id="modal"
+  data-bs-backdrop="static"
+  data-bs-keyboard="false"
+  tabindex="-1"
+  aria-labelledby="modalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-scrollable modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="modalLabel">Detail Rekomendasi</h1>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="nama" class="form-label">Nama Pembimbing</label>
+          <input type="text" class="form-control" id="nama" readonly />
+        </div>
 
-    var $cards = $container.children(".app-card").sort(function (a, b) {
-      var dateA = new Date($(a).find(".app-card-title").text().trim());
-      var dateB = new Date($(b).find(".app-card-title").text().trim());
+        <div class="mb-3">
+          <label for="nama" class="form-label">Judul Skripsi</label>
+          <input type="text" class="form-control" id="title" readonly />
+        </div>
 
-      if (sortOrder === "Terbaru") {
-        return dateB - dateA;
-      } else {
-        return dateA - dateB;
-      }
+        <div class="mb-3">
+          <label for="nama" class="form-label">Skor Kemiripan</label>
+          <input type="text" class="form-control" id="similarity" readonly />
+        </div>
+
+        <div class="mb-3">
+          <label for="nama" class="form-label">URL Skripsi</label>
+          <input type="text" class="form-control" id="url" readonly />
+        </div>
+
+        <div class="mb-3">
+          <label for="nama" class="form-label">Abstrak Skripsi</label>
+          <textarea
+            id="abstract"
+            class="form-control"
+            style="height: 200px"
+            readonly
+          ></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label for="nama" class="form-label">Kata Kunci Skripsi</label>
+          <input type="text" class="form-control" id="keywords" readonly />
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endblock modal %} {% block script %}
+  <script>
+    $("#sort-select").change(function () {
+      var sortOrder = $(this).val();
+      var $container = $("#histories-container");
+
+      var $cards = $container.children(".app-card").sort(function (a, b) {
+        var dateA = new Date($(a).find(".app-card-title").text().trim());
+        var dateB = new Date($(b).find(".app-card-title").text().trim());
+
+        if (sortOrder === "Terbaru") {
+          return dateB - dateA;
+        } else {
+          return dateA - dateB;
+        }
+      });
+
+      $container.html($cards);
     });
 
-    $container.html($cards);
-  });
+    function deleteHistory(historyId) {
+      Swal.fire({
+        title: "Konfirmasi Hapus",
+        text: "Apakah anda yakin untuk menghapus riwayat ini?",
+        icon: "warning",
+        showCancelButton: true,
+        cancelButtonColor: "grey",
+        confirmButtonText: "Ya, hapus",
+        cancelButtonText: "Batal",
+        customClass: {
+          confirmButton: "swt-alert-btn",
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          $(".spinner").removeClass("d-none");
+          $(".overlay").removeClass("d-none");
 
-  function deleteHistory(historyId) {
-    Swal.fire({
-      title: "Konfirmasi Hapus",
-      text: "Apakah anda yakin untuk menghapus riwayat ini?",
-      icon: "warning",
-      showCancelButton: true,
-      cancelButtonColor: "grey",
-      confirmButtonText: "Ya, hapus",
-      cancelButtonText: "Batal",
-      customClass: {
-        confirmButton: "swt-alert-btn",
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        $(".spinner").removeClass("d-none");
-        $(".overlay").removeClass("d-none");
+          $("#historyId").val(historyId);
+          $("#deleteForm").submit();
+        }
+      });
+    }
 
-        $("#historyId").val(historyId);
-        $("#deleteForm").submit();
-      }
-    });
-  }
-</script>
-{% endblock script %}
+    function openModal(
+      abstract,
+      keywords,
+      similarity_score,
+      supervisor,
+      title,
+      url
+    ) {
+      $("#nama").val(supervisor);
+      $("#title").val(title);
+      $("#similarity").val(similarity_score + "%");
+      $("#url").val(url);
+      $("#abstract").val(abstract);
+      $("#keywords").val(keywords);
+    }
+  </script>
+  {% endblock script %}
+</div>

@@ -1,12 +1,14 @@
 import torch
 import emoji
 import re
+import pickle
 import torch.nn as nn
 import torch.nn.functional as F
 
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from transformers import BertTokenizer, BertModel
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 class BERT_CNN(nn.Module):
@@ -58,6 +60,7 @@ class Inference():
         self.stemmer = StemmerFactory().create_stemmer()
         self.max_length = max_length
         
+
         self.window_sizes = window_sizes
         self.model = BERT_CNN(window_sizes=self.window_sizes)
         self.output_layer = nn.Linear(len(self.window_sizes) * out_channels, len(self.labels))
@@ -68,6 +71,14 @@ class Inference():
         
         self.model.to(self.device)
         self.output_layer.to(self.device)
+
+
+        with open('checkpoint/tfidf_data.pkl', 'rb') as f:
+            tfidf_data = pickle.load(f)
+
+        self.vectorizer = tfidf_data['vectorizer']
+        self.tfidf_matrix = tfidf_data['tfidf_matrix']
+        self.attribut = tfidf_data['attribut']
 
     def text_processing(self, abstrak, kata_kunci):
         text = str(kata_kunci) + " - " + str(abstrak)
@@ -95,8 +106,8 @@ class Inference():
 
         return token['input_ids'], token['attention_mask']
 
-    def classification(self, text):
-        input_ids, attention_mask = self.bert_tokenizer(text)
+    def classification(self, data):
+        input_ids, attention_mask = self.bert_tokenizer(data)
 
         self.model.eval()
         with torch.no_grad():
@@ -113,3 +124,30 @@ class Inference():
             kbk = self.kbk[highest_prob]
 
         return probs, kbk
+    
+    def content_based_filtering(self, data):
+        matrix = self.vectorizer.transform([data])
+
+        similarity_scores = cosine_similarity(matrix, self.tfidf_matrix).flatten()
+
+        score_indices = similarity_scores.argsort()[::-1]
+        top_indices = score_indices[:3]
+        top_similarity = [(index, similarity_scores[index]) for index in top_indices]
+
+        attribut_recommended = [self.attribut[idx] for idx, _ in top_similarity]
+
+        recommended = []
+        for idx, (attribut, score) in enumerate(zip(attribut_recommended, top_similarity)):
+            result = {
+                "rank": idx + 1,
+                "similarity_score": round(score[1] * 100, 2),
+                "title": attribut['judul'],
+                "abstract": attribut['abstrak'],
+                "keywords": attribut['kata_kunci'],
+                "supervisor": attribut['nama_pembimbing'],
+                "url": attribut['url']
+            }
+
+            recommended.append(result)
+
+        return recommended

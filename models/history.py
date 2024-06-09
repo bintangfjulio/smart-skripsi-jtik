@@ -3,13 +3,14 @@ from firebase_admin import firestore
 
 
 class History:
-    def __init__(self, id=None, abstrak=None, kata_kunci=None, probabilitas=None, kelompok_bidang_keahlian=None, tanggal_inferensi=None):
+    def __init__(self, id=None, abstrak=None, kata_kunci=None, probabilitas=None, kelompok_bidang_keahlian=None, tanggal_inferensi=None, top_similarity=None):
         self.id = id
         self.abstrak = abstrak
         self.kata_kunci = kata_kunci
         self.probabilitas = probabilitas
         self.kelompok_bidang_keahlian = kelompok_bidang_keahlian
         self.tanggal_inferensi = tanggal_inferensi  
+        self.top_similarity = top_similarity
 
 
     def save(self, id):
@@ -18,7 +19,8 @@ class History:
             'kata_kunci': self.kata_kunci,
             'probabilitas': self.probabilitas,
             'kelompok_bidang_keahlian': self.kelompok_bidang_keahlian,
-            'tanggal_inferensi': self.tanggal_inferensi
+            'tanggal_inferensi': self.tanggal_inferensi,
+            'top_similarity': self.top_similarity
         })
         
         self.id = doc.id
@@ -46,6 +48,7 @@ class History:
                 'probabilitas': dict(sorted(data['probabilitas'].items(), key=lambda item: item[1], reverse=True)),
                 'kelompok_bidang_keahlian': data['kelompok_bidang_keahlian'],
                 'tanggal_inferensi': data['tanggal_inferensi'].strftime("%A, %d-%m-%Y %H:%M:%S"),
+                'top_similarity': data['top_similarity']
             })
 
         return datas
