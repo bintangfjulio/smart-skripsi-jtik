@@ -502,12 +502,21 @@ title %} {% block content %}
                       >
                     </div>
 
-                    <h4 class="notification-title mb-1">${topSimilarity[index]["supervisor"]}</h4>
+                    <h4 class="notification-title mb-1">${
+                      topSimilarity[index]["supervisor"]
+                    }</h4>
 
                     <ul class="notification-meta list-inline mb-0">
                       <li class="list-inline-item fw-bold">
-                        Skor Kemiripan: <span style="color: #128c9b">${topSimilarity[index]["similarity_score"]}%</span>
+                        Skor Kemiripan: <span style="color: #128c9b">${
+                          topSimilarity[index]["similarity_score"]
+                        }%</span>
                       </li>
+                      ${
+                        topSimilarity[index]["similarity_score"] > 80
+                          ? `<li class="fw-bold" style="color: red;">Tingkat Kemiripan Sangat Tinggi</li>`
+                          : ``
+                      }
                     </ul>
                   </div>
                 </div>
