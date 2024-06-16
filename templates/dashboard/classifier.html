@@ -186,7 +186,7 @@ title %} {% block content %}
         <form method="post" id="inference">
           <div class="mb-3">
             <div class="d-flex justify-content-between">
-              <label for="nama" class="form-label">Abstrak</label>
+              <label for="abstrak" class="form-label">Abstrak</label>
               <div id="wordCounter">0/350</div>
             </div>
             <textarea
@@ -199,7 +199,7 @@ title %} {% block content %}
           </div>
 
           <div class="mb-5">
-            <label for="nama" class="form-label">Kata Kunci</label>
+            <label for="keywordInput" class="form-label">Kata Kunci</label>
             <div class="d-flex">
               <input
                 type="text"
@@ -227,7 +227,6 @@ title %} {% block content %}
                 class="btn app-btn-secondary"
                 type="button"
                 id="bersihkanBtn"
-                data-bs-dismiss="modal"
               >
                 Reset
               </button>

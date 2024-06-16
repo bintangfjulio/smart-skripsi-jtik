@@ -32,3 +32,9 @@ def classifier():
 def history(id):
     histories = History.fetch(id)
     return render_template('dashboard/history.html', page="history", histories=histories)
+
+
+@dashboard.route('/file', methods=['GET'])
+@role_required('pengguna')
+def file():
+    return render_template('dashboard/file.html', page="file")
