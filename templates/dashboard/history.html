@@ -285,8 +285,20 @@
       var $container = $("#histories-container");
 
       var $cards = $container.children(".app-card").sort(function (a, b) {
-        var dateA = new Date($(a).find(".app-card-title").text().trim());
-        var dateB = new Date($(b).find(".app-card-title").text().trim());
+        var dateAText = $(a)
+          .find(".app-card-title")
+          .text()
+          .trim()
+          .split(", ")[1];
+
+        var dateBText = $(b)
+          .find(".app-card-title")
+          .text()
+          .trim()
+          .split(", ")[1];
+
+        var dateA = parseCustomDate(dateAText);
+        var dateB = parseCustomDate(dateBText);
 
         if (sortOrder === "Terbaru") {
           return dateB - dateA;
@@ -297,6 +309,23 @@
 
       $container.html($cards);
     });
+
+    function parseCustomDate(dateString) {
+      var parts = dateString.split(" ");
+      var dateParts = parts[0].split("-");
+      var timeParts = parts[1].split(":");
+
+      var date = new Date(
+        parseInt(dateParts[2]),
+        parseInt(dateParts[1]) - 1,
+        parseInt(dateParts[0]),
+        parseInt(timeParts[0]),
+        parseInt(timeParts[1]),
+        parseInt(timeParts[2])
+      );
+
+      return date;
+    }
 
     function deleteHistory(historyId) {
       Swal.fire({
