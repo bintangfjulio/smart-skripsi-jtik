@@ -85,8 +85,8 @@ optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
 best_loss = 9.99
 failed_counter = 0
 
-logger = pd.DataFrame(columns=['accuracy', 'loss', 'epoch', 'stage']) 
-classification_report = pd.DataFrame(columns=['label', 'correct_prediction', 'false_prediction', 'total_prediction', 'epoch', 'stage'])
+graph_logger = pd.DataFrame(columns=['accuracy', 'loss', 'epoch', 'stage']) 
+prediction_stats = pd.DataFrame(columns=['label', 'correct_prediction', 'false_prediction', 'total_prediction', 'epoch', 'stage'])
 
 optimizer.zero_grad()
 model.zero_grad()
@@ -137,13 +137,13 @@ for epoch in range(config["max_epochs"]):
 
     train_loss /= n_batch
     acc = 100.0 * n_correct / n_samples
-    logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': [train_loss], 'epoch': [epoch+1], 'stage': ['train']})], ignore_index=True)
+    graph_logger = pd.concat([graph_logger, pd.DataFrame({'accuracy': [acc], 'loss': [train_loss], 'epoch': [epoch+1], 'stage': ['train']})], ignore_index=True)
     print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Training Loss: {train_loss:.4f}, Training Accuracy: {acc:.2f}%')
 
     for label, total_count in each_label_total.items():
         correct_count = each_label_correct.get(label, 0)  
         false_count = total_count - correct_count
-        classification_report = pd.concat([classification_report, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [epoch+1], 'stage': ['train']})], ignore_index=True)
+        prediction_stats = pd.concat([prediction_stats, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [epoch+1], 'stage': ['train']})], ignore_index=True)
         print(f"Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
 
     model.eval()
@@ -184,13 +184,13 @@ for epoch in range(config["max_epochs"]):
 
         val_loss /= n_batch
         acc = 100.0 * n_correct / n_samples
-        logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': [val_loss], 'epoch': [epoch+1], 'stage': ['valid']})], ignore_index=True)
+        graph_logger = pd.concat([graph_logger, pd.DataFrame({'accuracy': [acc], 'loss': [val_loss], 'epoch': [epoch+1], 'stage': ['valid']})], ignore_index=True)
         print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Validation Loss: {val_loss:.4f}, Validation Accuracy: {acc:.2f}%')
 
         for label, total_count in each_label_total.items():
             correct_count = each_label_correct.get(label, 0)  
             false_count = total_count - correct_count
-            classification_report = pd.concat([classification_report, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [epoch+1], 'stage': ['valid']})], ignore_index=True)
+            prediction_stats = pd.concat([prediction_stats, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [epoch+1], 'stage': ['valid']})], ignore_index=True)
             print(f"Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
         
         if round(val_loss, 2) < round(best_loss, 2):
@@ -251,27 +251,27 @@ with torch.no_grad():
 
     test_loss /= n_batch
     acc = 100.0 * n_correct / n_samples
-    logger = pd.concat([logger, pd.DataFrame({'accuracy': [acc], 'loss': [test_loss], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
+    graph_logger = pd.concat([graph_logger, pd.DataFrame({'accuracy': [acc], 'loss': [test_loss], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
     print(f'Test Loss: {test_loss:.4f}, Test Accuracy: {acc:.2f}%')
 
     for label, total_count in each_label_total.items():
         correct_count = each_label_correct.get(label, 0)  
         false_count = total_count - correct_count
-        classification_report = pd.concat([classification_report, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
+        prediction_stats = pd.concat([prediction_stats, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
         print(f"Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
 
 if not os.path.exists('log'):
     os.makedirs('log')
 
-logger.to_csv(f'log/{config["bert_model"]}_{config["target"]}_metrics.csv', index=False, encoding='utf-8')
-classification_report.to_csv(f'log/{config["bert_model"]}_{config["target"]}_classification_report.csv', index=False, encoding='utf-8')
+graph_logger.to_csv(f'log/{config["bert_model"]}_{config["target"]}_metrics.csv', index=False, encoding='utf-8')
+prediction_stats.to_csv(f'log/{config["bert_model"]}_{config["target"]}_prediction_stats.csv', index=False, encoding='utf-8')
 
 
 # generate result
-logger = pd.read_csv(f"log/{config["bert_model"]}_{config["target"]}_metrics.csv", dtype={'accuracy': float, 'loss': float})
+graph_logger = pd.read_csv(f"log/{config["bert_model"]}_{config["target"]}_metrics.csv", dtype={'accuracy': float, 'loss': float})
 
-train_log = logger[logger['stage'] == 'train']
-valid_log = logger[logger['stage'] == 'valid']
+train_log = graph_logger[graph_logger['stage'] == 'train']
+valid_log = graph_logger[graph_logger['stage'] == 'valid']
 
 plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
