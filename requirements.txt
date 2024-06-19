@@ -2,3 +2,4 @@ Sastrawi
 transformers
 selenium
 emoji
+seaborn

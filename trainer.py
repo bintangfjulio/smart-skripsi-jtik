@@ -17,6 +17,8 @@ from collections import defaultdict
 from model.bert_cnn import BERT_CNN
 from util.preprocessor import Preprocessor
 from util.hyperparameter import get_hyperparameters
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
 
 
 # setup
@@ -86,7 +88,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
 best_loss = 9.99
 failed_counter = 0
 
-graph_logger = pd.DataFrame(columns=['accuracy', 'loss', 'epoch', 'stage']) 
+graph_logger = pd.DataFrame(columns=['accuracy', 'precision', 'recall', 'f1', 'loss', 'epoch', 'stage']) 
 prediction_stats = pd.DataFrame(columns=['label', 'correct_prediction', 'false_prediction', 'total_prediction', 'epoch', 'stage'])
 
 optimizer.zero_grad()
@@ -291,6 +293,21 @@ with torch.no_grad():
         prediction_stats = pd.concat([prediction_stats, pd.DataFrame({'label': [labels[label]], 'correct_prediction': [correct_count], 'false_prediction': [false_count], 'total_prediction': [total_count], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
         print(f"Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
 
+    cm = confusion_matrix(y_true_test, y_pred_test)
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False)
+
+    plt.xlabel('Predicted Labels')
+    plt.ylabel('True Labels')
+    plt.title('Confusion Matrix')
+
+    tick_marks = range(len(labels))
+    plt.xticks(tick_marks, labels)
+    plt.yticks(tick_marks, labels)
+
+    plt.savefig(f'log/{config["bert_model"]}_{config["target"]}_confusion_matrix.png', bbox_inches='tight')
+
+
 if not os.path.exists('log'):
     os.makedirs('log')
 
@@ -299,28 +316,30 @@ prediction_stats.to_csv(f'log/{config["bert_model"]}_{config["target"]}_predicti
 
 
 # export result
-graph_logger = pd.read_csv(f"log/{config["bert_model"]}_{config["target"]}_metrics.csv", dtype={'accuracy': float, 'loss': float})
+graph_logger = pd.read_csv(f"log/{config["bert_model"]}_{config["target"]}_metrics.csv", dtype={'accuracy': float, precision: float, recall: float, f1: float, 'loss': float})
 
 train_log = graph_logger[graph_logger['stage'] == 'train']
 valid_log = graph_logger[graph_logger['stage'] == 'valid']
 
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
+for metric in ['accuracy', 'precision', 'recall', 'f1']:
+    plt.xlabel('Epoch')
+    plt.ylabel(metric.capitalize())
+    plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(1))
 
-plt.plot(train_log['epoch'], train_log['accuracy'], marker='o', label='Train Accuracy')
-plt.plot(valid_log['epoch'], valid_log['accuracy'], marker='o', label='Validation Accuracy')
+    plt.plot(train_log['epoch'], train_log[metric], marker='o', label=f'Train {metric.capitalize()}')
+    plt.plot(valid_log['epoch'], valid_log[metric], marker='o', label=f'Validation {metric.capitalize()}')
 
-best_train_accuracy = train_log['accuracy'].max()
-best_valid_accuracy = valid_log['accuracy'].max()
+    best_train = train_log[metric].max()
+    best_valid = valid_log[metric].max()
 
-plt.annotate('best', xy=(train_log['epoch'][train_log['accuracy'].idxmax()], best_train_accuracy), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
-plt.annotate('best', xy=(valid_log['epoch'][valid_log['accuracy'].idxmax()], best_valid_accuracy), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
+    plt.annotate('best', xy=(train_log['epoch'][train_log[metric].idxmax()], best_train), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
+    plt.annotate('best', xy=(valid_log['epoch'][valid_log[metric].idxmax()], best_valid), xytext=(-30, 10), textcoords='offset points', arrowprops=dict(arrowstyle="->"))
 
-plt.title(f'Best Training Accuracy: {best_train_accuracy:.2f} | Best Validation Accuracy: {best_valid_accuracy:.2f}', ha='center', fontsize='medium')
-plt.legend()
-plt.savefig(f'log/{config["bert_model"]}_{config["target"]}_accuracy_metrics.png')
-plt.clf()
+    plt.title(f'Best Training {metric.capitalize()}: {best_train:.2f} | Best Validation {metric.capitalize()}: {best_valid:.2f}', ha='center', fontsize='medium')
+    plt.legend()
+    plt.savefig(f'log/{config["bert_model"]}_{config["target"]}_{metric}_metrics.png')
+    plt.clf()
+
 
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
