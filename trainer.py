@@ -197,15 +197,15 @@ for epoch in range(config["max_epochs"]):
             if not os.path.exists('checkpoint'):
                 os.makedirs('checkpoint')
 
-            if os.path.exists(f'checkpoint/flat_{config["target"]}_model.pt'):
-                os.remove(f'checkpoint/flat_{config["target"]}_model.pt')
+            if os.path.exists(f'checkpoint/{config["bert_model"]}_{config["target"]}_model.pt'):
+                os.remove(f'checkpoint/{config["bert_model"]}_{config["target"]}_model.pt')
 
             checkpoint = {
                 "hidden_states": model.state_dict(),
                 "last_hidden_state": output_layer.state_dict(),
             }
 
-            torch.save(checkpoint, f'checkpoint/flat_{config["target"]}_model.pt')
+            torch.save(checkpoint, f'checkpoint/{config["bert_model"]}_{config["target"]}_model.pt')
 
             best_loss = val_loss
             failed_counter = 0
@@ -213,7 +213,7 @@ for epoch in range(config["max_epochs"]):
         else:
             failed_counter += 1
 
-checkpoint = torch.load(f'checkpoint/flat_{config["target"]}_model.pt', map_location=device)
+checkpoint = torch.load(f'checkpoint/{config["bert_model"]}_{config["target"]}_model.pt', map_location=device)
 model.load_state_dict(checkpoint["hidden_states"])
 output_layer.load_state_dict(checkpoint["last_hidden_state"])
 
@@ -263,12 +263,12 @@ with torch.no_grad():
 if not os.path.exists('log'):
     os.makedirs('log')
 
-logger.to_csv(f'log/flat_{config["target"]}_metrics.csv', index=False, encoding='utf-8')
-classification_report.to_csv(f'log/flat_{config["target"]}_classification_report.csv', index=False, encoding='utf-8')
+logger.to_csv(f'log/{config["bert_model"]}_{config["target"]}_metrics.csv', index=False, encoding='utf-8')
+classification_report.to_csv(f'log/{config["bert_model"]}_{config["target"]}_classification_report.csv', index=False, encoding='utf-8')
 
 
 # generate result
-logger = pd.read_csv(f"log/flat_{config['target']}_metrics.csv", dtype={'accuracy': float, 'loss': float})
+logger = pd.read_csv(f"log/{config['target']}_metrics.csv", dtype={'accuracy': float, 'loss': float})
 
 train_log = logger[logger['stage'] == 'train']
 valid_log = logger[logger['stage'] == 'valid']
@@ -288,7 +288,7 @@ plt.annotate('best', xy=(valid_log['epoch'][valid_log['accuracy'].idxmax()], bes
 
 plt.title(f'Best Training Accuracy: {best_train_accuracy:.2f} | Best Validation Accuracy: {best_valid_accuracy:.2f}', ha='center', fontsize='medium')
 plt.legend()
-plt.savefig(f'log/flat_{config["target"]}_accuracy_metrics.png')
+plt.savefig(f'log/{config["bert_model"]}_{config["target"]}_accuracy_metrics.png')
 plt.clf()
 
 plt.xlabel('Epoch')
@@ -306,5 +306,5 @@ plt.annotate('best', xy=(valid_log['epoch'][valid_log['loss'].idxmin()], best_va
 
 plt.title(f'Best Training Loss: {best_train_loss:.2f} | Best Validation Loss: {best_valid_loss:.2f}', ha='center', fontsize='medium')
 plt.legend()
-plt.savefig(f'log/flat_{config["target"]}_loss_metrics.png')
+plt.savefig(f'log/{config["bert_model"]}_{config["target"]}_loss_metrics.png')
 plt.clf()
