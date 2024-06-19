@@ -9,6 +9,7 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from torch.utils.data import TensorDataset
 from transformers import BertModel
 from tqdm import tqdm
@@ -99,8 +100,9 @@ for epoch in range(config["max_epochs"]):
 
     train_loss = 0
     n_batch = 0
-    n_correct = 0
-    n_samples = 0
+
+    y_true_train = []
+    y_pred_train = []
 
     each_label_correct = defaultdict(int)
     each_label_total = defaultdict(int)
@@ -120,8 +122,9 @@ for epoch in range(config["max_epochs"]):
         n_batch += 1
 
         result = torch.argmax(preds, dim=1) 
-        n_correct += (result == target).sum().item()
-        n_samples += target.size(0)
+
+        y_pred_train.extend(result.cpu().numpy())
+        y_true_train.extend(target.cpu().numpy())
 
         for prediction, ground_truth in zip(result, target):
             if prediction == ground_truth:
@@ -136,9 +139,17 @@ for epoch in range(config["max_epochs"]):
         output_layer.zero_grad()
 
     train_loss /= n_batch
-    acc = 100.0 * n_correct / n_samples
-    graph_logger = pd.concat([graph_logger, pd.DataFrame({'accuracy': [acc], 'loss': [train_loss], 'epoch': [epoch+1], 'stage': ['train']})], ignore_index=True)
-    print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Training Loss: {train_loss:.4f}, Training Accuracy: {acc:.2f}%')
+
+    y_true_train = np.array(y_true_train)
+    y_pred_train = np.array(y_pred_train)
+
+    accuracy = accuracy_score(y_true_train, y_pred_train)
+    precision = precision_score(y_true_train, y_pred_train, average='weighted')
+    recall = recall_score(y_true_train, y_pred_train, average='weighted')
+    f1 = f1_score(y_true_train, y_pred_train, average='weighted')
+
+    graph_logger = pd.concat([graph_logger, pd.DataFrame({'accuracy': [accuracy], 'precision': [precision], 'recall': [recall], 'f1': [f1], 'loss': [train_loss], 'epoch': [epoch+1], 'stage': ['train']})], ignore_index=True)
+    print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Training Loss: {train_loss:.4f}, Training Accuracy: {accuracy:.2f}%, Training Precision: {precision:.2f}%, Training Recall: {recall:.2f}%, Training F1: {f1:.2f}%')
 
     for label, total_count in each_label_total.items():
         correct_count = each_label_correct.get(label, 0)  
@@ -150,8 +161,9 @@ for epoch in range(config["max_epochs"]):
     with torch.no_grad():
         val_loss = 0
         n_batch = 0
-        n_correct = 0
-        n_samples = 0
+
+        y_true_valid = []
+        y_pred_valid = []
 
         each_label_correct = defaultdict(int)
         each_label_total = defaultdict(int)
@@ -170,8 +182,9 @@ for epoch in range(config["max_epochs"]):
             n_batch += 1
 
             result = torch.argmax(preds, dim=1) 
-            n_correct += (result == target).sum().item()
-            n_samples += target.size(0)
+
+            y_pred_valid.extend(result.cpu().numpy())
+            y_true_valid.extend(target.cpu().numpy())
 
             for prediction, ground_truth in zip(result, target):
                 if prediction == ground_truth:
@@ -183,9 +196,17 @@ for epoch in range(config["max_epochs"]):
             output_layer.zero_grad()
 
         val_loss /= n_batch
-        acc = 100.0 * n_correct / n_samples
-        graph_logger = pd.concat([graph_logger, pd.DataFrame({'accuracy': [acc], 'loss': [val_loss], 'epoch': [epoch+1], 'stage': ['valid']})], ignore_index=True)
-        print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Validation Loss: {val_loss:.4f}, Validation Accuracy: {acc:.2f}%')
+
+        y_true_valid = np.array(y_true_valid)
+        y_pred_valid = np.array(y_pred_valid)
+
+        accuracy = accuracy_score(y_true_valid, y_pred_valid)
+        precision = precision_score(y_true_valid, y_pred_valid, average='weighted')
+        recall = recall_score(y_true_valid, y_pred_valid, average='weighted')
+        f1 = f1_score(y_true_valid, y_pred_valid, average='weighted')
+
+        graph_logger = pd.concat([graph_logger, pd.DataFrame({'accuracy': [accuracy], 'precision': [precision], 'recall': [recall], 'f1': [f1], 'loss': [val_loss], 'epoch': [epoch+1], 'stage': ['valid']})], ignore_index=True)
+        print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Validation Loss: {val_loss:.4f}, Validation Accuracy: {accuracy:.2f}%, Validation Precision: {precision:.2f}%, Validation Recall: {recall:.2f}%, Validation F1: {f1:.2f}%')
 
         for label, total_count in each_label_total.items():
             correct_count = each_label_correct.get(label, 0)  
@@ -221,8 +242,9 @@ model.eval()
 with torch.no_grad():
     test_loss = 0
     n_batch = 0
-    n_correct = 0
-    n_samples = 0
+
+    y_true_test = []
+    y_pred_test = []
 
     each_label_correct = defaultdict(int)
     each_label_total = defaultdict(int)
@@ -241,8 +263,9 @@ with torch.no_grad():
         n_batch += 1
 
         result = torch.argmax(preds, dim=1) 
-        n_samples += target.size(0)
-        n_correct += (result == target).sum().item()
+
+        y_pred_test.extend(result.cpu().numpy())
+        y_true_test.extend(target.cpu().numpy())
 
         for prediction, ground_truth in zip(result, target):
             if prediction == ground_truth:
@@ -250,9 +273,17 @@ with torch.no_grad():
             each_label_total[ground_truth.item()] += 1
 
     test_loss /= n_batch
-    acc = 100.0 * n_correct / n_samples
-    graph_logger = pd.concat([graph_logger, pd.DataFrame({'accuracy': [acc], 'loss': [test_loss], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
-    print(f'Test Loss: {test_loss:.4f}, Test Accuracy: {acc:.2f}%')
+
+    y_true_test = np.array(y_true_test)
+    y_pred_test = np.array(y_pred_test)
+
+    accuracy = accuracy_score(y_true_test, y_pred_test)
+    precision = precision_score(y_true_test, y_pred_test, average='weighted')
+    recall = recall_score(y_true_test, y_pred_test, average='weighted')
+    f1 = f1_score(y_true_test, y_pred_test, average='weighted')
+
+    graph_logger = pd.concat([graph_logger, pd.DataFrame({'accuracy': [accuracy], 'precision': [precision], 'recall': [recall], 'f1': [f1], 'loss': [test_loss], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
+    print(f'Test Loss: {test_loss:.4f}, Test Accuracy: {accuracy:.2f}%, Test Precision: {precision:.2f}%, Test Recall: {recall:.2f}%, Test F1: {f1:.2f}%')
 
     for label, total_count in each_label_total.items():
         correct_count = each_label_correct.get(label, 0)  
@@ -267,7 +298,7 @@ graph_logger.to_csv(f'log/{config["bert_model"]}_{config["target"]}_metrics.csv'
 prediction_stats.to_csv(f'log/{config["bert_model"]}_{config["target"]}_prediction_stats.csv', index=False, encoding='utf-8')
 
 
-# generate result
+# export result
 graph_logger = pd.read_csv(f"log/{config["bert_model"]}_{config["target"]}_metrics.csv", dtype={'accuracy': float, 'loss': float})
 
 train_log = graph_logger[graph_logger['stage'] == 'train']
