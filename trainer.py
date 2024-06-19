@@ -268,7 +268,7 @@ classification_report.to_csv(f'log/{config["bert_model"]}_{config["target"]}_cla
 
 
 # generate result
-logger = pd.read_csv(f"log/{config['target']}_metrics.csv", dtype={'accuracy': float, 'loss': float})
+logger = pd.read_csv(f"log/{config["bert_model"]}_{config["target"]}_metrics.csv", dtype={'accuracy': float, 'loss': float})
 
 train_log = logger[logger['stage'] == 'train']
 valid_log = logger[logger['stage'] == 'valid']
