@@ -316,7 +316,7 @@ prediction_stats.to_csv(f'log/{config["bert_model"]}_{config["target"]}_predicti
 
 
 # export result
-graph_logger = pd.read_csv(f"log/{config["bert_model"]}_{config["target"]}_metrics.csv", dtype={'accuracy': float, precision: float, recall: float, f1: float, 'loss': float})
+graph_logger = pd.read_csv(f"log/{config['bert_model']}_{config['target']}_metrics.csv", dtype={'accuracy': float, 'precision': float, 'recall': float, 'f1': float, 'loss': float})
 
 train_log = graph_logger[graph_logger['stage'] == 'train']
 valid_log = graph_logger[graph_logger['stage'] == 'valid']
