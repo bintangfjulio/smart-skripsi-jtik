@@ -1,5 +1,13 @@
 ## Requirements
 
+To clone:
+
+```setup
+git clone -b deep-learning https://github.com/bintangfjulio/thesis-classification-app.git
+```
+
+## Requirements
+
 To install requirements:
 
 ```setup
@@ -14,13 +22,13 @@ To train the model, run this command:
 !python trainer.py
 ```
 
-or more advaned train:
+or more advanced train:
 
 ```
 !python trainer.py --hyperparameter_name=value
 ```
 
-for example:
+example:
 
 ```
 !python trainer.py --batch_size=16 --bert_model=indolem/indobertweet-uncased
