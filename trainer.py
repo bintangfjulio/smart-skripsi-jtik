@@ -300,6 +300,7 @@ with torch.no_grad():
         os.makedirs('log')
 
     plt.savefig('log/confusion_matrix.png', bbox_inches='tight')
+    plt.clf()
 
 
 graph_logger.to_csv(f'log/metrics.csv', index=False, encoding='utf-8')
