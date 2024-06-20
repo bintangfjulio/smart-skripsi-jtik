@@ -286,21 +286,20 @@ with torch.no_grad():
         print(f"Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
 
     cm = confusion_matrix(y_true_test, y_pred_test)
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False)
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False, xticklabels=labels, yticklabels=labels)
 
     plt.xlabel('Predicted Labels')
     plt.ylabel('True Labels')
     plt.title('Confusion Matrix')
 
-    tick_marks = range(len(labels))
-    plt.xticks(tick_marks, labels)
-    plt.yticks(tick_marks, labels)
+    plt.xticks(rotation=15, ha='right', fontsize=12)
+    plt.yticks(fontsize=12)
 
     if not os.path.exists('log'):
         os.makedirs('log')
 
-    plt.savefig(f'log/confusion_matrix.png', bbox_inches='tight')
+    plt.savefig('log/confusion_matrix.png', bbox_inches='tight')
 
 
 graph_logger.to_csv(f'log/metrics.csv', index=False, encoding='utf-8')
