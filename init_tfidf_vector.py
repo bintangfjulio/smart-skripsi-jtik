@@ -8,15 +8,18 @@ from util.preprocessor import Preprocessor
 from util.hyperparameter import get_hyperparameters
 
 
-dataset = pd.read_json("dataset/init_data_repo_jtik.json")
+config = get_hyperparameters()
+
+dataset = pd.read_json(f"dataset/{config["dataset"]}")
 dataset = dataset[['nama_pembimbing', 'url', 'judul', 'abstrak', 'kata_kunci']]
 
-config = get_hyperparameters()
-preprocessor = Preprocessor(bert_model=config["bert_model"], max_length=config["max_length"])
+if not os.path.exists("dataset/preprocessed_set.pkl"):
+    preprocessor = Preprocessor(bert_model=config["bert_model"], max_length=config["max_length"])
+    tqdm.pandas(desc="Preprocessing Stage")
+    dataset["preprocessed"] = dataset.progress_apply(lambda data: preprocessor.text_processing(data), axis=1)
+    dataset.to_pickle("dataset/preprocessed_set.pkl")
 
-tqdm.pandas(desc="Preprocessing Stage")
-dataset["preprocessed"] = dataset.progress_apply(lambda data: preprocessor.text_processing(data), axis=1)
-
+dataset = pd.read_pickle("dataset/preprocessed_set.pkl")
 vectorizer = TfidfVectorizer()
 tfidf_matrix = vectorizer.fit_transform(dataset["preprocessed"])
 attribut = dataset[['judul', 'abstrak', 'kata_kunci', 'nama_pembimbing', 'url']].to_dict(orient='records')
