@@ -219,10 +219,10 @@ for epoch in range(config["max_epochs"]):
             if not os.path.exists('checkpoint'):
                 os.makedirs('checkpoint')
 
-            if os.path.exists(f'checkpoint/{config["target"]}_model.pt'):
-                os.remove(f'checkpoint/{config["target"]}_model.pt')
+            if os.path.exists(f'checkpoint/pretrained_classifier.pt'):
+                os.remove(f'checkpoint/pretrained_classifier.pt')
 
-            torch.save(model.state_dict(), f'checkpoint/{config["target"]}_model.pt')
+            torch.save(model.state_dict(), f'checkpoint/pretrained_classifier.pt')
 
             best_loss = val_loss
             failed_counter = 0
@@ -230,7 +230,7 @@ for epoch in range(config["max_epochs"]):
         else:
             failed_counter += 1
 
-checkpoint = torch.load(f'checkpoint/{config["target"]}_model.pt', map_location=device)
+checkpoint = torch.load(f'checkpoint/pretrained_classifier.pt', map_location=device)
 model.load_state_dict(checkpoint)
 
 model.eval()
@@ -300,15 +300,15 @@ with torch.no_grad():
     if not os.path.exists('log'):
         os.makedirs('log')
 
-    plt.savefig(f'log/{config["target"]}_confusion_matrix.png', bbox_inches='tight')
+    plt.savefig(f'log/confusion_matrix.png', bbox_inches='tight')
 
 
-graph_logger.to_csv(f'log/{config["target"]}_metrics.csv', index=False, encoding='utf-8')
-prediction_stats.to_csv(f'log/{config["target"]}_prediction_stats.csv', index=False, encoding='utf-8')
+graph_logger.to_csv(f'log/metrics.csv', index=False, encoding='utf-8')
+prediction_stats.to_csv(f'log/prediction_stats.csv', index=False, encoding='utf-8')
 
 
 # export result
-graph_logger = pd.read_csv(f"log/{config['bert_model']}_{config['target']}_metrics.csv", dtype={'accuracy': float, 'precision': float, 'recall': float, 'f1': float, 'loss': float})
+graph_logger = pd.read_csv(f"log/metrics.csv", dtype={'accuracy': float, 'precision': float, 'recall': float, 'f1': float, 'loss': float})
 
 train_log = graph_logger[graph_logger['stage'] == 'train']
 valid_log = graph_logger[graph_logger['stage'] == 'valid']
@@ -329,7 +329,7 @@ for metric in ['accuracy', 'precision', 'recall', 'f1']:
 
     plt.title(f'Best Training {metric.capitalize()}: {best_train:.2f} | Best Validation {metric.capitalize()}: {best_valid:.2f}', ha='center', fontsize='medium')
     plt.legend()
-    plt.savefig(f'log/{config["target"]}_{metric}_metrics.png')
+    plt.savefig(f'log/{metric}_metrics.png')
     plt.clf()
 
 
@@ -348,5 +348,5 @@ plt.annotate('best', xy=(valid_log['epoch'][valid_log['loss'].idxmin()], best_va
 
 plt.title(f'Best Training Loss: {best_train_loss:.2f} | Best Validation Loss: {best_valid_loss:.2f}', ha='center', fontsize='medium')
 plt.legend()
-plt.savefig(f'log/{config["target"]}_loss_metrics.png')
+plt.savefig(f'log/loss_metrics.png')
 plt.clf()

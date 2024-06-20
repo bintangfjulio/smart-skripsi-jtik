@@ -1,4 +1,5 @@
 import pickle
+import os
 import pandas as pd
 
 from tqdm import tqdm
@@ -20,7 +21,10 @@ vectorizer = TfidfVectorizer()
 tfidf_matrix = vectorizer.fit_transform(dataset["preprocessed"])
 attribut = dataset[['judul', 'abstrak', 'kata_kunci', 'nama_pembimbing', 'url']].to_dict(orient='records')
 
-with open('dataset/tfidf_data.pkl', 'wb') as f:
+if not os.path.exists('checkpoint'):
+    os.makedirs('checkpoint')
+
+with open('checkpoint/pretrained_tfidf.pkl', 'wb') as f:
     pickle.dump({
         'vectorizer': vectorizer,
         'tfidf_matrix': tfidf_matrix,
