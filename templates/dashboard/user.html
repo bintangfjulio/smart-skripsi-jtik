@@ -127,8 +127,10 @@
           <td class="cell">${user.email}</td>
           <td class="cell">${user.registered_at}</td>
           <td class="cell"><span class="badge bg-${user.status_badge}">${user.inactive === "1" ? 'Nonaktif' : 'Aktif'}</span></td>
-          <td class="cell"><a class="btn-sm app-btn-secondary me-1" href="#" data-bs-toggle="modal" data-bs-target="#modal" onclick="setModalData('${user.id}', '${user.inactive}')">Ubah Status</a>
-          <a class="btn-sm app-btn-secondary" href="/dashboard/history/${user.id}">Cek Riwayat</a></td>
+          <td class="cell">
+            <div class="d-flex">
+            <a class="btn-sm app-btn-secondary me-1" href="#" data-bs-toggle="modal" data-bs-target="#modal" onclick="setModalData('${user.id}', '${user.inactive}')">Edit Status</a>
+          <a class="btn-sm app-btn-secondary" href="/dashboard/history/${user.id}">Lihat Riwayat</a></td></div>
         `);
         $tableBody.append($row);
       });
