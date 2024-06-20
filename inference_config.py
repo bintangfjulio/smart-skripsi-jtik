@@ -7,14 +7,14 @@ import torch.nn.functional as F
 
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
-from transformers import BertTokenizer, BertModel
+from transformers import AutoTokenizer, AutoModel
 from sklearn.metrics.pairwise import cosine_similarity
 
 
 class BERT_CNN(nn.Module):
     def __init__(self, labels, pretrained_bert, window_sizes=[1, 2, 3, 4, 5], in_channels=4, out_channels=32, dropout=0.1, num_bert_states=4):
         super(BERT_CNN, self).__init__()
-        self.pretrained_bert = BertModel.from_pretrained(pretrained_bert, output_attentions=False, output_hidden_states=True)
+        self.pretrained_bert = AutoModel.from_pretrained(pretrained_bert, output_attentions=False, output_hidden_states=True)
         
         conv_layers = []
         for window_size in window_sizes:
@@ -57,7 +57,7 @@ class Inference():
         self.labels = ['Jaringan & IoT', 'Multimedia & Teknologi: AI Game', 'Rekayasa Perangkat Lunak', 'Sistem Cerdas']
 
         self.stop_words = StopWordRemoverFactory().get_stop_words()
-        self.tokenizer = BertTokenizer.from_pretrained(pretrained_bert, use_fast=False)
+        self.tokenizer = AutoTokenizer.from_pretrained(pretrained_bert, use_fast=False)
         self.stemmer = StemmerFactory().create_stemmer()
         self.max_length = max_length
         
