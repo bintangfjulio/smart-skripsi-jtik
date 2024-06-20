@@ -8,6 +8,7 @@ import pandas as pd
 import torch.nn as nn
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
+import seaborn as sns
 
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from torch.utils.data import TensorDataset
@@ -18,7 +19,6 @@ from model.bert_cnn import BERT_CNN
 from util.preprocessor import Preprocessor
 from util.hyperparameter import get_hyperparameters
 from sklearn.metrics import confusion_matrix
-import seaborn as sns
 
 
 # setup
@@ -76,11 +76,8 @@ test_loader = torch.utils.data.DataLoader(dataset=test_set,
 
 
 # fine-tune
-model = BERT_CNN(pretrained_bert=pretrained_bert, dropout=config["dropout"], window_sizes=config["window_sizes"], in_channels=config["in_channels"], out_channels=config["out_channels"], num_bert_states=config["num_bert_states"])
+model = BERT_CNN(labels=labels, pretrained_bert=pretrained_bert, dropout=config["dropout"], window_sizes=config["window_sizes"], in_channels=config["in_channels"], out_channels=config["out_channels"], num_bert_states=config["num_bert_states"])
 model.to(device)
-
-output_layer = nn.Linear(len(config["window_sizes"]) * config["out_channels"], len(labels))
-output_layer.to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"])
@@ -93,7 +90,6 @@ prediction_stats = pd.DataFrame(columns=['label', 'correct_prediction', 'false_p
 
 optimizer.zero_grad()
 model.zero_grad()
-output_layer.zero_grad()
 
 for epoch in range(config["max_epochs"]):
     if failed_counter == config["patience"]:
@@ -116,7 +112,6 @@ for epoch in range(config["max_epochs"]):
         target = target.to(device)
 
         preds = model(input_ids=input_ids, attention_mask=attention_mask)
-        preds = output_layer(preds)
 
         loss = criterion(preds, target)
 
@@ -138,7 +133,6 @@ for epoch in range(config["max_epochs"]):
 
         optimizer.zero_grad()
         model.zero_grad()
-        output_layer.zero_grad()
 
     train_loss /= n_batch
 
@@ -176,7 +170,6 @@ for epoch in range(config["max_epochs"]):
             target = target.to(device)
 
             preds = model(input_ids=input_ids, attention_mask=attention_mask)
-            preds = output_layer(preds)
 
             loss = criterion(preds, target)
 
@@ -195,7 +188,6 @@ for epoch in range(config["max_epochs"]):
 
             optimizer.zero_grad()
             model.zero_grad()
-            output_layer.zero_grad()
 
         val_loss /= n_batch
 
@@ -220,15 +212,10 @@ for epoch in range(config["max_epochs"]):
             if not os.path.exists('checkpoint'):
                 os.makedirs('checkpoint')
 
-            if os.path.exists(f'checkpoint/{config["bert_model"]}_{config["target"]}_model.pt'):
-                os.remove(f'checkpoint/{config["bert_model"]}_{config["target"]}_model.pt')
+            if os.path.exists(f'checkpoint/{config["target"]}_model.pt'):
+                os.remove(f'checkpoint/{config["target"]}_model.pt')
 
-            checkpoint = {
-                "hidden_states": model.state_dict(),
-                "last_hidden_state": output_layer.state_dict(),
-            }
-
-            torch.save(checkpoint, f'checkpoint/{config["bert_model"]}_{config["target"]}_model.pt')
+            torch.save(model.state_dict(), f'checkpoint/{config["target"]}_model.pt')
 
             best_loss = val_loss
             failed_counter = 0
@@ -236,9 +223,8 @@ for epoch in range(config["max_epochs"]):
         else:
             failed_counter += 1
 
-checkpoint = torch.load(f'checkpoint/{config["bert_model"]}_{config["target"]}_model.pt', map_location=device)
-model.load_state_dict(checkpoint["hidden_states"])
-output_layer.load_state_dict(checkpoint["last_hidden_state"])
+checkpoint = torch.load(f'checkpoint/{config["target"]}_model.pt', map_location=device)
+model.load_state_dict(checkpoint)
 
 model.eval()
 with torch.no_grad():
@@ -257,7 +243,6 @@ with torch.no_grad():
         target = target.to(device)
 
         preds = model(input_ids=input_ids, attention_mask=attention_mask)
-        preds = output_layer(preds)
 
         loss = criterion(preds, target)
 
@@ -305,14 +290,14 @@ with torch.no_grad():
     plt.xticks(tick_marks, labels)
     plt.yticks(tick_marks, labels)
 
-    plt.savefig(f'log/{config["bert_model"]}_{config["target"]}_confusion_matrix.png', bbox_inches='tight')
+    plt.savefig(f'log/{config["target"]}_confusion_matrix.png', bbox_inches='tight')
 
 
 if not os.path.exists('log'):
     os.makedirs('log')
 
-graph_logger.to_csv(f'log/{config["bert_model"]}_{config["target"]}_metrics.csv', index=False, encoding='utf-8')
-prediction_stats.to_csv(f'log/{config["bert_model"]}_{config["target"]}_prediction_stats.csv', index=False, encoding='utf-8')
+graph_logger.to_csv(f'log/{config["target"]}_metrics.csv', index=False, encoding='utf-8')
+prediction_stats.to_csv(f'log/{config["target"]}_prediction_stats.csv', index=False, encoding='utf-8')
 
 
 # export result
@@ -337,7 +322,7 @@ for metric in ['accuracy', 'precision', 'recall', 'f1']:
 
     plt.title(f'Best Training {metric.capitalize()}: {best_train:.2f} | Best Validation {metric.capitalize()}: {best_valid:.2f}', ha='center', fontsize='medium')
     plt.legend()
-    plt.savefig(f'log/{config["bert_model"]}_{config["target"]}_{metric}_metrics.png')
+    plt.savefig(f'log/{config["target"]}_{metric}_metrics.png')
     plt.clf()
 
 
@@ -356,5 +341,5 @@ plt.annotate('best', xy=(valid_log['epoch'][valid_log['loss'].idxmin()], best_va
 
 plt.title(f'Best Training Loss: {best_train_loss:.2f} | Best Validation Loss: {best_valid_loss:.2f}', ha='center', fontsize='medium')
 plt.legend()
-plt.savefig(f'log/{config["bert_model"]}_{config["target"]}_loss_metrics.png')
+plt.savefig(f'log/{config["target"]}_loss_metrics.png')
 plt.clf()

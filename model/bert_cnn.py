@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 
 class BERT_CNN(nn.Module):
-    def __init__(self, pretrained_bert, dropout, window_sizes, in_channels, out_channels, num_bert_states):
+    def __init__(self, labels, pretrained_bert, dropout, window_sizes, in_channels, out_channels, num_bert_states):
         super(BERT_CNN, self).__init__()
         self.pretrained_bert = pretrained_bert
 
@@ -14,6 +14,7 @@ class BERT_CNN(nn.Module):
             conv_layers.append(conv_layer)
             
         self.cnn = nn.ModuleList(conv_layers)
+        self.output_layer = nn.Linear(len(window_sizes) * out_channels, len(labels))
 
         self.dropout = nn.Dropout(dropout) 
         self.window_length = len(window_sizes)
@@ -36,5 +37,7 @@ class BERT_CNN(nn.Module):
         
         concatenated = torch.cat(max_pooling, dim=1)
         preds = self.dropout(concatenated)
+
+        preds = self.output_layer(preds)
         
         return preds
