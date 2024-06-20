@@ -4,13 +4,13 @@ import pandas as pd
 
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
-from transformers import BertTokenizer
+from transformers import AutoTokenizer
 
 
 class Preprocessor:
     def __init__(self, bert_model, max_length):
         self.stop_words = StopWordRemoverFactory().get_stop_words()
-        self.tokenizer = BertTokenizer.from_pretrained(bert_model, use_fast=False)
+        self.tokenizer = AutoTokenizer.from_pretrained(bert_model, use_fast=False)
         self.stemmer = StemmerFactory().create_stemmer()
         self.max_length = max_length
     

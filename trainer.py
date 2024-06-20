@@ -12,7 +12,7 @@ import seaborn as sns
 
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from torch.utils.data import TensorDataset
-from transformers import BertModel
+from transformers import AutoModel
 from tqdm import tqdm
 from collections import defaultdict
 from model.bert_cnn import BERT_CNN
@@ -37,7 +37,7 @@ if torch.cuda.is_available():
     torch.backends.cudnn.deterministic = True
 
 dataset = pd.read_json(f'dataset/{config["dataset"]}')
-pretrained_bert = BertModel.from_pretrained(config["bert_model"], output_attentions=False, output_hidden_states=True)
+pretrained_bert = AutoModel.from_pretrained(config["bert_model"], output_attentions=False, output_hidden_states=True)
 preprocessor = Preprocessor(bert_model=config["bert_model"], max_length=config["max_length"])
 
 
