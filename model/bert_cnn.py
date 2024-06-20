@@ -14,11 +14,11 @@ class BERT_CNN(nn.Module):
             conv_layers.append(conv_layer)
             
         self.cnn = nn.ModuleList(conv_layers)
-        self.output_layer = nn.Linear(len(window_sizes) * out_channels, len(labels))
 
         self.dropout = nn.Dropout(dropout) 
-        self.window_length = len(window_sizes)
         self.num_bert_states = num_bert_states
+
+        self.output_layer = nn.Linear(len(window_sizes) * out_channels, len(labels))
 
     def forward(self, input_ids, attention_mask):
         bert_output = self.pretrained_bert(input_ids=input_ids, attention_mask=attention_mask)
