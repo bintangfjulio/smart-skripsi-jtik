@@ -42,14 +42,14 @@ class Preprocessor:
         
         return labels
     
-    def train_test_split(self, dataset, test_size):
-        dataset = dataset.sample(frac=1)
-        train_valid_size = round(dataset.shape[0] * (1.0 - test_size))
+    # def train_test_split(self, dataset, test_size):
+    #     dataset = dataset.sample(frac=1)
+    #     train_valid_size = round(dataset.shape[0] * (1.0 - test_size))
 
-        train_valid_set = pd.DataFrame(dataset.iloc[:train_valid_size, :])
-        test_set = pd.DataFrame(dataset.iloc[train_valid_size:, :])
+    #     train_valid_set = pd.DataFrame(dataset.iloc[:train_valid_size, :])
+    #     test_set = pd.DataFrame(dataset.iloc[train_valid_size:, :])
 
-        return train_valid_set, test_set
+    #     return train_valid_set, test_set
     
     # def get_grouped_labels(self, dataset, root, node):
     #     node_labels = dataset.groupby(root)[node].unique().apply(sorted).to_dict()
