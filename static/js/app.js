@@ -70,6 +70,7 @@ function initChart(keys, values) {
             window.chartColors.green,
             window.chartColors.blue,
             window.chartColors.grey,
+            window.chartColors.yellow,
           ],
           label: "Hasil",
         },
