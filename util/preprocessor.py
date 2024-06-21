@@ -28,8 +28,8 @@ class Preprocessor:
 
         return text
 
-    def bert_tokenizer(self, text):
-        token = self.tokenizer(text=text, 
+    def bert_tokenizer(self, data):
+        token = self.tokenizer(text=data["preprocessed"], 
                             max_length=self.max_length, 
                             padding="max_length", 
                             truncation=True) 

@@ -24,6 +24,7 @@ from sklearn.metrics import confusion_matrix
 # setup
 config = get_hyperparameters()
 
+folder_path = f'{config["model_name"]}_{config["lr"]}_{config["batch_size"]}'
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 pd.options.display.float_format = '{:,.2f}'.format  
 
@@ -48,7 +49,8 @@ if not os.path.exists("dataset/preprocessed_set.pkl"):
     dataset.to_pickle("dataset/preprocessed_set.pkl")
 
 dataset = pd.read_pickle("dataset/preprocessed_set.pkl")
-dataset[['input_ids', 'attention_mask']] = dataset["preprocessed"].progress_apply(lambda data: preprocessor.bert_tokenizer(data), result_type='expand')
+tqdm.pandas(desc="Tokenizing")
+dataset[['input_ids', 'attention_mask']] = dataset.progress_apply(lambda data: preprocessor.bert_tokenizer(data), axis=1, result_type='expand')
 
 labels = preprocessor.get_labels(dataset=dataset, target=config["target"])
 dataset["target"] = dataset[config["target"]].apply(lambda data: labels.index(data))
@@ -218,13 +220,13 @@ for epoch in range(config["max_epochs"]):
             print(f"Label: {labels[label]}, Correct Predictions: {correct_count}, False Predictions: {false_count}")
         
         if round(val_loss, 2) < round(best_loss, 2):
-            if not os.path.exists('checkpoint'):
-                os.makedirs('checkpoint')
+            if not os.path.exists(f'checkpoint/{folder_path}'):
+                os.makedirs(f'checkpoint/{folder_path}')
 
-            if os.path.exists(f'checkpoint/pretrained_classifier.pt'):
-                os.remove(f'checkpoint/pretrained_classifier.pt')
+            if os.path.exists(f'checkpoint/{folder_path}/pretrained_classifier.pt'):
+                os.remove(f'checkpoint/{folder_path}/pretrained_classifier.pt')
 
-            torch.save(model.state_dict(), f'checkpoint/pretrained_classifier.pt')
+            torch.save(model.state_dict(), f'checkpoint/{folder_path}/pretrained_classifier.pt')
 
             best_loss = val_loss
             failed_counter = 0
@@ -232,7 +234,7 @@ for epoch in range(config["max_epochs"]):
         else:
             failed_counter += 1
 
-checkpoint = torch.load(f'checkpoint/pretrained_classifier.pt', map_location=device)
+checkpoint = torch.load(f'checkpoint/{folder_path}/pretrained_classifier.pt', map_location=device)
 model.load_state_dict(checkpoint)
 
 model.eval()
@@ -298,19 +300,19 @@ with torch.no_grad():
     plt.xticks(rotation=15, ha='right', fontsize=12)
     plt.yticks(fontsize=12)
 
-    if not os.path.exists('log'):
-        os.makedirs('log')
+    if not os.path.exists(f'log/{folder_path}'):
+        os.makedirs(f'log/{folder_path}')
 
-    plt.savefig('log/confusion_matrix.png', bbox_inches='tight')
+    plt.savefig(f'log/{folder_path}/confusion_matrix.png', bbox_inches='tight')
     plt.clf()
 
 
-graph_logger.to_csv(f'log/metrics.csv', index=False, encoding='utf-8')
-prediction_stats.to_csv(f'log/prediction_stats.csv', index=False, encoding='utf-8')
+graph_logger.to_csv(f'log/{folder_path}/metrics.csv', index=False, encoding='utf-8')
+prediction_stats.to_csv(f'log/{folder_path}/prediction_stats.csv', index=False, encoding='utf-8')
 
 
 # export result
-graph_logger = pd.read_csv(f"log/metrics.csv", dtype={'accuracy': float, 'precision': float, 'recall': float, 'f1': float, 'loss': float})
+graph_logger = pd.read_csv(f"log/{folder_path}/metrics.csv", dtype={'accuracy': float, 'precision': float, 'recall': float, 'f1': float, 'loss': float})
 
 train_log = graph_logger[graph_logger['stage'] == 'train']
 valid_log = graph_logger[graph_logger['stage'] == 'valid']
@@ -331,7 +333,7 @@ for metric in ['accuracy', 'precision', 'recall', 'f1']:
 
     plt.title(f'Best Training {metric.capitalize()}: {best_train:.2f} | Best Validation {metric.capitalize()}: {best_valid:.2f}', ha='center', fontsize='medium')
     plt.legend()
-    plt.savefig(f'log/{metric}_metrics.png')
+    plt.savefig(f'log/{folder_path}/{metric}_metrics.png')
     plt.clf()
 
 
@@ -350,5 +352,5 @@ plt.annotate('best', xy=(valid_log['epoch'][valid_log['loss'].idxmin()], best_va
 
 plt.title(f'Best Training Loss: {best_train_loss:.2f} | Best Validation Loss: {best_valid_loss:.2f}', ha='center', fontsize='medium')
 plt.legend()
-plt.savefig(f'log/loss_metrics.png')
+plt.savefig(f'log/{folder_path}/loss_metrics.png')
 plt.clf()
