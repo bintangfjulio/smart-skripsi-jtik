@@ -2,4 +2,3 @@ checkpoint
 log
 **/__pycache__/
 deprecated
-dataset/preprocessed_set.pkl
