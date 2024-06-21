@@ -24,7 +24,7 @@ from sklearn.metrics import confusion_matrix
 # setup
 config = get_hyperparameters()
 
-folder_path = f'{config["model_name"]}_{config["lr"]}_{config["batch_size"]}'
+folder_path = f'{config["model_name"]}_{config["lr"]}_{config["batch_size"]}_{config["dropout"]}'
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 pd.options.display.float_format = '{:,.2f}'.format  
 
