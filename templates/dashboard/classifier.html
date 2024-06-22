@@ -511,15 +511,16 @@ title %} {% block content %}
         }
 
         $("#hasil").removeClass("d-none");
-        $(".spinner").addClass("d-none");
-        $(".overlay").addClass("d-none");
 
         $("html, body").animate(
           {
             scrollTop: $("#hasil").offset().top - 50,
           },
-          1000
+          700
         );
+
+        $(".spinner").addClass("d-none");
+        $(".overlay").addClass("d-none");
       },
       error: function (response) {
         $(".spinner").addClass("d-none");
