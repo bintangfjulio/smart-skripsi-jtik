@@ -1,6 +1,5 @@
 import os
 import middleware
-import locale
 
 from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, url_for
@@ -9,7 +8,6 @@ from flask_login import current_user
 from inference_config import Inference
 
 
-locale.setlocale(locale.LC_TIME, 'id_ID')
 load_dotenv(override=True)
 
 app = Flask(__name__, static_folder='static', template_folder='templates')

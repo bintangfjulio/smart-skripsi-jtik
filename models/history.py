@@ -1,3 +1,5 @@
+import arrow
+
 from firebase_config import firebase_db
 from firebase_admin import firestore
 
@@ -47,7 +49,7 @@ class History:
                 'kata_kunci': data['kata_kunci'],
                 'probabilitas': dict(sorted(data['probabilitas'].items(), key=lambda item: item[1], reverse=True)),
                 'kelompok_bidang_keahlian': data['kelompok_bidang_keahlian'],
-                'tanggal_inferensi': data['tanggal_inferensi'].strftime("%A, %d-%m-%Y %H:%M:%S"),
+                'tanggal_inferensi': arrow.get(data['tanggal_inferensi']).to('Asia/Jakarta').format('dddd, DD-MM-YYYY HH:mm:ss', locale='id_ID'),
                 'top_similarity': data['top_similarity']
             })
 

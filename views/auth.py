@@ -6,9 +6,11 @@ from requests.exceptions import HTTPError
 from firebase_config import firebase_auth, firebase_db
 from flask_login import logout_user, login_user
 from middleware import load_user
+from pytz import timezone
 
 
 auth = Blueprint('auth', __name__, template_folder='templates')
+tz = timezone('Asia/Jakarta')
 
 @auth.route('/sign-up', methods=['GET', 'POST'])
 def sign_up():
@@ -22,6 +24,10 @@ def sign_up():
             flash(('Pendaftaran Gagal', 'Semua isian harus diisi'), 'error')
             return render_template('auth/sign_up.html')
         
+        if not email.endswith('pnj.ac.id'):
+            flash(('Pendaftaran Gagal', 'Harus menggunakan email Politeknik Negeri Jakarta'), 'error')
+            return render_template('auth/sign_up.html')
+        
         if password != confirm_password:
             flash(('Pendaftaran Gagal', 'Password dan konfirmasi password tidak sama'), 'error')
             return render_template('auth/sign_up.html')
@@ -33,7 +39,7 @@ def sign_up():
                 'nama': nama,
                 'email': email,
                 'role': 'pengguna',
-                'registered_at': datetime.now(),
+                'registered_at': datetime.now(tz),
                 'inactive': '0'
             }
 

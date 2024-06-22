@@ -247,7 +247,7 @@ title %} {% block content %}
 
 <hr class="my-4" />
 
-<div class="row g-4 settings-section d-none" id="hasil">
+<div class="row g-3 settings-section justify-content-center d-none" id="hasil">
   <div class="col-12">
     <h3 class="section-title">Hasil</h3>
   </div>
@@ -256,7 +256,7 @@ title %} {% block content %}
       <div class="app-card-header p-3">
         <div class="row justify-content-between align-items-center">
           <div class="col-auto">
-            <h4 class="app-card-title">Skor</h4>
+            <h4 class="app-card-title">Skor Klasifikasi</h4>
           </div>
         </div>
         <!--//row-->
@@ -279,28 +279,6 @@ title %} {% block content %}
       <!--//app-card-body-->
     </div>
     <!--//app-card-->
-  </div>
-  <div class="col-12 col-lg-6">
-    <div class="app-card app-card-chart h-100 shadow-sm">
-      <div class="app-card-header p-3 border-0">
-        <h4 class="app-card-title">Grafik</h4>
-      </div>
-      <div class="app-card-body pb-2">
-        <div class="chart-container">
-          <div class="chartjs-size-monitor">
-            <div class="chartjs-size-monitor-expand"><div class=""></div></div>
-            <div class="chartjs-size-monitor-shrink"><div class=""></div></div>
-          </div>
-          <canvas
-            id="chart-doughnut"
-            style="display: block; width: 454px; height: 227px"
-            width="384"
-            height="157"
-            class="chartjs-render-monitor"
-          ></canvas>
-        </div>
-      </div>
-    </div>
   </div>
 
   <div class="col-12 mt-5 text-center">
@@ -440,13 +418,6 @@ title %} {% block content %}
           isFirstRow = false;
         });
 
-        var doughnutChart = $("#chart-doughnut")[0].getContext("2d");
-
-        window.myDoughnut = new Chart(
-          doughnutChart,
-          initChart(Object.keys(probs), Object.values(probs))
-        );
-
         $("#kbk").text(response["message"]["kbk"]);
 
         $("#lecturers").empty();
@@ -494,7 +465,7 @@ title %} {% block content %}
             `<div class="app-card app-card-notification shadow-sm mb-4">
               <div class="app-card-header px-4 py-3">
                 <div class="row g-3 align-items-center">
-                  <div class="col-12 col-lg-auto text-center text-lg-start">
+                  <div class="col-12 col-lg-auto text-start">
                     <div class="notification-type mb-3">
                       <span class="badge" style="background-color: #128c9b"
                         >Rank #${topSimilarity[index]["rank"]}</span
@@ -540,9 +511,15 @@ title %} {% block content %}
         }
 
         $("#hasil").removeClass("d-none");
-        window.location.hash = "hasil";
         $(".spinner").addClass("d-none");
         $(".overlay").addClass("d-none");
+
+        $("html, body").animate(
+          {
+            scrollTop: $("#hasil").offset().top - 50,
+          },
+          1000
+        );
       },
       error: function (response) {
         $(".spinner").addClass("d-none");

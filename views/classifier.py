@@ -4,9 +4,11 @@ from models.lecturer import Lecturer
 from models.history import History
 from datetime import datetime
 from flask_login import current_user
+from pytz import timezone
 
 
 classifier = Blueprint('classifier', __name__, template_folder='templates', url_prefix='/dashboard/classifier')
+tz = timezone('Asia/Jakarta')
 
 @classifier.route('/inference', methods=['POST'])
 @role_required('pengguna')
@@ -22,7 +24,7 @@ def inference():
 
         recommended = current_app.inference.content_based_filtering(text)
 
-        history = History(abstrak=abstrak, kata_kunci=kata_kunci, probabilitas=probs, kelompok_bidang_keahlian=kbk, tanggal_inferensi=datetime.now(), top_similarity=recommended)
+        history = History(abstrak=abstrak, kata_kunci=kata_kunci, probabilitas=probs, kelompok_bidang_keahlian=kbk, tanggal_inferensi=datetime.now(tz), top_similarity=recommended)
         history.save(current_user.id)
 
         return jsonify(message={'probs': probs, 'lecturers': lecturers, 'kbk': kbk, 'top_similarity': recommended}, status="success"), 200

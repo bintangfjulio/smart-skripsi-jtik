@@ -1,3 +1,5 @@
+import arrow
+
 from flask_login import UserMixin
 from firebase_config import firebase_db
 from firebase_admin import firestore
@@ -34,7 +36,7 @@ class User(UserMixin):
                 'email': data['email'],
                 'role': data['role'],
                 'inactive': data['inactive'],
-                'registered_at': data['registered_at'].strftime("%A, %d-%m-%Y %H:%M:%S"),
+                'registered_at': arrow.get(data['registered_at']).to('Asia/Jakarta').format('dddd, DD-MM-YYYY HH:mm:ss', locale='id_ID'),
                 'status_badge': 'danger' if data['inactive'] == "1" else 'success'
             })
 
