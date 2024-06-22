@@ -5,7 +5,6 @@ Pyrebase4
 firebase_admin
 flask_login
 python-docx
-gunicorn
 torch
 scikit-learn
 transformers
