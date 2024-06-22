@@ -5,3 +5,8 @@ Pyrebase4
 firebase_admin
 flask_login
 python-docx
+torch
+scikit-learn
+transformers
+Sastrawi
+emoji
