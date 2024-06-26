@@ -29,10 +29,10 @@ def get_hyperparameters():
     parser.add_argument("--out_channels", type=int, default=32, help='CNN Out Channels')
     parser.add_argument("--window_sizes", nargs="+", type=int, default=[1, 2, 3, 4, 5], help='CNN Kernel')
     
-    # parser.add_argument("--root", type=str, default='prodi', help='Target Root Column')
-    # parser.add_argument("--node", type=str, default='nama_pembimbing', help='Target Node Column')
-    
     config = vars(parser.parse_args())
     config['bert_model'] = pretrained_model_name[config['model_name']]
 
     return config
+
+# parser.add_argument("--root", type=str, default='prodi', help='Target Root Column')
+# parser.add_argument("--node", type=str, default='nama_pembimbing', help='Target Node Column')

@@ -1,0 +1,53 @@
+label,correct_prediction,false_prediction,total_prediction,epoch,stage
+Rekayasa Perangkat Lunak,152,45,197,1,train
+Jaringan & IoT,18,89,107,1,train
+Sistem Cerdas,14,78,92,1,train
+Multimedia & Teknologi: AI Game,2,55,57,1,train
+Sistem Cerdas,0,8,8,1,valid
+Rekayasa Perangkat Lunak,27,1,28,1,valid
+Multimedia & Teknologi: AI Game,1,5,6,1,valid
+Jaringan & IoT,3,5,8,1,valid
+Jaringan & IoT,89,18,107,2,train
+Rekayasa Perangkat Lunak,174,23,197,2,train
+Sistem Cerdas,15,77,92,2,train
+Multimedia & Teknologi: AI Game,36,21,57,2,train
+Sistem Cerdas,1,7,8,2,valid
+Rekayasa Perangkat Lunak,27,1,28,2,valid
+Multimedia & Teknologi: AI Game,6,0,6,2,valid
+Jaringan & IoT,7,1,8,2,valid
+Rekayasa Perangkat Lunak,176,21,197,3,train
+Jaringan & IoT,97,10,107,3,train
+Sistem Cerdas,77,15,92,3,train
+Multimedia & Teknologi: AI Game,53,4,57,3,train
+Sistem Cerdas,4,4,8,3,valid
+Rekayasa Perangkat Lunak,28,0,28,3,valid
+Multimedia & Teknologi: AI Game,6,0,6,3,valid
+Jaringan & IoT,6,2,8,3,valid
+Sistem Cerdas,78,14,92,4,train
+Rekayasa Perangkat Lunak,184,13,197,4,train
+Jaringan & IoT,96,11,107,4,train
+Multimedia & Teknologi: AI Game,55,2,57,4,train
+Sistem Cerdas,5,3,8,4,valid
+Rekayasa Perangkat Lunak,26,2,28,4,valid
+Multimedia & Teknologi: AI Game,6,0,6,4,valid
+Jaringan & IoT,6,2,8,4,valid
+Sistem Cerdas,89,3,92,5,train
+Rekayasa Perangkat Lunak,191,6,197,5,train
+Jaringan & IoT,104,3,107,5,train
+Multimedia & Teknologi: AI Game,56,1,57,5,train
+Sistem Cerdas,7,1,8,5,valid
+Rekayasa Perangkat Lunak,27,1,28,5,valid
+Multimedia & Teknologi: AI Game,5,1,6,5,valid
+Jaringan & IoT,8,0,8,5,valid
+Sistem Cerdas,92,0,92,6,train
+Jaringan & IoT,101,6,107,6,train
+Rekayasa Perangkat Lunak,195,2,197,6,train
+Multimedia & Teknologi: AI Game,56,1,57,6,train
+Sistem Cerdas,7,1,8,6,valid
+Rekayasa Perangkat Lunak,27,1,28,6,valid
+Multimedia & Teknologi: AI Game,6,0,6,6,valid
+Jaringan & IoT,8,0,8,6,valid
+Jaringan & IoT,29,0,29,0,test
+Sistem Cerdas,20,7,27,0,test
+Rekayasa Perangkat Lunak,56,4,60,0,test
+Multimedia & Teknologi: AI Game,10,0,10,0,test

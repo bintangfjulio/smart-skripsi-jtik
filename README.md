@@ -19,19 +19,13 @@ pip install -r requirements.txt
 To train the model, run this command:
 
 ```train
-python trainer.py
-```
-
-or more advanced train:
-
-```
 python trainer.py --hyperparameter_name=value
 ```
 
 example:
 
 ```
-python trainer.py --batch_size=16 --bert_model=indolem/indobertweet-uncased
+python trainer.py --batch_size=16 --bert_model=IndoBERT --lr=3e-5
 ```
 
 You can see the other hyperparameter on util/hyperparameter.py
