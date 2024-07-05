@@ -1,5 +1,4 @@
-const CACHE_NAME = "my-cache";
-const OFFLINE_URL = "/static/offline.html";
+const CACHE_NAME = "my-cache-v1";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -9,24 +8,32 @@ self.addEventListener("install", (event) => {
         "/static/css/portal.css",
         "/static/js/app.js",
         "/static/images/favicon.png",
-        OFFLINE_URL,
       ]);
     })
   );
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  const cacheWhitelist = [CACHE_NAME];
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (!cacheWhitelist.includes(cacheName)) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+  self.clients.claim();
 });
 
 self.addEventListener("fetch", (event) => {
-  if (event.request.mode === "navigate") {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match(OFFLINE_URL);
-      })
-    );
-  } else {
-    event.respondWith(
-      caches.match(event.request).then((response) => {
-        return response || fetch(event.request);
-      })
-    );
-  }
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
+  );
 });
