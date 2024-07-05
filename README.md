@@ -25,7 +25,7 @@ app
 │ └── error.html --view http error handling
 │
 ├── views/ --folder controller (kelola view)
-│ ├── **init** --bootstraping seluruh controller
+│ ├── __init__.py --bootstraping seluruh controller
 │ ├── auth.py --controller authentifikasi
 │ ├── classifier.py --controller klasifikasi
 │ ├── dashboard.py --controller menu dashboard
