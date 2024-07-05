@@ -1,3 +1,4 @@
+```sh
 app
 │
 ├── checkpoint/ --folder petrained model
@@ -40,3 +41,4 @@ app
 ├── inference_config.py --service pretrained model
 ├── middleware.py --service middleware
 └── requiremens.txt --list pustaka
+```
