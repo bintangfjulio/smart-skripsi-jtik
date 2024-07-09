@@ -1,0 +1,85 @@
+label,correct_prediction,false_prediction,total_prediction,epoch,stage
+Rekayasa Perangkat Lunak,159,38,197,1,train
+Jaringan & IoT,28,79,107,1,train
+Sistem Cerdas,6,86,92,1,train
+Multimedia & Teknologi: AI Game,3,54,57,1,train
+Sistem Cerdas,0,8,8,1,valid
+Rekayasa Perangkat Lunak,27,1,28,1,valid
+Multimedia & Teknologi: AI Game,6,0,6,1,valid
+Jaringan & IoT,6,2,8,1,valid
+Jaringan & IoT,84,23,107,2,train
+Rekayasa Perangkat Lunak,161,36,197,2,train
+Sistem Cerdas,35,57,92,2,train
+Multimedia & Teknologi: AI Game,49,8,57,2,train
+Sistem Cerdas,1,7,8,2,valid
+Rekayasa Perangkat Lunak,28,0,28,2,valid
+Multimedia & Teknologi: AI Game,4,2,6,2,valid
+Jaringan & IoT,5,3,8,2,valid
+Rekayasa Perangkat Lunak,170,27,197,3,train
+Jaringan & IoT,94,13,107,3,train
+Sistem Cerdas,67,25,92,3,train
+Multimedia & Teknologi: AI Game,50,7,57,3,train
+Sistem Cerdas,5,3,8,3,valid
+Rekayasa Perangkat Lunak,26,2,28,3,valid
+Multimedia & Teknologi: AI Game,6,0,6,3,valid
+Jaringan & IoT,7,1,8,3,valid
+Sistem Cerdas,74,18,92,4,train
+Rekayasa Perangkat Lunak,182,15,197,4,train
+Jaringan & IoT,99,8,107,4,train
+Multimedia & Teknologi: AI Game,56,1,57,4,train
+Sistem Cerdas,6,2,8,4,valid
+Rekayasa Perangkat Lunak,27,1,28,4,valid
+Multimedia & Teknologi: AI Game,5,1,6,4,valid
+Jaringan & IoT,8,0,8,4,valid
+Sistem Cerdas,83,9,92,5,train
+Rekayasa Perangkat Lunak,179,18,197,5,train
+Jaringan & IoT,100,7,107,5,train
+Multimedia & Teknologi: AI Game,57,0,57,5,train
+Sistem Cerdas,7,1,8,5,valid
+Rekayasa Perangkat Lunak,26,2,28,5,valid
+Multimedia & Teknologi: AI Game,5,1,6,5,valid
+Jaringan & IoT,6,2,8,5,valid
+Sistem Cerdas,92,0,92,6,train
+Jaringan & IoT,104,3,107,6,train
+Rekayasa Perangkat Lunak,197,0,197,6,train
+Multimedia & Teknologi: AI Game,57,0,57,6,train
+Sistem Cerdas,7,1,8,6,valid
+Rekayasa Perangkat Lunak,27,1,28,6,valid
+Multimedia & Teknologi: AI Game,5,1,6,6,valid
+Jaringan & IoT,6,2,8,6,valid
+Rekayasa Perangkat Lunak,197,0,197,7,train
+Sistem Cerdas,92,0,92,7,train
+Multimedia & Teknologi: AI Game,57,0,57,7,train
+Jaringan & IoT,105,2,107,7,train
+Sistem Cerdas,7,1,8,7,valid
+Rekayasa Perangkat Lunak,27,1,28,7,valid
+Multimedia & Teknologi: AI Game,6,0,6,7,valid
+Jaringan & IoT,7,1,8,7,valid
+Rekayasa Perangkat Lunak,197,0,197,8,train
+Multimedia & Teknologi: AI Game,57,0,57,8,train
+Jaringan & IoT,106,1,107,8,train
+Sistem Cerdas,92,0,92,8,train
+Sistem Cerdas,7,1,8,8,valid
+Rekayasa Perangkat Lunak,25,3,28,8,valid
+Multimedia & Teknologi: AI Game,6,0,6,8,valid
+Jaringan & IoT,8,0,8,8,valid
+Rekayasa Perangkat Lunak,197,0,197,9,train
+Jaringan & IoT,107,0,107,9,train
+Sistem Cerdas,92,0,92,9,train
+Multimedia & Teknologi: AI Game,57,0,57,9,train
+Sistem Cerdas,7,1,8,9,valid
+Rekayasa Perangkat Lunak,27,1,28,9,valid
+Multimedia & Teknologi: AI Game,5,1,6,9,valid
+Jaringan & IoT,6,2,8,9,valid
+Rekayasa Perangkat Lunak,197,0,197,10,train
+Jaringan & IoT,107,0,107,10,train
+Multimedia & Teknologi: AI Game,57,0,57,10,train
+Sistem Cerdas,92,0,92,10,train
+Sistem Cerdas,7,1,8,10,valid
+Rekayasa Perangkat Lunak,27,1,28,10,valid
+Multimedia & Teknologi: AI Game,6,0,6,10,valid
+Jaringan & IoT,6,2,8,10,valid
+Jaringan & IoT,29,0,29,0,test
+Sistem Cerdas,24,3,27,0,test
+Rekayasa Perangkat Lunak,55,5,60,0,test
+Multimedia & Teknologi: AI Game,10,0,10,0,test
