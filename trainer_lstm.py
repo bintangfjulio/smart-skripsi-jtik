@@ -267,8 +267,8 @@ with torch.no_grad():
     graph_logger = pd.concat([graph_logger, pd.DataFrame({'accuracy': [accuracy], 'precision': [precision], 'recall': [recall], 'f1': [f1], 'loss': [test_loss], 'epoch': [0], 'stage': ['test']})], ignore_index=True)
     print(f'Test Loss: {test_loss:.4f}, Test Accuracy: {accuracy:.2f}%, Test Precision: {precision:.2f}%, Test Recall: {recall:.2f}%, Test F1: {f1:.2f}%')
 
-if not os.path.exists('log'):
-    os.makedirs('log')
+if not os.path.exists(f'log/{folder_path}'):
+    os.makedirs(f'log/{folder_path}')
 
 graph_logger.to_csv(f'log/{folder_path}/metrics.csv', index=False, encoding='utf-8')
 
