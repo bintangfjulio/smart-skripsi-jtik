@@ -23,7 +23,13 @@ from model.lstm import LSTM
 
 # setup
 parser = argparse.ArgumentParser()
-parser.add_argument("--bidirectional", type=bool, default=False, help='Bi-LSTM T/F')
+parser.add_argument(
+    "--bidirectional", 
+    action='store_true', 
+    default=False, 
+    help='Set this flag to use Bi-LSTM. Default is False (use LSTM).'
+)
+
 config = vars(parser.parse_args())
 
 if(config['bidirectional']):
@@ -31,6 +37,8 @@ if(config['bidirectional']):
 
 else:
     folder_path = 'lstm'
+
+print(f"Folder path set to: {folder_path}")
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 pd.options.display.float_format = '{:,.2f}'.format  
