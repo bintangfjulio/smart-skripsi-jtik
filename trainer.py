@@ -87,7 +87,7 @@ test_loader = torch.utils.data.DataLoader(dataset=test_set,
 
 
 # fine-tune
-model = BERT_CNN(labels=labels, pretrained_bert=pretrained_bert, dropout=config["dropout"], window_sizes=config["window_sizes"], in_channels=config["in_channels"], out_channels=config["out_channels"], num_bert_states=config["num_bert_states"])
+model = BERT_CNN(freeze=config["freeze"], labels=labels, pretrained_bert=pretrained_bert, dropout=config["dropout"], window_sizes=config["window_sizes"], in_channels=config["in_channels"], out_channels=config["out_channels"], num_bert_states=config["num_bert_states"])
 model.to(device)
 
 criterion = nn.CrossEntropyLoss()

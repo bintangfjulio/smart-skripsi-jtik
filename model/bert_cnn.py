@@ -4,9 +4,12 @@ import torch.nn.functional as F
 
 
 class BERT_CNN(nn.Module):
-    def __init__(self, labels, pretrained_bert, dropout, window_sizes, in_channels, out_channels, num_bert_states):
+    def __init__(self, freeze, labels, pretrained_bert, dropout, window_sizes, in_channels, out_channels, num_bert_states):
         super(BERT_CNN, self).__init__()
         self.pretrained_bert = pretrained_bert
+
+        if freeze:
+            self.freeze_bert()
 
         conv_layers = []
         for window_size in window_sizes:
@@ -41,3 +44,7 @@ class BERT_CNN(nn.Module):
         preds = self.output_layer(preds)
         
         return preds
+    
+    def freeze_bert(self):
+        for param in self.pretrained_bert.parameters():
+            param.requires_grad = False
