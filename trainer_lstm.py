@@ -148,7 +148,7 @@ for epoch in range(2000):
     f1 = f1_score(y_true_train, y_pred_train, average='weighted')
 
     graph_logger = pd.concat([graph_logger, pd.DataFrame({'accuracy': [accuracy], 'precision': [precision], 'recall': [recall], 'f1': [f1], 'loss': [train_loss], 'epoch': [epoch+1], 'stage': ['train']})], ignore_index=True)
-    print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Training Loss: {train_loss:.4f}, Training Accuracy: {accuracy:.2f}%, Training Precision: {precision:.2f}%, Training Recall: {recall:.2f}%, Training F1: {f1:.2f}%')
+    print(f'Epoch [{epoch + 1}/{2000}], Training Loss: {train_loss:.4f}, Training Accuracy: {accuracy:.2f}%, Training Precision: {precision:.2f}%, Training Recall: {recall:.2f}%, Training F1: {f1:.2f}%')
 
     model.eval()
     with torch.no_grad():
@@ -195,7 +195,7 @@ for epoch in range(2000):
         f1 = f1_score(y_true_valid, y_pred_valid, average='weighted')
 
         graph_logger = pd.concat([graph_logger, pd.DataFrame({'accuracy': [accuracy], 'precision': [precision], 'recall': [recall], 'f1': [f1], 'loss': [val_loss], 'epoch': [epoch+1], 'stage': ['valid']})], ignore_index=True)
-        print(f'Epoch [{epoch + 1}/{config["max_epochs"]}], Validation Loss: {val_loss:.4f}, Validation Accuracy: {accuracy:.2f}%, Validation Precision: {precision:.2f}%, Validation Recall: {recall:.2f}%, Validation F1: {f1:.2f}%')
+        print(f'Epoch [{epoch + 1}/{2000}], Validation Loss: {val_loss:.4f}, Validation Accuracy: {accuracy:.2f}%, Validation Precision: {precision:.2f}%, Validation Recall: {recall:.2f}%, Validation F1: {f1:.2f}%')
         
         if round(val_loss, 2) < round(best_loss, 2):
             if not os.path.exists(f'checkpoint/{folder_path}'):
