@@ -25,7 +25,7 @@ python trainer.py --hyperparameter_name=value
 example:
 
 ```
-python trainer.py --batch_size=16 --bert_model=IndoBERT --lr=3e-5
+python trainer.py --batch_size=16 --bert_model=IndoBERT --lr=3e-5 --freeze
 ```
 
 You can see the other hyperparameter on util/hyperparameter.py

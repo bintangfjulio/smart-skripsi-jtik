@@ -10,8 +10,8 @@ pretrained_model_name = {
 def get_hyperparameters():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_name", choices=['IndoBERT', 'IndoBERTweet', 'IndoRoBERTa'], required=True, help='BERT model choices')
-    parser.add_argument("--batch_size", type=int, default=32, help='Batch Size')
-    parser.add_argument("--lr", type=float, default=2e-5, help='Learning Rate')
+    parser.add_argument("--batch_size", type=int, default=16, help='Batch Size')
+    parser.add_argument("--lr", type=float, default=3e-5, help='Learning Rate')
     parser.add_argument("--freeze", action='store_true', default=False, help='Freeze Pretrained Model')
 
     parser.add_argument("--target", type=str, default='kelompok_bidang_keahlian', help='Target Column')
