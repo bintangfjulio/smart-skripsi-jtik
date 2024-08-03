@@ -1,13 +1,13 @@
 {% extends 'dashboard/base.html' %} {% block title %}Klasifikasi{% endblock
 title %} {% block content %}
 
-<h1 class="app-page-title">Klasifikasi</h1>
+<h1 class="app-page-title">Inferensi</h1>
 
 <hr class="my-4" />
 
 <div class="row g-4 settings-section">
   <div class="col-12">
-    <h3 class="section-title">Kelas</h3>
+    <!-- <h3 class="section-title">Kelas</h3> -->
     <div class="section-intro">
       Terdapat
       <span class="text-unmuted">4 kelompok bidang keahlian </span> sebagai
@@ -387,7 +387,7 @@ title %} {% block content %}
 
     $.ajax({
       type: "POST",
-      url: '{{ url_for("classifier.inference") }}',
+      url: '{{ url_for("inference.inference") }}',
       contentType: "application/json",
       data: JSON.stringify({
         abstrak: $("#abstrak").val(),

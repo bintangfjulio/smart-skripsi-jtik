@@ -21,10 +21,10 @@ def user():
     return render_template('dashboard/user.html', page="user", users=users)
 
 
-@dashboard.route('/classifier', methods=['GET'])
+@dashboard.route('/inference', methods=['GET'])
 @role_required('pengguna')
-def classifier():
-    return render_template('dashboard/classifier.html', page="classifier")
+def inference():
+    return render_template('dashboard/inference.html', page="inference")
 
 
 @dashboard.route('/history/<string:id>', methods=['GET'])

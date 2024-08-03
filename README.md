@@ -27,7 +27,7 @@ app
 ├── views/ --folder controller (kelola view)
 │ ├── __init__.py --bootstraping seluruh controller
 │ ├── auth.py --controller authentifikasi
-│ ├── classifier.py --controller klasifikasi
+│ ├── inference.py --controller klasifikasi
 │ ├── dashboard.py --controller menu dashboard
 │ ├── file.py --controller ekspor berkas
 │ ├── history.py --controller riwayat

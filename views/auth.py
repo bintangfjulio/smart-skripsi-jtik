@@ -107,7 +107,7 @@ def sign_in():
                 return redirect(url_for('dashboard.lecturer'))
             
             elif user.role == "pengguna":
-                return redirect(url_for('dashboard.classifier'))
+                return redirect(url_for('dashboard.inference'))
 
     return render_template('auth/sign_in.html')
 
