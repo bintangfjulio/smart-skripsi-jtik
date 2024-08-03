@@ -10,19 +10,19 @@ from pytz import timezone
 inference = Blueprint('inference', __name__, template_folder='templates', url_prefix='/dashboard/inference')
 tz = timezone('Asia/Jakarta')
 
-@inference.route('/inferencer', methods=['POST'])
+@inference.route('/', methods=['POST'])
 @role_required('pengguna')
-def inferencer():
+def index():
     abstrak = request.get_json().get('abstrak')
     kata_kunci = request.get_json().get('kata_kunci')
     klasifikasi = request.get_json().get('klasifikasi')
     rekomendasi = request.get_json().get('rekomendasi')
 
     try:
-        text = current_app.inference.text_processing(abstrak, kata_kunci)
+        text = current_app.inference_utils.text_processing(abstrak, kata_kunci)
 
         if klasifikasi:
-            probs, kbk = current_app.inference.classification(text)
+            probs, kbk = current_app.inference_utils.classification(text)
             lecturers = Lecturer.fetch(kelompok_bidang_keahlian=kbk) 
 
         else:
@@ -31,7 +31,7 @@ def inferencer():
             lecturers = ""
 
         if rekomendasi:
-            recommended = current_app.inference.content_based_filtering(text)
+            recommended = current_app.inference_utils.content_based_filtering(text)
             
         else:
             recommended = ""

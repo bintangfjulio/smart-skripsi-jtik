@@ -414,7 +414,7 @@
 
     $.ajax({
       type: "POST",
-      url: '{{ url_for("inference.inferencer") }}',
+      url: '{{ url_for("inference.index") }}',
       contentType: "application/json",
       data: JSON.stringify({
         abstrak: $("#abstrak").val(),
