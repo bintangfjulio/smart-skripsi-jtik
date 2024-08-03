@@ -1,17 +1,15 @@
-{% extends 'dashboard/base.html' %} {% block title %}Klasifikasi{% endblock
-title %} {% block content %}
+{% extends 'dashboard/base.html' %} {% block title %}Inferensi{% endblock title
+%} {% block content %}
 
 <h1 class="app-page-title">Inferensi</h1>
-
-<hr class="my-4" />
 
 <div class="row g-4 settings-section">
   <div class="col-12">
     <!-- <h3 class="section-title">Kelas</h3> -->
     <div class="section-intro">
-      Terdapat
-      <span class="text-unmuted">4 kelompok bidang keahlian </span> sebagai
-      kelas klasifikasi.
+      Saat ini terdapat
+      <span class="text-unmuted">4 kelompok bidang keahlian </span>untuk
+      diklasifikasikan:
     </div>
   </div>
 
@@ -170,19 +168,42 @@ title %} {% block content %}
   </div>
 </div>
 
-<hr class="my-4" />
-
-<div class="row g-4 settings-section">
-  <div class="col-12">
-    <h3 class="section-title">Data</h3>
-    <div class="section-intro">
-      Masukkan <span class="text-unmuted">abstrak dan kata kunci</span> Anda
-      sebagai data untuk diklasifikasikan.
-    </div>
-  </div>
+<div class="row g-4 mt-3 settings-section">
   <div class="col-12">
     <div class="app-card app-card-settings shadow-sm p-4">
       <div class="app-card-body">
+        <nav
+          id="orders-table-tab"
+          class="orders-table-tab app-nav-tabs nav shadow-sm flex-column flex-sm-row mb-4"
+        >
+          <a
+            class="flex-sm-fill text-sm-center nav-link active"
+            data-bs-toggle="tab"
+            role="tab"
+            aria-controls="orders-all"
+            aria-selected="true"
+            onclick="setType(true, false)"
+            >Klasifikasi</a
+          >
+          <a
+            class="flex-sm-fill text-sm-center nav-link"
+            data-bs-toggle="tab"
+            role="tab"
+            aria-controls="orders-paid"
+            aria-selected="false"
+            onclick="setType(false, true)"
+            >Content Based Filtering</a
+          >
+          <a
+            class="flex-sm-fill text-sm-center nav-link"
+            data-bs-toggle="tab"
+            role="tab"
+            aria-controls="orders-pending"
+            aria-selected="false"
+            onclick="setType(true, true)"
+            >Klasifikasi & Content Based Filtering</a
+          >
+        </nav>
         <form method="post" id="inference">
           <div class="mb-3">
             <div class="d-flex justify-content-between">
@@ -232,9 +253,7 @@ title %} {% block content %}
               </button>
             </div>
             <div class="col-auto">
-              <button class="btn app-btn-primary" type="submit">
-                Klasifikasi
-              </button>
+              <button class="btn app-btn-primary" type="submit">Submit</button>
             </div>
           </div>
         </form>
@@ -245,13 +264,11 @@ title %} {% block content %}
   </div>
 </div>
 
-<hr class="my-4" />
-
 <div class="row g-3 settings-section justify-content-center d-none" id="hasil">
   <div class="col-12">
     <h3 class="section-title">Hasil</h3>
   </div>
-  <div class="col-12 col-lg-6">
+  <div class="col-12 col-lg-6 hasil-klasifikasi">
     <div class="app-card app-card-stats-table h-100 shadow-sm">
       <div class="app-card-header p-3">
         <div class="row justify-content-between align-items-center">
@@ -281,7 +298,7 @@ title %} {% block content %}
     <!--//app-card-->
   </div>
 
-  <div class="col-12 mt-5 text-center">
+  <div class="col-12 mt-5 text-center hasil-klasifikasi">
     <h3 class="section-title">
       Dosen Kelompok Bidang Keahlian<br /><span
         id="kbk"
@@ -290,21 +307,26 @@ title %} {% block content %}
     </h3>
   </div>
 
-  <div class="row justify-content-center gy-2" id="lecturers"></div>
+  <div
+    class="row justify-content-center gy-2 hasil-klasifikasi"
+    id="lecturers"
+  ></div>
 
-  <div class="col-12 mt-5 text-center mb-3">
+  <div class="col-12 mt-5 text-center mb-3 hasil-rekomendasi">
     <h3 class="section-title">
       Dosen dengan
       <span style="color: #128c9b">Riwayat Bimbingan Termirip</span>
     </h3>
   </div>
 
-  <div class="container-xl" id="similarity-results"></div>
+  <div class="container-xl" id="similarity-results hasil-rekomendasi"></div>
 </div>
 
 {% endblock content %} {% block script %}
 <script>
   let keywords = [];
+  let klasifikasi = true;
+  let rekomendasi = false;
 
   $("#abstrak").on("input", function () {
     let text = $(this).val().trim();
@@ -346,6 +368,11 @@ title %} {% block content %}
     }
   });
 
+  function setType(setKlasifikasi, setRekomendasi) {
+    klasifikasi = setKlasifikasi;
+    rekomendasi = setRekomendasi;
+  }
+
   $(document).on("click", ".close-badge", function () {
     let removedKeyword = $(this).closest(".badge").text().trim();
     $(this).closest(".badge").remove();
@@ -367,7 +394,7 @@ title %} {% block content %}
     if ($("#abstrak").val().trim() == "") {
       alertMessage(
         "Abstrak Harus Diisi",
-        "Tidak dapat melakukan klasifikasi",
+        "Tidak dapat melakukan inferensi",
         "error"
       );
       return;
@@ -376,7 +403,7 @@ title %} {% block content %}
     if (keywords.length == 0) {
       alertMessage(
         "Minimal 1 Kata Kunci",
-        "Tidak dapat melakukan klasifikasi",
+        "Tidak dapat melakukan inferensi",
         "error"
       );
       return;
@@ -387,43 +414,47 @@ title %} {% block content %}
 
     $.ajax({
       type: "POST",
-      url: '{{ url_for("inference.inference") }}',
+      url: '{{ url_for("inference.inferencer") }}',
       contentType: "application/json",
       data: JSON.stringify({
         abstrak: $("#abstrak").val(),
         kata_kunci: keywords.join(", "),
+        klasifikasi: klasifikasi,
+        rekomendasi: rekomendasi,
       }),
       xhrFields: {
         withCredentials: true,
       },
       success: function (response) {
-        $("#statsResult").empty();
+        if (klasifikasi) {
+          $(".hasil-klasifikasi").removeClass("d-none");
 
-        probs = response["message"]["probs"];
+          $("#statsResult").empty();
+          probs = response["message"]["probs"];
 
-        const classificationResult = Object.entries(probs)
-          .sort((x, y) => x[1] - y[1])
-          .reverse();
+          const classificationResult = Object.entries(probs)
+            .sort((x, y) => x[1] - y[1])
+            .reverse();
 
-        let isFirstRow = true;
-        classificationResult.forEach(([key, value]) => {
-          $("#statsResult").append(
-            `<tr>
+          let isFirstRow = true;
+          classificationResult.forEach(([key, value]) => {
+            $("#statsResult").append(
+              `<tr>
               <td>${key}</td>
               <td class="stat-cell${
                 isFirstRow ? " fw-bold" : ""
               }" style="color: #128c9b">${value}%</td>
             </tr>`
-          );
-          isFirstRow = false;
-        });
+            );
+            isFirstRow = false;
+          });
 
-        $("#kbk").text(response["message"]["kbk"]);
+          $("#kbk").text(response["message"]["kbk"]);
 
-        $("#lecturers").empty();
-        $.each(response["message"]["lecturers"], function (index, lecturer) {
-          $("#lecturers").append(
-            `<div class="col-6 col-md-3">
+          $("#lecturers").empty();
+          $.each(response["message"]["lecturers"], function (index, lecturer) {
+            $("#lecturers").append(
+              `<div class="col-6 col-md-3">
                 <div class="app-card app-card-doc shadow-sm h-100">
                   <div class="app-card-thumb-holder p-3 d-flex justify-content-center">
                     <div
@@ -454,15 +485,21 @@ title %} {% block content %}
                   </div>
                 </div>
               </div>`
-          );
-        });
+            );
+          });
+        } else {
+          $(".hasil-klasifikasi").addClass("d-none");
+        }
 
-        $("#similarity-results").empty();
-        var topSimilarity = response["message"]["top_similarity"];
+        if (rekomendasi) {
+          $(".hasil-rekomendasi").removeClass("d-none");
 
-        for (var index = 0; index < topSimilarity.length; index++) {
-          $("#similarity-results").append(
-            `<div class="app-card app-card-notification shadow-sm mb-4">
+          $("#similarity-results").empty();
+          var topSimilarity = response["message"]["top_similarity"];
+
+          for (var index = 0; index < topSimilarity.length; index++) {
+            $("#similarity-results").append(
+              `<div class="app-card app-card-notification shadow-sm mb-4">
               <div class="app-card-header px-4 py-3">
                 <div class="row g-3 align-items-center">
                   <div class="col-12 col-lg-auto text-start">
@@ -507,7 +544,10 @@ title %} {% block content %}
                   >${topSimilarity[index]["url"]}</a>
               </div>
             </div>`
-          );
+            );
+          }
+        } else {
+          $(".hasil-rekomendasi").addClass("d-none");
         }
 
         $("#hasil").removeClass("d-none");
@@ -525,7 +565,7 @@ title %} {% block content %}
       error: function (response) {
         $(".spinner").addClass("d-none");
         $(".overlay").addClass("d-none");
-        alertMessage("Klasifikasi Gagal", "Terjadi kesalahan server", "error");
+        alertMessage("Inferensi Gagal", "Terjadi kesalahan server", "error");
       },
     });
   });
