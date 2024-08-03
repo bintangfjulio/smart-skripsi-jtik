@@ -27,7 +27,7 @@ def index():
             return redirect(url_for('dashboard.lecturer'))
         
         elif current_user.role == "pengguna":
-            return redirect(url_for('dashboard.inference'))
+            return redirect(url_for('dashboard.classifier'))
         
     return redirect(url_for('auth.sign_in'))
 

@@ -181,11 +181,11 @@
                   <span class="nav-link-text">Pengguna</span>
                 </a>
               </li>
-              <li class="nav-item d-none" id="menu-inference">
+              <li class="nav-item d-none" id="menu-classifier">
                 <a
                   class="nav-link"
-                  id="inference"
-                  href="{{ url_for('dashboard.inference')  }}"
+                  id="classifier"
+                  href="{{ url_for('dashboard.classifier')  }}"
                 >
                   <span class="nav-icon">
                     <svg
@@ -205,7 +205,7 @@
                       ></path>
                     </svg>
                   </span>
-                  <span class="nav-link-text">Inferensi</span>
+                  <span class="nav-link-text">Klasifikasi</span>
                 </a>
               </li>
               <li class="nav-item d-none" id="menu-history">
@@ -287,7 +287,7 @@
       if ("{{ current_user.role }}" === "admin") {
         menu = ["lecturer", "user"];
       } else if ("{{ current_user.role }}" === "pengguna") {
-        menu = ["inference", "history", "file"];
+        menu = ["classifier", "history", "file"];
       }
 
       $.each(menu, function (index, value) {

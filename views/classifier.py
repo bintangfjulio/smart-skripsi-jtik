@@ -7,10 +7,14 @@ from flask_login import current_user
 from pytz import timezone
 
 
-inference = Blueprint('inference', __name__, template_folder='templates', url_prefix='/dashboard/inference')
+classifier = Blueprint('classifier', __name__, template_folder='templates', url_prefix='/dashboard/classifier')
 tz = timezone('Asia/Jakarta')
 
+<<<<<<< HEAD:views/inference.py
 @inference.route('/', methods=['POST'])
+=======
+@classifier.route('/inference', methods=['POST'])
+>>>>>>> parent of 43a5e92 (refactor):views/classifier.py
 @role_required('pengguna')
 def index():
     abstrak = request.get_json().get('abstrak')

@@ -1,11 +1,11 @@
 {% extends 'dashboard/base.html' %} {% block title %}Inferensi{% endblock title
 %} {% block content %}
 
-<h1 class="app-page-title">Inferensi</h1>
+<h1 class="app-page-title">Klasifikasi</h1>
 
 <div class="row g-4 settings-section">
   <div class="col-12">
-    <!-- <h3 class="section-title">Kelas</h3> -->
+    <h3 class="section-title">Kelas</h3>
     <div class="section-intro">
       Saat ini terdapat
       <span class="text-unmuted">4 kelompok bidang keahlian </span>untuk
@@ -414,7 +414,11 @@
 
     $.ajax({
       type: "POST",
+<<<<<<< HEAD:templates/dashboard/inference.html
       url: '{{ url_for("inference.index") }}',
+=======
+      url: '{{ url_for("classifier.inference") }}',
+>>>>>>> parent of 43a5e92 (refactor):templates/dashboard/classifier.html
       contentType: "application/json",
       data: JSON.stringify({
         abstrak: $("#abstrak").val(),
