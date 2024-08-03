@@ -14,7 +14,7 @@ app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = os.getenv('SECRET_KEY')
 
 middleware.init_middleware(app)
-app.inference_utils = Inference()
+app.inference = Inference()
 
 for view in views:
     app.register_blueprint(view)

@@ -47,10 +47,10 @@ class History:
                 'id': history.id,
                 'abstrak': data['abstrak'],
                 'kata_kunci': data['kata_kunci'],
-                'probabilitas': dict(sorted(data.get('probabilitas', {}).items(), key=lambda item: item[1], reverse=True)),
-                'kelompok_bidang_keahlian': data.get('kelompok_bidang_keahlian', ''),
+                'probabilitas': dict(sorted(data['probabilitas'].items(), key=lambda item: item[1], reverse=True)),
+                'kelompok_bidang_keahlian': data['kelompok_bidang_keahlian'],
                 'tanggal_inferensi': arrow.get(data['tanggal_inferensi']).to('Asia/Jakarta').format('dddd, DD-MM-YYYY HH:mm:ss', locale='id_ID'),
-                'top_similarity': data.get('top_similarity', '')
+                'top_similarity': data['top_similarity']
             })
 
         return datas

@@ -10,35 +10,19 @@ from pytz import timezone
 classifier = Blueprint('classifier', __name__, template_folder='templates', url_prefix='/dashboard/classifier')
 tz = timezone('Asia/Jakarta')
 
-<<<<<<< HEAD:views/inference.py
-@inference.route('/', methods=['POST'])
-=======
 @classifier.route('/inference', methods=['POST'])
->>>>>>> parent of 43a5e92 (refactor):views/classifier.py
 @role_required('pengguna')
-def index():
+def inference():
     abstrak = request.get_json().get('abstrak')
     kata_kunci = request.get_json().get('kata_kunci')
-    klasifikasi = request.get_json().get('klasifikasi')
-    rekomendasi = request.get_json().get('rekomendasi')
 
     try:
-        text = current_app.inference_utils.text_processing(abstrak, kata_kunci)
+        text = current_app.inference.text_processing(abstrak, kata_kunci)
 
-        if klasifikasi:
-            probs, kbk = current_app.inference_utils.classification(text)
-            lecturers = Lecturer.fetch(kelompok_bidang_keahlian=kbk) 
+        probs, kbk = current_app.inference.classification(text)
+        lecturers = Lecturer.fetch(kelompok_bidang_keahlian=kbk)
 
-        else:
-            probs = ""
-            kbk = ""
-            lecturers = ""
-
-        if rekomendasi:
-            recommended = current_app.inference_utils.content_based_filtering(text)
-            
-        else:
-            recommended = ""
+        recommended = current_app.inference.content_based_filtering(text)
 
         history = History(abstrak=abstrak, kata_kunci=kata_kunci, probabilitas=probs, kelompok_bidang_keahlian=kbk, tanggal_inferensi=datetime.now(tz), top_similarity=recommended)
         history.save(current_user.id)
