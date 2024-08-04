@@ -6,8 +6,8 @@
 <div class="row g-4 settings-section">
   <div class="col-12">
     <div class="section-intro">
-      Saat ini terdapat
-      <span class="text-unmuted">4 kelompok bidang keahlian </span>untuk
+      Terdapat
+      <span class="text-unmuted">4 Kelompok Bidang Keahlian (KBK) </span>untuk
       diklasifikasikan:
     </div>
   </div>
@@ -182,7 +182,7 @@
             aria-controls="orders-all"
             aria-selected="true"
             id="setKlasifikasi"
-            >Klasifikasi</a
+            >Klasifikasi KBK</a
           >
           <a
             class="flex-sm-fill text-sm-center nav-link"
@@ -191,7 +191,7 @@
             aria-controls="orders-paid"
             aria-selected="false"
             id="setRekomendasi"
-            >Content Based Filtering</a
+            >Rekomendasi Dosen</a
           >
           <a
             class="flex-sm-fill text-sm-center nav-link"
@@ -200,7 +200,7 @@
             aria-controls="orders-pending"
             aria-selected="false"
             id="setAll"
-            >Klasifikasi & Content Based Filtering</a
+            >Semua</a
           >
         </nav>
         <form method="post" id="inferencer">
@@ -431,15 +431,19 @@
       data: JSON.stringify({
         abstrak: $("#abstrak").val(),
         kata_kunci: keywords.join(", "),
+        klasifikasi: klasifikasi,
+        rekomendasi: rekomendasi,
       }),
       xhrFields: {
         withCredentials: true,
       },
       success: function (response) {
+        $("#statsResult").empty();
+        $("#lecturers").empty();
+        $("#similarity-results").empty();
+
         if (klasifikasi) {
           $(".hasil-klasifikasi").removeClass("d-none");
-
-          $("#statsResult").empty();
           probs = response["message"]["probs"];
 
           const classificationResult = Object.entries(probs)
@@ -461,7 +465,6 @@
 
           $("#kbk").text(response["message"]["kbk"]);
 
-          $("#lecturers").empty();
           $.each(response["message"]["lecturers"], function (index, lecturer) {
             $("#lecturers").append(
               `<div class="col-6 col-md-3">
@@ -503,8 +506,6 @@
 
         if (rekomendasi) {
           $(".hasil-rekomendasi").removeClass("d-none");
-
-          $("#similarity-results").empty();
           var topSimilarity = response["message"]["top_similarity"];
 
           for (var index = 0; index < topSimilarity.length; index++) {

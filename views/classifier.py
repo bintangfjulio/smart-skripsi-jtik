@@ -15,14 +15,26 @@ tz = timezone('Asia/Jakarta')
 def inference():
     abstrak = request.get_json().get('abstrak')
     kata_kunci = request.get_json().get('kata_kunci')
+    klasifikasi = request.get_json().get('klasifikasi')
+    rekomendasi = request.get_json().get('rekomendasi')
 
     try:
         text = current_app.inference.text_processing(abstrak, kata_kunci)
 
-        probs, kbk = current_app.inference.classification(text)
-        lecturers = Lecturer.fetch(kelompok_bidang_keahlian=kbk)
+        if klasifikasi:
+            probs, kbk = current_app.inference.classification(text)
+            lecturers = Lecturer.fetch(kelompok_bidang_keahlian=kbk)
 
-        recommended = current_app.inference.content_based_filtering(text)
+        else:
+            probs = {}
+            kbk = ""
+            lecturers = []
+
+        if rekomendasi:
+            recommended = current_app.inference.content_based_filtering(text)
+
+        else:
+            recommended = []
 
         history = History(abstrak=abstrak, kata_kunci=kata_kunci, probabilitas=probs, kelompok_bidang_keahlian=kbk, tanggal_inferensi=datetime.now(tz), top_similarity=recommended)
         history.save(current_user.id)
