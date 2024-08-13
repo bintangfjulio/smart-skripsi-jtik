@@ -1,3 +1,5 @@
+![Brief Image](brief.png)
+
 ```sh
 app
 │
